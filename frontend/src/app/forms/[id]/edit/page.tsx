@@ -27,28 +27,28 @@ import { QuestionListPane } from "@/components/builder/QuestionListPane";
 import { CanvasPane } from "@/components/builder/CanvasPane";
 import { SettingsPane } from "@/components/builder/SettingsPane";
 import { AddQuestionModal } from "@/components/builder/AddQuestionModal";
+import { PreviewModal } from "@/components/builder/PreviewModal";
+import { DesignDrawer } from "@/components/builder/DesignDrawer";
+import { ConnectModal } from "@/components/builder/ConnectModal";
 import { Button } from "@/components/ui/Button";
 
 // Inner builder workspace component that has access to BuilderContext
 function BuilderWorkspace() {
   const { saveNow } = useAutosave();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isDesignOpen, setIsDesignOpen] = useState(false);
+  const [isConnectOpen, setIsConnectOpen] = useState(false);
   const { state } = useBuilderStore();
-
-  const handleOpenPreview = () => {
-    if (state.form?.slug) {
-      window.open(`/forms/${state.form.slug}`, "_blank");
-    } else {
-      window.open(`/forms/${state.form?.id}/preview`, "_blank");
-    }
-  };
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-white text-[#262627]">
       {/* 1. Top Bar */}
       <BuilderTopBar
         onSaveNow={saveNow}
-        onOpenPreview={handleOpenPreview}
+        onOpenPreview={() => setIsPreviewOpen(true)}
+        onOpenDesign={() => setIsDesignOpen(true)}
+        onOpenConnect={() => setIsConnectOpen(true)}
       />
 
       {/* 2. 3-Pane Main Work Area */}
@@ -67,6 +67,26 @@ function BuilderWorkspace() {
       <AddQuestionModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+      />
+
+      {/* Live Preview Full-Screen Modal with Device Frames */}
+      <PreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        form={state.form}
+        questions={state.questions}
+      />
+
+      {/* Design & Theme Drawer */}
+      <DesignDrawer
+        isOpen={isDesignOpen}
+        onClose={() => setIsDesignOpen(false)}
+      />
+
+      {/* Connect & Integrations Modal */}
+      <ConnectModal
+        isOpen={isConnectOpen}
+        onClose={() => setIsConnectOpen(false)}
       />
     </div>
   );
