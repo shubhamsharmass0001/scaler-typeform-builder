@@ -1,14 +1,17 @@
 "use client";
 
 /**
- * app/page.tsx — Typeform-style Workspace Dashboard
+ * app/page.tsx — Typeform Workspace Dashboard
  *
- * Implements:
- *   - Forms listing with React Query fetching and cache invalidation
- *   - Real-time search filtering
- *   - Grid and List view toggle
- *   - Form creation, duplication, renaming, deletion, and public link copying
- *   - Loading skeletons, empty states, and toast feedback on every mutation
+ * Pixel-accurate implementation of Typeform's workspace interface:
+ *   - Header & Sub-navigation tabs (Forms, Contacts, Automations, Insights, Pages Beta)
+ *   - Left sidebar with "+ Create form", search, workspaces navigation, responses meter & AI input
+ *   - Promotional quota banner & suggestion recommendations
+ *   - Workspace title with "... ", "+ Invite", diamond badge
+ *   - Sort dropdown ("Date created", "Date updated", "Alphabetical")
+ *   - Segmented List / Grid view switcher (List view default matching screenshot)
+ *   - Forms table with squircle icons, responses, completed counts, updated dates, and context menu
+ *   - Fully connected to real backend API with optimistic mutations, error handling, and toast feedback
  */
 
 import React, { useState, useMemo } from "react";
@@ -16,10 +19,13 @@ import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  Plus,
-  Search,
-  LayoutGrid,
+  MoreHorizontal,
+  UserPlus,
+  Sparkles,
+  Calendar,
   List as ListIcon,
+  LayoutGrid,
+  ChevronDown,
   RefreshCw,
   AlertCircle,
 } from "lucide-react";
@@ -33,30 +39,37 @@ import {
 } from "@/lib/api";
 import { FormListItem } from "@/types";
 import { TopNav } from "@/components/dashboard/TopNav";
+import { TopTabs } from "@/components/dashboard/TopTabs";
 import { Sidebar } from "@/components/dashboard/Sidebar";
-import { FormCard } from "@/components/dashboard/FormCard";
+import { PromoBanner } from "@/components/dashboard/PromoBanner";
+import { SuggestionBanner } from "@/components/dashboard/SuggestionBanner";
 import { FormRow } from "@/components/dashboard/FormRow";
+import { FormCard } from "@/components/dashboard/FormCard";
 import { RenameModal } from "@/components/dashboard/RenameModal";
 import { DeleteModal } from "@/components/dashboard/DeleteModal";
-import { FormCardSkeleton, FormRowSkeleton } from "@/components/ui/Skeleton";
+import { FormRowSkeleton, FormCardSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 
-export default function DashboardPage() {
+type SortOption = "created" | "updated" | "alphabetical";
+
+export default function WorkspaceDashboard() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   // Local UI State
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list"); // List view is default in Typeform screenshot
+  const [sortBy, setSortBy] = useState<SortOption>("created");
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  // Modal State
+  // Modals
   const [formToRename, setFormToRename] = useState<FormListItem | null>(null);
   const [formToDelete, setFormToDelete] = useState<FormListItem | null>(null);
 
   // ---------------------------------------------------------------------------
-  // Queries
+  // Data Queries
   // ---------------------------------------------------------------------------
   const {
     data: forms = [],
@@ -69,11 +82,16 @@ export default function DashboardPage() {
     queryFn: getForms,
   });
 
+  // Calculate total responses collected across all forms
+  const totalResponsesCollected = useMemo(() => {
+    return forms.reduce((acc, f) => acc + (f.response_count || 0), 0);
+  }, [forms]);
+
   // ---------------------------------------------------------------------------
   // Mutations
   // ---------------------------------------------------------------------------
   const createMutation = useMutation({
-    mutationFn: () => createForm({ title: "Untitled form" }),
+    mutationFn: () => createForm({ title: "New form" }),
     onSuccess: (newForm) => {
       queryClient.invalidateQueries({ queryKey: ["forms"] });
       toast.success("New form created!");
@@ -119,121 +137,219 @@ export default function DashboardPage() {
   });
 
   // ---------------------------------------------------------------------------
-  // Handlers
+  // Handlers & Filtering
   // ---------------------------------------------------------------------------
   const handleCopyLink = (form: FormListItem) => {
     if (!form.slug) return;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const publicUrl = `${origin}/forms/${form.slug}`;
     navigator.clipboard.writeText(publicUrl);
-    toast.success("Public form link copied to clipboard!");
+    toast.success("Public link copied to clipboard!");
   };
 
-  const filteredForms = useMemo(() => {
-    if (!searchQuery.trim()) return forms;
-    const q = searchQuery.toLowerCase();
-    return forms.filter(
-      (f) =>
-        f.title.toLowerCase().includes(q) ||
-        (f.description && f.description.toLowerCase().includes(q))
-    );
-  }, [forms, searchQuery]);
+  const processedForms = useMemo(() => {
+    let result = [...forms];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (f) =>
+          f.title.toLowerCase().includes(q) ||
+          (f.description && f.description.toLowerCase().includes(q))
+      );
+    }
+
+    // Sort order
+    result.sort((a, b) => {
+      if (sortBy === "created") {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+      if (sortBy === "updated") {
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      }
+      if (sortBy === "alphabetical") {
+        return a.title.localeCompare(b.title);
+      }
+      return 0;
+    });
+
+    return result;
+  }, [forms, searchQuery, sortBy]);
+
+  const sortLabels: Record<SortOption, string> = {
+    created: "Date created",
+    updated: "Date updated",
+    alphabetical: "Alphabetical",
+  };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
-      {/* Top Header */}
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans">
+      {/* 1. Top Navbar */}
       <TopNav onToggleMobileSidebar={() => setMobileSidebarOpen(true)} />
 
-      <div className="flex-1 flex max-w-[1600px] w-full mx-auto">
-        {/* Sidebar */}
+      {/* 2. Top Sub-Navigation Tabs */}
+      <TopTabs />
+
+      {/* 3. Main Workspace Area */}
+      <div className="flex-1 flex w-full">
+        {/* Left Sidebar */}
         <Sidebar
           totalForms={forms.length}
+          totalResponses={totalResponsesCollected}
           isOpenMobile={mobileSidebarOpen}
           onCloseMobile={() => setMobileSidebarOpen(false)}
+          onCreateForm={() => createMutation.mutate()}
+          isCreating={createMutation.isPending}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
 
-        {/* Main Content Area */}
-        <main className="flex-1 min-w-0 p-4 sm:p-8 lg:p-10">
-          {/* Header Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#262627] tracking-tight">
+        {/* Content Pane */}
+        <main className="flex-1 min-w-0 px-6 sm:px-10 py-6 max-w-7xl mx-auto">
+          {/* Promo Upgrade Banner */}
+          <PromoBanner />
+
+          {/* Workspace Title & Controls Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            {/* Title & Actions */}
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#262627] tracking-tight">
                 My workspace
               </h1>
-              <p className="text-xs sm:text-sm text-[#737373] mt-1">
-                {isLoading
-                  ? "Loading forms..."
-                  : `${forms.length} ${forms.length === 1 ? "typeform" : "typeforms"}`}
-              </p>
+
+              {/* Workspace dots menu */}
+              <button
+                type="button"
+                className="p-1 rounded-md text-[#737373] hover:text-[#262627] hover:bg-[#EBEBEB] transition-colors cursor-pointer"
+                title="Workspace settings"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+
+              {/* + Invite button */}
+              <button
+                type="button"
+                onClick={() => alert("Workspace collaboration invite modal")}
+                className="flex items-center gap-1.5 text-xs font-medium text-[#262627] hover:bg-[#EBEBEB] px-2.5 py-1 rounded-md transition-colors cursor-pointer ml-1"
+              >
+                <UserPlus className="w-3.5 h-3.5 text-[#525252]" />
+                <span>Invite</span>
+              </button>
+
+              {/* Diamond badge */}
+              <div
+                className="w-5 h-5 rounded-full border border-emerald-300 bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 cursor-pointer"
+                title="Upgrade to Pro"
+              >
+                <Sparkles className="w-2.5 h-2.5" />
+              </div>
             </div>
 
-            <Button
-              onClick={() => createMutation.mutate()}
-              isLoading={createMutation.isPending}
-              leftIcon={<Plus className="w-4 h-4" />}
-              className="shadow-sm font-medium"
-            >
-              Create typeform
-            </Button>
-          </div>
+            {/* Right Controls: Sort Dropdown & List/Grid View Switcher */}
+            <div className="flex items-center gap-2.5 self-end sm:self-auto">
+              {/* Sort By Dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                  className="flex items-center gap-2 text-xs font-medium text-[#262627] bg-white border border-[#E5E5E5] px-3 py-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors cursor-pointer"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-[#737373]" />
+                  <span>{sortLabels[sortBy]}</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-[#737373]" />
+                </button>
 
-          {/* Search & View Controls */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-            <div className="relative max-w-sm w-full">
-              <Search className="w-4 h-4 text-[#A3A3A3] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search typeforms..."
-                className="w-full bg-white text-sm text-[#262627] placeholder:text-[#A3A3A3] pl-10 pr-4 py-2 rounded-lg border border-[#E5E5E5] transition-all focus:outline-none focus:border-[#262627] focus:ring-1 focus:ring-[#262627]"
-              />
-            </div>
+                {isSortDropdownOpen && (
+                  <div className="absolute right-0 mt-1 w-36 rounded-xl bg-white shadow-lg border border-[#E5E5E5] py-1 text-xs z-30">
+                    {(["created", "updated", "alphabetical"] as SortOption[]).map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => {
+                          setSortBy(opt);
+                          setIsSortDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-1.5 transition-colors cursor-pointer ${
+                          sortBy === opt
+                            ? "bg-[#F5F5F5] font-semibold text-[#262627]"
+                            : "text-[#525252] hover:bg-[#F9F9F9]"
+                        }`}
+                      >
+                        {sortLabels[opt]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-            <div className="flex items-center gap-2 self-end sm:self-auto">
+              {/* Segmented Toggle: List / Grid */}
               <div className="flex items-center bg-white border border-[#E5E5E5] p-0.5 rounded-lg shadow-2xs">
                 <button
                   type="button"
-                  onClick={() => setViewMode("grid")}
-                  className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                    viewMode === "grid"
-                      ? "bg-[#F0F0F0] text-[#262627]"
+                  onClick={() => setViewMode("list")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                    viewMode === "list"
+                      ? "bg-[#F0F0F0] text-[#262627] font-semibold"
                       : "text-[#737373] hover:text-[#262627]"
                   }`}
-                  aria-label="Grid view"
                 >
-                  <LayoutGrid className="w-4 h-4" />
+                  <ListIcon className="w-3.5 h-3.5" />
+                  <span>List</span>
                 </button>
+
                 <button
                   type="button"
-                  onClick={() => setViewMode("list")}
-                  className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                    viewMode === "list"
-                      ? "bg-[#F0F0F0] text-[#262627]"
+                  onClick={() => setViewMode("grid")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                    viewMode === "grid"
+                      ? "bg-[#F0F0F0] text-[#262627] font-semibold"
                       : "text-[#737373] hover:text-[#262627]"
                   }`}
-                  aria-label="List view"
                 >
-                  <ListIcon className="w-4 h-4" />
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span>Grid</span>
                 </button>
               </div>
             </div>
           </div>
 
+          {/* Suggestion Recommendation Card */}
+          <SuggestionBanner
+            onCreateForm={() => createMutation.mutate()}
+            isLoading={createMutation.isPending}
+          />
+
+          {/* List View Column Headers */}
+          {viewMode === "list" && !isLoading && !isError && processedForms.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-2 text-xs font-medium text-[#737373] mb-1">
+              <div className="flex-1">
+                {/* Title spacer */}
+              </div>
+              <div className="flex items-center gap-8 sm:gap-14 shrink-0">
+                <div className="w-16 text-center hidden sm:block">Responses</div>
+                <div className="w-16 text-center hidden sm:block">Completed</div>
+                <div className="w-24 text-left hidden md:block">Updated</div>
+                <div className="w-8 text-center hidden lg:block">Integrations</div>
+                <div className="w-8"></div>
+              </div>
+            </div>
+          )}
+
           {/* -----------------------------------------------------------------
-              Main Content Display: Loading, Error, Empty, or Form Cards
+              Forms List / Grid View Content
              ----------------------------------------------------------------- */}
           {isLoading ? (
-            viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            viewMode === "list" ? (
+              <div className="space-y-2.5">
                 {Array.from({ length: 4 }).map((_, idx) => (
-                  <FormCardSkeleton key={idx} />
+                  <FormRowSkeleton key={idx} />
                 ))}
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {Array.from({ length: 4 }).map((_, idx) => (
-                  <FormRowSkeleton key={idx} />
+                  <FormCardSkeleton key={idx} />
                 ))}
               </div>
             )
@@ -257,7 +373,7 @@ export default function DashboardPage() {
                 Try again
               </Button>
             </div>
-          ) : filteredForms.length === 0 ? (
+          ) : processedForms.length === 0 ? (
             searchQuery ? (
               <EmptyState
                 title="No forms found"
@@ -272,10 +388,10 @@ export default function DashboardPage() {
                 isLoading={createMutation.isPending}
               />
             )
-          ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-              {filteredForms.map((form) => (
-                <FormCard
+          ) : viewMode === "list" ? (
+            <div className="space-y-2">
+              {processedForms.map((form) => (
+                <FormRow
                   key={form.id}
                   form={form}
                   onRename={(f) => setFormToRename(f)}
@@ -286,9 +402,9 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="space-y-2.5">
-              {filteredForms.map((form) => (
-                <FormRow
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              {processedForms.map((form) => (
+                <FormCard
                   key={form.id}
                   form={form}
                   onRename={(f) => setFormToRename(f)}

@@ -1,74 +1,91 @@
 "use client";
 
 /**
- * components/dashboard/TopNav.tsx — Top header bar
+ * components/dashboard/TopNav.tsx — Top Navigation Bar matching Typeform workspace
  */
 
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Menu } from "lucide-react";
+import {
+  ChevronDown,
+  LayoutGrid,
+  Palette,
+  HelpCircle,
+  Menu,
+} from "lucide-react";
 
 interface TopNavProps {
   onToggleMobileSidebar?: () => void;
+  username?: string;
 }
 
-export function TopNav({ onToggleMobileSidebar }: TopNavProps) {
+export function TopNav({
+  onToggleMobileSidebar,
+  username = "shubhamsharmass0001",
+}: TopNavProps) {
   return (
-    <header className="sticky top-0 z-30 h-14 bg-white border-b border-[#E5E5E5] px-4 sm:px-6 flex items-center justify-between">
+    <header className="sticky top-0 z-30 h-14 bg-white border-b border-[#ECECEC] px-4 sm:px-6 flex items-center justify-between">
+      {/* Left side: Logo mark, user account switcher */}
       <div className="flex items-center gap-3">
         {onToggleMobileSidebar && (
           <button
             onClick={onToggleMobileSidebar}
-            className="md:hidden p-1.5 rounded-lg text-[#737373] hover:text-[#262627] hover:bg-[#F5F5F5] cursor-pointer"
-            aria-label="Toggle navigation menu"
+            className="md:hidden p-1.5 rounded-lg text-[#5E5E60] hover:text-[#262627] hover:bg-[#F5F5F5] cursor-pointer"
+            aria-label="Toggle navigation"
           >
             <Menu className="w-5 h-5" />
           </button>
         )}
 
-        {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 rounded-lg bg-[#262627] flex items-center justify-center text-white shadow-xs group-hover:scale-105 transition-transform">
-            <span className="font-bold text-xs tracking-wider">F</span>
+        {/* Brand visual pill mark */}
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-2.5 h-6 rounded-full bg-[#191919]" />
+          
+          {/* Org / Account Avatar & Selector */}
+          <div className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-[#F5F5F5] transition-colors cursor-pointer">
+            <div className="w-6 h-6 rounded-md bg-[#C2410C] text-white font-semibold text-xs flex items-center justify-center">
+              {username.charAt(0).toUpperCase()}
+            </div>
+            <span className="font-medium text-xs sm:text-sm text-[#262627] tracking-tight">
+              {username}
+            </span>
+            <ChevronDown className="w-3.5 h-3.5 text-[#737373]" />
           </div>
-          <span className="font-semibold text-base text-[#262627] tracking-tight">
-            Formly
-          </span>
         </Link>
-
-        <span className="hidden sm:inline-block text-[#D4D4D4] font-light">/</span>
-        <span className="hidden sm:inline-block text-xs font-medium px-2 py-0.5 rounded-md bg-[#F5F5F5] text-[#525252]">
-          Workspace
-        </span>
       </div>
 
-      <div className="flex items-center gap-4">
-        {/* Quick Link to API Docs */}
+      {/* Right side: Integrations, Brand kit, Help, User Avatar */}
+      <div className="flex items-center gap-1 sm:gap-2">
         <a
           href="http://localhost:8000/docs"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden sm:flex items-center gap-1.5 text-xs text-[#737373] hover:text-[#262627] py-1 px-2.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
+          className="hidden md:flex items-center gap-1.5 text-xs font-medium text-[#5E5E60] hover:text-[#262627] py-1.5 px-2.5 rounded-lg hover:bg-[#F5F5F5] transition-colors"
         >
-          <Sparkles className="w-3.5 h-3.5 text-purple-600" />
-          API Docs
+          <LayoutGrid className="w-4 h-4 text-[#737373]" />
+          <span>Integrations</span>
         </a>
 
-        {/* User avatar circle */}
-        <div className="flex items-center gap-2.5 pl-2 border-l border-[#F0F0F0]">
-          <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-[#E5E5E5] text-[#262627] font-semibold text-xs flex items-center justify-center border border-white shadow-xs">
-              DC
-            </div>
-            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
-          </div>
-          <div className="hidden lg:block text-left">
-            <p className="text-xs font-medium text-[#262627] leading-tight">
-              Demo Creator
-            </p>
-            <p className="text-[10px] text-[#737373] leading-tight">
-              Free plan
-            </p>
+        <button
+          type="button"
+          className="hidden md:flex items-center gap-1.5 text-xs font-medium text-[#5E5E60] hover:text-[#262627] py-1.5 px-2.5 rounded-lg hover:bg-[#F5F5F5] transition-colors cursor-pointer"
+        >
+          <Palette className="w-4 h-4 text-[#737373]" />
+          <span>Brand kit</span>
+        </button>
+
+        <button
+          type="button"
+          className="p-1.5 rounded-full text-[#737373] hover:text-[#262627] hover:bg-[#F5F5F5] transition-colors cursor-pointer"
+          title="Help & Support"
+        >
+          <HelpCircle className="w-4.5 h-4.5" />
+        </button>
+
+        {/* Profile Circle Avatar with 'SS' */}
+        <div className="ml-1 flex items-center justify-center">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#EBD8BE] text-[#422006] font-semibold text-xs flex items-center justify-center border border-[#DECAAE] shadow-2xs select-none">
+            SS
           </div>
         </div>
       </div>
