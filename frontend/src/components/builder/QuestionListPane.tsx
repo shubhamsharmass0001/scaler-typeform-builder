@@ -77,6 +77,8 @@ export function QuestionListPane({ onOpenAddModal }: QuestionListPaneProps) {
             return (
               <div
                 key={question.id}
+                data-testid={`question-item-${index}`}
+                data-question-id={String(question.id)}
                 onClick={() => selectQuestion(question.id)}
                 className={clsx(
                   "group relative flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all duration-150 cursor-pointer",

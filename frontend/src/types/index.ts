@@ -33,10 +33,14 @@ export interface QuestionProperties {
   options?: QuestionOption[];
   allowOther?: boolean;
   multiple?: boolean;
+  randomize?: boolean;
+  alphabetical?: boolean;
   min?: number;
   max?: number;
+  maxLength?: number;
   steps?: number;
-  shape?: "star" | "number" | "heart" | "thumb";
+  shape?: "star" | "number" | "heart" | "thumbs" | "thumb";
+  showDescription?: boolean;
   [key: string]: unknown;
 }
 

@@ -1,26 +1,35 @@
 "use client";
 
 /**
- * components/builder/SettingsPane.tsx — Right settings & properties pane (~300px)
+ * components/builder/SettingsPane.tsx — Right settings & configuration panel (~300px)
  *
- * Provides granular configuration for:
- *   - Questions: Required toggle, placeholders, choices list, min/max limits, rating steps
- *   - Welcome Screen: Button text, greeting text
- *   - Thank You Screen: Ending message
+ * Implements:
+ *   - Common settings: Question type dropdown (preserving title), Required toggle, Description toggle
+ *   - Type-specific settings:
+ *       • multiple_choice: multiple selection toggle, randomize toggle, allow "Other" toggle
+ *       • dropdown: alphabetical order toggle, bulk-add options textarea
+ *       • rating: steps (3-10), shape (star/heart/thumbs)
+ *       • number: min, max boundaries
+ *       • short_text / long_text: max characters limit, placeholder
+ *       • yes_no / email: common settings & format info
+ *   - "Logic" section at the bottom with a "Coming Soon" card
  */
 
-import React from "react";
+import React, { useState } from "react";
 import {
-  Settings,
-  Plus,
-  Trash2,
+  Sliders,
   Sparkles,
   CheckCircle2,
-  Sliders,
-  HelpCircle,
+  GitFork,
+  Plus,
+  Trash2,
+  FileText,
+  AlignLeft,
+  ChevronDown,
 } from "lucide-react";
 import { useBuilderStore } from "./BuilderContext";
-import { QUESTION_TYPES } from "@/lib/questionTypes";
+import { QUESTION_TYPES, QUESTION_TYPE_LIST } from "@/lib/questionTypes";
+import { QuestionOption, QuestionType } from "@/types";
 
 export function SettingsPane() {
   const {
@@ -31,6 +40,8 @@ export function SettingsPane() {
   } = useBuilderStore();
 
   const { form, selectedId } = state;
+  const [bulkText, setBulkText] = useState("");
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
 
   // Toggle switch helper component
   const ToggleSwitch = ({
@@ -38,11 +49,13 @@ export function SettingsPane() {
     onChange,
     label,
     description,
+    testId,
   }: {
     checked: boolean;
     onChange: (val: boolean) => void;
     label: string;
     description?: string;
+    testId?: string;
   }) => (
     <div className="flex items-center justify-between gap-3 py-2">
       <div className="min-w-0 flex-1">
@@ -57,6 +70,7 @@ export function SettingsPane() {
         type="button"
         role="switch"
         aria-checked={checked}
+        data-testid={testId}
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
           checked ? "bg-[#262627]" : "bg-[#E5E5E5]"
@@ -87,7 +101,7 @@ export function SettingsPane() {
           </div>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-4 flex-1">
           <div>
             <label className="block text-xs font-semibold text-[#262627] mb-1.5">
               Button text
@@ -105,7 +119,7 @@ export function SettingsPane() {
 
           <div className="pt-2 border-t border-[#ECECEC]">
             <p className="text-[11px] text-[#737373] leading-relaxed">
-              The welcome screen greets respondents before they begin your form. You can edit the headline and subtext directly in the center canvas.
+              The welcome screen introduces respondents to your form. You can customize the title and description directly in the center canvas.
             </p>
           </div>
         </div>
@@ -129,7 +143,7 @@ export function SettingsPane() {
           </div>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-4 flex-1">
           <div>
             <label className="block text-xs font-semibold text-[#262627] mb-1.5">
               Title
@@ -177,15 +191,52 @@ export function SettingsPane() {
   }
 
   const typeDef = QUESTION_TYPES[selectedQuestion.type];
-  const Icon = typeDef?.icon || HelpCircle;
   const props = selectedQuestion.properties || {};
+  const isDescriptionActive =
+    props.showDescription ?? (selectedQuestion.description !== null && selectedQuestion.description !== "");
 
-  // Handlers for option list management (multiple_choice, dropdown)
+  // Handler for changing question type (preserves title & description)
+  const handleTypeChange = (newType: QuestionType) => {
+    if (newType === selectedQuestion.type) return;
+    const newTypeDef = QUESTION_TYPES[newType];
+
+    // Preserve compatible properties when possible
+    const newProps = {
+      ...JSON.parse(JSON.stringify(newTypeDef.defaultProperties)),
+      showDescription: props.showDescription,
+    };
+
+    if (
+      (selectedQuestion.type === "multiple_choice" || selectedQuestion.type === "dropdown") &&
+      (newType === "multiple_choice" || newType === "dropdown") &&
+      props.options
+    ) {
+      newProps.options = props.options;
+    }
+
+    if (
+      (selectedQuestion.type === "short_text" || selectedQuestion.type === "long_text") &&
+      (newType === "short_text" || newType === "long_text")
+    ) {
+      if (props.placeholder) newProps.placeholder = props.placeholder;
+      if (props.maxLength) newProps.maxLength = props.maxLength;
+    }
+
+    updateQuestion(selectedQuestion.id, {
+      type: newType,
+      properties: newProps,
+    });
+  };
+
+  // Option editor handlers
   const handleAddOption = () => {
     const currentOptions = props.options || [];
     const newOptionId = `opt_${Date.now()}`;
     const nextNumber = currentOptions.length + 1;
-    const newOptions = [...currentOptions, { id: newOptionId, label: `Option ${nextNumber}` }];
+    const newOptions: QuestionOption[] = [
+      ...currentOptions,
+      { id: newOptionId, label: `Choice ${nextNumber}` },
+    ];
     updateQuestion(selectedQuestion.id, {
       properties: { ...props, options: newOptions },
     });
@@ -203,84 +254,149 @@ export function SettingsPane() {
 
   const handleDeleteOption = (optId: string) => {
     const currentOptions = props.options || [];
-    if (currentOptions.length <= 1) return; // Keep at least one option
+    if (currentOptions.length <= 1) return;
     const updated = currentOptions.filter((opt) => opt.id !== optId);
     updateQuestion(selectedQuestion.id, {
       properties: { ...props, options: updated },
     });
   };
 
+  // Bulk add options handler for dropdown
+  const handleApplyBulkOptions = () => {
+    const lines = bulkText
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (lines.length === 0) return;
+
+    const newOptions: QuestionOption[] = lines.map((label, idx) => ({
+      id: `opt_${Date.now()}_${idx}`,
+      label,
+    }));
+
+    updateQuestion(selectedQuestion.id, {
+      properties: { ...props, options: newOptions },
+    });
+    setBulkText("");
+    setIsBulkOpen(false);
+  };
+
   return (
     <aside className="w-72 sm:w-[300px] bg-[#F9F9FB] border-l border-[#ECECEC] flex flex-col h-full shrink-0 overflow-y-auto">
-      {/* Top Header */}
-      <div className="p-4 border-b border-[#ECECEC] flex items-center justify-between">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border"
-            style={{
-              backgroundColor: typeDef?.badgeBg,
-              borderColor: `${typeDef?.color}30`,
-              color: typeDef?.color,
-            }}
+      {/* 1. Header: Question Type Selector */}
+      <div className="p-4 border-b border-[#ECECEC] space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-semibold text-[#8C8C8C] uppercase tracking-wider">
+            Question Type
+          </span>
+        </div>
+
+        {/* Question Type Dropdown */}
+        <div className="relative">
+          <select
+            value={selectedQuestion.type}
+            onChange={(e) => handleTypeChange(e.target.value as QuestionType)}
+            data-testid="question-type-select"
+            className="w-full appearance-none bg-white text-xs font-semibold text-[#262627] pl-3 pr-8 py-2 rounded-xl border border-[#E5E5E5] hover:border-[#262627] focus:outline-none focus:border-[#262627] cursor-pointer shadow-2xs transition-colors"
           >
-            <Icon className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-xs font-semibold text-[#262627] truncate">
-              {typeDef?.label}
-            </h3>
-            <p className="text-[11px] text-[#737373] truncate">Question settings</p>
-          </div>
+            {QUESTION_TYPE_LIST.map((t) => (
+              <option key={t.type} value={t.type}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="w-4 h-4 text-[#737373] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
       </div>
 
-      <div className="p-4 space-y-5">
-        {/* Basic Validations */}
+      {/* 2. Scrollable Body of Configuration Settings */}
+      <div className="p-4 space-y-5 flex-1">
+        {/* Common Settings: Required & Description toggles */}
         <div className="space-y-1">
-          <h4 className="text-[11px] font-semibold text-[#8C8C8C] uppercase tracking-wider mb-2">
-            Validation
+          <h4 className="text-[11px] font-semibold text-[#8C8C8C] uppercase tracking-wider mb-1">
+            Common Settings
           </h4>
+
+          {/* Required toggle */}
           <ToggleSwitch
             label="Required"
             description="Respondents must answer before proceeding"
+            testId="toggle-required"
             checked={!!selectedQuestion.required}
             onChange={(val) =>
               updateQuestion(selectedQuestion.id, { required: val })
             }
           />
+
+          {/* Description toggle */}
+          <ToggleSwitch
+            label="Description"
+            description="Show helper subtitle under question headline"
+            testId="toggle-description"
+            checked={isDescriptionActive}
+            onChange={(val) => {
+              updateQuestion(selectedQuestion.id, {
+                properties: { ...props, showDescription: val },
+                description: val ? selectedQuestion.description || "" : null,
+              });
+            }}
+          />
         </div>
 
-        {/* Divider */}
         <div className="border-t border-[#ECECEC]" />
 
-        {/* Type-Specific Properties */}
+        {/* 3. Type-Specific Settings */}
         <div className="space-y-3">
           <h4 className="text-[11px] font-semibold text-[#8C8C8C] uppercase tracking-wider mb-2">
-            Properties
+            {typeDef.label} Properties
           </h4>
 
-          {/* Short Text / Long Text Placeholder */}
+          {/* Short Text / Long Text Settings */}
           {(selectedQuestion.type === "short_text" ||
             selectedQuestion.type === "long_text") && (
-            <div>
-              <label className="block text-xs font-semibold text-[#262627] mb-1.5">
-                Placeholder
-              </label>
-              <input
-                type="text"
-                value={props.placeholder || ""}
-                onChange={(e) =>
-                  updateQuestion(selectedQuestion.id, {
-                    properties: { ...props, placeholder: e.target.value },
-                  })
-                }
-                placeholder="Type your answer here..."
-                className="w-full text-xs bg-white text-[#262627] px-3 py-2 rounded-lg border border-[#E5E5E5] focus:outline-none focus:border-[#262627]"
-              />
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#262627] mb-1.5">
+                  Placeholder text
+                </label>
+                <input
+                  type="text"
+                  value={props.placeholder || ""}
+                  onChange={(e) =>
+                    updateQuestion(selectedQuestion.id, {
+                      properties: { ...props, placeholder: e.target.value },
+                    })
+                  }
+                  placeholder="Type your answer here..."
+                  className="w-full text-xs bg-white text-[#262627] px-3 py-2 rounded-lg border border-[#E5E5E5] focus:outline-none focus:border-[#262627]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#262627] mb-1.5">
+                  Max characters
+                </label>
+                <input
+                  type="number"
+                  value={props.maxLength ?? ""}
+                  data-testid="input-max-length"
+                  onChange={(e) =>
+                    updateQuestion(selectedQuestion.id, {
+                      properties: {
+                        ...props,
+                        maxLength:
+                          e.target.value !== "" ? Number(e.target.value) : undefined,
+                      },
+                    })
+                  }
+                  placeholder="e.g. 255"
+                  className="w-full text-xs bg-white text-[#262627] px-3 py-2 rounded-lg border border-[#E5E5E5] focus:outline-none focus:border-[#262627]"
+                />
+              </div>
             </div>
           )}
 
-          {/* Number Min / Max */}
+          {/* Number Settings: Min and Max */}
           {selectedQuestion.type === "number" && (
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -290,11 +406,13 @@ export function SettingsPane() {
                 <input
                   type="number"
                   value={props.min ?? ""}
+                  data-testid="input-number-min"
                   onChange={(e) =>
                     updateQuestion(selectedQuestion.id, {
                       properties: {
                         ...props,
-                        min: e.target.value !== "" ? Number(e.target.value) : undefined,
+                        min:
+                          e.target.value !== "" ? Number(e.target.value) : undefined,
                       },
                     })
                   }
@@ -302,6 +420,7 @@ export function SettingsPane() {
                   className="w-full text-xs bg-white text-[#262627] px-3 py-2 rounded-lg border border-[#E5E5E5] focus:outline-none focus:border-[#262627]"
                 />
               </div>
+
               <div>
                 <label className="block text-xs font-semibold text-[#262627] mb-1.5">
                   Max value
@@ -309,11 +428,13 @@ export function SettingsPane() {
                 <input
                   type="number"
                   value={props.max ?? ""}
+                  data-testid="input-number-max"
                   onChange={(e) =>
                     updateQuestion(selectedQuestion.id, {
                       properties: {
                         ...props,
-                        max: e.target.value !== "" ? Number(e.target.value) : undefined,
+                        max:
+                          e.target.value !== "" ? Number(e.target.value) : undefined,
                       },
                     })
                   }
@@ -324,24 +445,25 @@ export function SettingsPane() {
             </div>
           )}
 
-          {/* Rating: Steps and Shape */}
+          {/* Rating Settings: Steps (3-10) and Shape (star/heart/thumbs) */}
           {selectedQuestion.type === "rating" && (
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-[#262627] mb-1.5">
                   Steps ({props.steps || 5})
                 </label>
-                <div className="flex gap-1.5">
-                  {[3, 5, 7, 10].map((step) => (
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[3, 4, 5, 6, 7, 8, 9, 10].map((step) => (
                     <button
                       key={step}
                       type="button"
+                      data-testid={`rating-step-${step}`}
                       onClick={() =>
                         updateQuestion(selectedQuestion.id, {
                           properties: { ...props, steps: step },
                         })
                       }
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-medium border cursor-pointer transition-colors ${
+                      className={`py-1.5 rounded-lg text-xs font-semibold border cursor-pointer transition-colors ${
                         (props.steps || 5) === step
                           ? "bg-[#262627] text-white border-[#262627]"
                           : "bg-white text-[#262627] border-[#E5E5E5] hover:bg-[#F5F5F5]"
@@ -352,75 +474,178 @@ export function SettingsPane() {
                   ))}
                 </div>
               </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#262627] mb-1.5">
+                  Icon shape
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { key: "star", label: "Stars" },
+                    { key: "heart", label: "Hearts" },
+                    { key: "thumbs", label: "Thumbs" },
+                  ].map((s) => (
+                    <button
+                      key={s.key}
+                      type="button"
+                      data-testid={`rating-shape-${s.key}`}
+                      onClick={() =>
+                        updateQuestion(selectedQuestion.id, {
+                          properties: { ...props, shape: s.key as "star" | "heart" | "thumbs" },
+                        })
+                      }
+                      className={`py-1.5 rounded-lg text-xs font-medium border cursor-pointer transition-colors ${
+                        (props.shape || "star") === s.key
+                          ? "bg-[#262627] text-white border-[#262627]"
+                          : "bg-white text-[#262627] border-[#E5E5E5] hover:bg-[#F5F5F5]"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Multiple Choice & Dropdown Options Editor */}
-          {(selectedQuestion.type === "multiple_choice" ||
-            selectedQuestion.type === "dropdown") && (
-            <div className="space-y-2.5">
-              <label className="block text-xs font-semibold text-[#262627]">
-                Choices
-              </label>
-              <div className="space-y-1.5">
-                {(props.options || []).map((opt, idx) => (
-                  <div key={opt.id} className="flex items-center gap-1.5">
-                    <span className="w-5 text-[11px] font-mono font-semibold text-[#8C8C8C] text-center shrink-0">
-                      {String.fromCharCode(65 + idx)}
-                    </span>
-                    <input
-                      type="text"
-                      value={opt.label}
-                      onChange={(e) => handleUpdateOption(opt.id, e.target.value)}
-                      className="flex-1 text-xs bg-white text-[#262627] px-2.5 py-1.5 rounded-lg border border-[#E5E5E5] focus:outline-none focus:border-[#262627]"
+          {/* Multiple Choice Settings: Multiple selection, Randomize, Allow Other */}
+          {selectedQuestion.type === "multiple_choice" && (
+            <div className="space-y-3">
+              <ToggleSwitch
+                label="Multiple selection"
+                description="Allow choosing more than one option"
+                testId="toggle-multiple"
+                checked={!!props.multiple}
+                onChange={(val) =>
+                  updateQuestion(selectedQuestion.id, {
+                    properties: { ...props, multiple: val },
+                  })
+                }
+              />
+
+              <ToggleSwitch
+                label="Randomize options"
+                description="Shuffle choices order for each respondent"
+                testId="toggle-randomize"
+                checked={!!props.randomize}
+                onChange={(val) =>
+                  updateQuestion(selectedQuestion.id, {
+                    properties: { ...props, randomize: val },
+                  })
+                }
+              />
+
+              <ToggleSwitch
+                label="Allow &quot;Other&quot;"
+                description="Include an option with free-form text input"
+                testId="toggle-allow-other"
+                checked={!!props.allowOther}
+                onChange={(val) =>
+                  updateQuestion(selectedQuestion.id, {
+                    properties: { ...props, allowOther: val },
+                  })
+                }
+              />
+
+              {/* Quick choices list overview in panel */}
+              <div className="pt-2 border-t border-[#ECECEC]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-[#262627]">
+                    Choices ({props.options?.length || 0})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleAddOption}
+                    className="text-xs font-medium text-blue-600 hover:underline cursor-pointer"
+                  >
+                    + Add choice
+                  </button>
+                </div>
+
+                <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                  {(props.options || []).map((opt, idx) => (
+                    <div key={opt.id} className="flex items-center gap-1.5">
+                      <span className="w-5 text-[11px] font-mono font-semibold text-[#8C8C8C] text-center shrink-0">
+                        {String.fromCharCode(65 + idx)}
+                      </span>
+                      <input
+                        type="text"
+                        value={opt.label}
+                        onChange={(e) => handleUpdateOption(opt.id, e.target.value)}
+                        className="flex-1 text-xs bg-white text-[#262627] px-2.5 py-1.5 rounded-lg border border-[#E5E5E5] focus:outline-none focus:border-[#262627]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteOption(opt.id)}
+                        disabled={(props.options || []).length <= 1}
+                        className="p-1.5 text-[#A3A3A3] hover:text-red-600 disabled:opacity-30 disabled:pointer-events-none rounded-md hover:bg-red-50 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Dropdown Settings: Alphabetical toggle & Bulk-add options textarea */}
+          {selectedQuestion.type === "dropdown" && (
+            <div className="space-y-3">
+              <ToggleSwitch
+                label="Alphabetical order"
+                description="Sort dropdown options alphabetically (A-Z)"
+                testId="toggle-alphabetical"
+                checked={!!props.alphabetical}
+                onChange={(val) =>
+                  updateQuestion(selectedQuestion.id, {
+                    properties: { ...props, alphabetical: val },
+                  })
+                }
+              />
+
+              {/* Bulk-add options toggle & textarea */}
+              <div className="pt-2 border-t border-[#ECECEC]">
+                <button
+                  type="button"
+                  data-testid="toggle-bulk-options"
+                  onClick={() => setIsBulkOpen(!isBulkOpen)}
+                  className="w-full flex items-center justify-between text-xs font-semibold text-[#262627] py-1 cursor-pointer hover:text-black"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <AlignLeft className="w-3.5 h-3.5 text-[#737373]" />
+                    <span>Bulk-add options</span>
+                  </span>
+                  <span className="text-[11px] text-blue-600 font-medium">
+                    {isBulkOpen ? "Hide" : "Open"}
+                  </span>
+                </button>
+
+                {isBulkOpen && (
+                  <div className="mt-2 space-y-2">
+                    <p className="text-[11px] text-[#737373]">
+                      Enter one option per line to replace or load all choices:
+                    </p>
+                    <textarea
+                      rows={5}
+                      value={bulkText}
+                      data-testid="textarea-bulk-options"
+                      onChange={(e) => setBulkText(e.target.value)}
+                      placeholder={"Option 1\nOption 2\nOption 3"}
+                      className="w-full text-xs font-mono bg-white text-[#262627] p-2 rounded-lg border border-[#E5E5E5] focus:outline-none focus:border-[#262627] resize-none"
                     />
                     <button
                       type="button"
-                      onClick={() => handleDeleteOption(opt.id)}
-                      disabled={(props.options || []).length <= 1}
-                      className="p-1.5 text-[#A3A3A3] hover:text-red-600 disabled:opacity-30 disabled:pointer-events-none rounded-md hover:bg-red-50 transition-colors cursor-pointer"
-                      title="Remove choice"
+                      data-testid="btn-apply-bulk"
+                      onClick={handleApplyBulkOptions}
+                      disabled={!bulkText.trim()}
+                      className="w-full py-1.5 px-3 rounded-lg bg-[#262627] hover:bg-black text-white text-xs font-semibold disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      Apply bulk options
                     </button>
                   </div>
-                ))}
+                )}
               </div>
-
-              <button
-                type="button"
-                onClick={handleAddOption}
-                className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg border border-dashed border-[#D4D4D4] hover:border-[#191919] bg-white text-xs font-medium text-[#262627] hover:text-black transition-colors cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add choice</span>
-              </button>
-
-              {/* Extra toggles for multiple choice */}
-              {selectedQuestion.type === "multiple_choice" && (
-                <div className="pt-2 space-y-1">
-                  <ToggleSwitch
-                    label="Multiple selection"
-                    description="Allow selecting more than one option"
-                    checked={!!props.multiple}
-                    onChange={(val) =>
-                      updateQuestion(selectedQuestion.id, {
-                        properties: { ...props, multiple: val },
-                      })
-                    }
-                  />
-                  <ToggleSwitch
-                    label="Other option"
-                    description="Include 'Other' with free text input"
-                    checked={!!props.allowOther}
-                    onChange={(val) =>
-                      updateQuestion(selectedQuestion.id, {
-                        properties: { ...props, allowOther: val },
-                      })
-                    }
-                  />
-                </div>
-              )}
             </div>
           )}
 
@@ -434,9 +659,29 @@ export function SettingsPane() {
           {/* Email notes */}
           {selectedQuestion.type === "email" && (
             <p className="text-[11px] text-[#737373] leading-relaxed">
-              Validated automatically against email format standards on submission.
+              Inputs are automatically validated against standard email address formats.
             </p>
           )}
+        </div>
+
+        <div className="border-t border-[#ECECEC]" />
+
+        {/* 4. Logic Section: Coming Soon Placeholder */}
+        <div className="pt-1" data-testid="logic-section">
+          <div className="p-3 rounded-xl border border-[#E5E5E5] bg-white shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#262627]">
+                <GitFork className="w-3.5 h-3.5 text-purple-600" />
+                <span>Logic</span>
+              </div>
+              <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                Coming Soon
+              </span>
+            </div>
+            <p className="text-[11px] text-[#737373] leading-relaxed">
+              Create conditional jumps, calculations, and branch respondent flow based on previous answers.
+            </p>
+          </div>
         </div>
       </div>
     </aside>
