@@ -41,16 +41,16 @@ export interface QuestionProperties {
 }
 
 export interface Question {
-  id: number;
-  form_id: number;
+  id: number | string;
+  form_id?: number;
   type: QuestionType;
   title: string;
   description: string | null;
   required: boolean;
   position: number;
   properties: QuestionProperties;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface BulkQuestionItem {
