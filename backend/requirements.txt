@@ -1,0 +1,16 @@
+# Web framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# Database ORM
+sqlalchemy==2.0.35
+
+# Data validation (Pydantic v2)
+pydantic==2.9.2
+pydantic-settings==2.5.2
+
+# URL-friendly slug generation
+python-slugify==8.0.4
+
+# Environment variable loading
+python-dotenv==1.0.1
