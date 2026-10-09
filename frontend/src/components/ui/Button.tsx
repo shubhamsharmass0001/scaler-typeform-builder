@@ -40,15 +40,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        "bg-[#262627] text-white hover:bg-[#151515] active:scale-[0.99] focus-visible:ring-[#262627] shadow-sm",
+        "bg-btn-primary text-primary-foreground hover:bg-btn-primary-hover active:scale-[0.99] focus-visible:ring-focus shadow-sm",
       secondary:
-        "bg-white text-[#262627] border border-[#E5E5E5] hover:bg-[#F9F9F9] hover:border-[#D4D4D4] active:scale-[0.99] focus-visible:ring-neutral-400 shadow-xs",
+        "bg-surface text-primary border border-default hover:bg-surface-hover active:scale-[0.99] focus-visible:ring-focus shadow-card",
       ghost:
-        "bg-transparent text-[#525252] hover:text-[#171717] hover:bg-[#F0F0F0] active:scale-[0.99] focus-visible:ring-neutral-400",
+        "bg-transparent text-secondary hover:text-primary hover:bg-surface-hover active:scale-[0.99] focus-visible:ring-focus",
       destructive:
-        "bg-[#DC2626] text-white hover:bg-[#B91C1C] active:scale-[0.99] focus-visible:ring-red-500 shadow-sm",
+        "bg-error text-white hover:opacity-90 active:scale-[0.99] focus-visible:ring-red-500 shadow-sm",
       outline:
-        "border border-[#E5E5E5] text-[#262627] bg-transparent hover:bg-[#F5F5F5] focus-visible:ring-neutral-400",
+        "border border-default text-primary bg-transparent hover:bg-surface-hover focus-visible:ring-focus",
     };
 
     const sizeStyles = {

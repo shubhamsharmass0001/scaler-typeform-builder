@@ -21,7 +21,7 @@ interface PublishSuccessModalProps {
 
 export function PublishSuccessModal({ isOpen, onClose, slug }: PublishSuccessModalProps) {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const publicUrl = `${origin}/forms/${slug}`;
+  const publicUrl = `${origin}/f/${slug}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(publicUrl);
@@ -44,7 +44,7 @@ export function PublishSuccessModal({ isOpen, onClose, slug }: PublishSuccessMod
 
         {/* Public Link Box */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-[#262627]">
+          <label className="text-xs font-semibold text-primary">
             Share link
           </label>
           <div className="flex items-center gap-2">
@@ -53,7 +53,7 @@ export function PublishSuccessModal({ isOpen, onClose, slug }: PublishSuccessMod
               readOnly
               data-testid="publish-modal-url"
               value={publicUrl}
-              className="flex-1 bg-[#F9F9FB] text-xs font-mono text-[#262627] px-3 py-2 rounded-xl border border-[#E5E5E5] focus:outline-none"
+              className="flex-1 bg-muted text-xs font-mono text-primary px-3 py-2 rounded-xl border border-default focus:outline-none"
             />
             <Button
               type="button"
@@ -69,13 +69,13 @@ export function PublishSuccessModal({ isOpen, onClose, slug }: PublishSuccessMod
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-[#ECECEC]">
+        <div className="flex items-center justify-between pt-2 border-t border-subtle">
           <Button variant="ghost" size="sm" onClick={onClose}>
             Done
           </Button>
 
           <a
-            href={`/forms/${slug}`}
+            href={`/f/${slug}`}
             target="_blank"
             rel="noopener noreferrer"
             data-testid="publish-modal-open-link"

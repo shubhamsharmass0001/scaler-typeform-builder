@@ -11,7 +11,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { useBuilderStore } from "./BuilderContext";
-import { bulkSaveQuestions, updateForm } from "@/lib/api";
+import { bulkSaveQuestions, updateForm, ApiError } from "@/lib/api";
 import { BulkQuestionItem } from "@/types";
 
 export function useAutosave() {
@@ -25,9 +25,11 @@ export function useAutosave() {
   const selectedIdRef = useRef(selectedId);
 
   // Keep refs synchronized to latest state values
-  questionsRef.current = questions;
-  formRef.current = form;
-  selectedIdRef.current = selectedId;
+  useEffect(() => {
+    questionsRef.current = questions;
+    formRef.current = form;
+    selectedIdRef.current = selectedId;
+  }, [questions, form, selectedId]);
 
   // Perform the actual backend bulk save and metadata update
   const saveNow = useCallback(async () => {
@@ -83,12 +85,17 @@ export function useAutosave() {
         },
       });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Autosave failed";
+      let message = "Autosave failed";
+      if (err instanceof ApiError) {
+        message = err.message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       dispatch({
         type: "SET_SAVE_STATUS",
         payload: { status: "error", errorMessage: message },
       });
-      toast.error(`Autosave failed: ${message}`);
+      toast.error(message);
     } finally {
       isSavingRef.current = false;
     }

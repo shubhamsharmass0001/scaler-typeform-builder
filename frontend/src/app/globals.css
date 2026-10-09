@@ -1,143 +1,160 @@
 /*
- * globals.css — Global styles and Tailwind CSS v4 theme configuration
+ * globals.css — Global styles and Tailwind CSS theme configuration
  *
- * Tailwind v4 uses CSS-native `@theme` to define design tokens.
- * Everything defined here is available as a Tailwind utility class.
- *
- * Design system inspired by Typeform:
- *   - Neutral palette (warm grays / off-whites)
- *   - Accent purple for interactive elements
- *   - Inter font for all body text
- *   - Very generous spacing and large border-radius
+ * Imports semantic tokens from tokens.css and wires them into Tailwind @theme.
  */
 
-/* Import the Tailwind base styles */
 @import "tailwindcss";
+@import "../styles/tokens.css";
+@config "../../tailwind.config.ts";
 
-/* --------------------------------------------------------------------------
-   Theme tokens
-   Define all design tokens here. Tailwind generates utility classes from
-   these automatically (e.g. `bg-brand`, `text-neutral-900`).
-   -------------------------------------------------------------------------- */
+/* Configure Tailwind dark mode class variant */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* ------------------------------------------------------------------
-     Typography
-     We load Inter via next/font (layout.tsx) and expose it as a CSS
-     variable. Here we wire that variable into Tailwind's font system.
-     ------------------------------------------------------------------ */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* Surfaces & Backgrounds */
+  --color-app: var(--bg-app);
+  --color-surface: var(--bg-surface);
+  --color-surface-hover: var(--bg-surface-hover);
+  --color-surface-active: var(--bg-surface-active);
+  --color-surface-subtle: var(--bg-surface-subtle);
+  --color-card: var(--bg-card);
+  --color-card-hover: var(--bg-card-hover);
+  --color-muted: var(--bg-muted);
+  --color-muted-hover: var(--bg-muted-hover);
+  --color-input: var(--bg-input);
+  --color-modal: var(--bg-modal);
+  --color-drawer: var(--bg-drawer);
+  --color-popover: var(--bg-popover);
+  --color-badge: var(--bg-badge);
+  --color-skeleton: var(--bg-skeleton);
+  --color-sidebar: var(--bg-sidebar);
+  --color-backdrop: var(--bg-backdrop);
+  --color-tooltip: var(--bg-tooltip);
 
-  /* ------------------------------------------------------------------
-     Brand color — Typeform uses a deep purple accent
-     ------------------------------------------------------------------ */
-  --color-brand-50:  #f5f3ff;
-  --color-brand-100: #ede9fe;
-  --color-brand-200: #ddd6fe;
-  --color-brand-300: #c4b5fd;
-  --color-brand-400: #a78bfa;
-  --color-brand-500: #8b5cf6;
-  --color-brand-600: #7c3aed;  /* Primary CTA color */
-  --color-brand-700: #6d28d9;
-  --color-brand-800: #5b21b6;
-  --color-brand-900: #4c1d95;
+  /* Buttons & Brand */
+  --color-primary: var(--bg-btn-primary);
+  --color-primary-hover: var(--bg-btn-primary-hover);
+  --color-primary-foreground: var(--text-btn-primary);
+  --color-brand-plan: var(--bg-brand-plan);
+  --color-brand-plan-hover: var(--bg-brand-plan-hover);
+  --color-brand-plan-text: var(--text-brand-plan);
+  --color-avatar-bg: var(--bg-avatar);
+  --color-avatar-text: var(--text-avatar);
 
-  /* ------------------------------------------------------------------
-     Neutral palette — warm grays used throughout the UI
-     ------------------------------------------------------------------ */
-  --color-neutral-0:   #ffffff;
-  --color-neutral-50:  #fafafa;
-  --color-neutral-100: #f5f5f5;
-  --color-neutral-200: #e5e5e5;
-  --color-neutral-300: #d4d4d4;
-  --color-neutral-400: #a3a3a3;
-  --color-neutral-500: #737373;
-  --color-neutral-600: #525252;
-  --color-neutral-700: #404040;
-  --color-neutral-800: #262626;
-  --color-neutral-900: #171717;
+  /* Borders */
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-border-focus: var(--border-focus);
+  --color-border-dashed: var(--border-dashed);
 
-  /* ------------------------------------------------------------------
-     Dark surface colors (for the dark hero / nav sections)
-     ------------------------------------------------------------------ */
-  --color-surface-dark:    #1a1826;  /* Deep dark purple-tinted navy */
-  --color-surface-darker:  #0f0e17;  /* Near-black for navbar */
-  --color-surface-card:    #242133;  /* Dark card background */
+  /* Text */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-placeholder: var(--text-placeholder);
+  --color-text-inverse: var(--text-inverse);
 
-  /* ------------------------------------------------------------------
-     Semantic colors
-     ------------------------------------------------------------------ */
-  --color-success: #22c55e;
-  --color-error:   #ef4444;
-  --color-warning: #f59e0b;
+  /* Status */
+  --color-status-success: var(--status-success);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-border: var(--status-warning-border);
+  --color-status-error: var(--status-error);
+  --color-status-error-bg: var(--status-error-bg);
+  --color-status-error-border: var(--status-error-border);
 
-  /* ------------------------------------------------------------------
-     Border radius
-     ------------------------------------------------------------------ */
-  --radius-sm:   0.375rem;   /* 6px  */
-  --radius-md:   0.5rem;     /* 8px  */
-  --radius-lg:   0.75rem;    /* 12px */
-  --radius-xl:   1rem;       /* 16px */
-  --radius-2xl:  1.5rem;     /* 24px */
-  --radius-full: 9999px;     /* Pill shape */
+  /* Question Badges */
+  --color-badge-short-text-bg: var(--badge-short-text-bg);
+  --color-badge-short-text-text: var(--badge-short-text-text);
+  --color-badge-long-text-bg: var(--badge-long-text-bg);
+  --color-badge-long-text-text: var(--badge-long-text-text);
+  --color-badge-email-bg: var(--badge-email-bg);
+  --color-badge-email-text: var(--badge-email-text);
+  --color-badge-choice-bg: var(--badge-choice-bg);
+  --color-badge-choice-text: var(--badge-choice-text);
+  --color-badge-dropdown-bg: var(--badge-dropdown-bg);
+  --color-badge-dropdown-text: var(--badge-dropdown-text);
+  --color-badge-number-bg: var(--badge-number-bg);
+  --color-badge-number-text: var(--badge-number-text);
+  --color-badge-yesno-bg: var(--badge-yesno-bg);
+  --color-badge-yesno-text: var(--badge-yesno-text);
+  --color-badge-rating-bg: var(--badge-rating-bg);
+  --color-badge-rating-text: var(--badge-rating-text);
+  --color-badge-upload-bg: var(--badge-upload-bg);
+  --color-badge-upload-text: var(--badge-upload-text);
+  --color-badge-welcome-bg: var(--badge-welcome-bg);
+  --color-badge-welcome-text: var(--badge-welcome-text);
+  --color-badge-ending-bg: var(--badge-ending-bg);
+  --color-badge-ending-text: var(--badge-ending-text);
 
-  /* ------------------------------------------------------------------
-     Shadows — kept subtle and soft
-     ------------------------------------------------------------------ */
-  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+  /* Typography */
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Border radius */
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-3xl: var(--radius-3xl);
+  --radius-full: var(--radius-full);
+
+  /* Shadows */
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-card: var(--shadow-card);
+  --shadow-dropdown: var(--shadow-dropdown);
+  --shadow-modal: var(--shadow-modal);
+  --shadow-tooltip: var(--shadow-tooltip);
+
+  /* Transitions */
+  --duration-fast: var(--duration-fast);
+  --duration-normal: var(--duration-normal);
+  --duration-slow: var(--duration-slow);
+  --duration-slide: var(--duration-slide);
+  --ease-default: var(--ease-default);
+  --ease-spring: var(--ease-spring);
 }
 
 /* --------------------------------------------------------------------------
    Base / reset styles
-   Applied to all elements via the universal selector.
    -------------------------------------------------------------------------- */
-
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 html {
-  /* Smooth scrolling for anchor links */
   scroll-behavior: smooth;
   font-size: 16px;
 }
 
 body {
-  /* Use Inter (wired through --font-sans above) */
   font-family: var(--font-sans);
-  background-color: var(--color-neutral-50);
-  color: var(--color-neutral-900);
-  /* Prevent horizontal overflow */
-  overflow-x: hidden;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* --------------------------------------------------------------------------
-   Utility layer — custom utilities not generated by Tailwind
-   -------------------------------------------------------------------------- */
-
-@layer utilities {
-  /* Typeform's distinctive large section padding */
-  .section-padding {
-    padding-top: 6rem;
-    padding-bottom: 6rem;
-  }
-
-  /* Centered content container */
-  .container-narrow {
-    width: 100%;
-    max-width: 48rem;   /* 768px */
-    margin-inline: auto;
-    padding-inline: 1.5rem;
-  }
-
-  /* Hide the scrollbar while keeping scroll functionality */
-  .scrollbar-hide {
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+/* Custom scrollbars matching Typeform's subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
 }

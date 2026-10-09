@@ -1,0 +1,341 @@
+/*
+ * src/styles/tokens.css — Typeform Design Tokens
+ *
+ * Meticulously mapped from Typeform UI screenshots & DevTools measurements:
+ *   - Screenshot 1: Share Page (Top nav, Copy link pill, Embed form cards, Ask Typeform AI)
+ *   - Screenshot 2: QR Code Modal (Backdrop, Modal card, Title, Subtitle, Download CTA, Cancel)
+ *   - Screenshot 3: Builder Welcome Screen (Navigation, Universal toolbar, Pages pane, Canvas, Right settings)
+ *   - Screenshot 4: Builder Multi-Question Canvas (Question titles, underline inputs, choice option cards)
+ *   - Screenshot 5: Builder Question Settings (Short text inspector, active question highlight, toggle switches)
+ *
+ * Includes complete light (:root) and dark (.dark) palettes, type scale, spacing, radii,
+ * shadows, and transition curves.
+ */
+
+:root {
+  /* ==========================================================================
+     1. Surfaces & Backgrounds
+     ========================================================================== */
+  --bg-app: #f5f5f7;              /* Main canvas / builder backdrop (Screenshot 1, 3) */
+  --bg-surface: #ffffff;          /* Top bar, sidebar, white cards (Screenshot 1, 3, 4) */
+  --bg-surface-hover: #f7f7f8;    /* Interactive item hover (Screenshot 3 left pane) */
+  --bg-surface-active: #efefef;   /* Selected card / page in builder list (Screenshot 3, 5) */
+  --bg-surface-subtle: #fafafa;   /* Sub-bars, secondary panels */
+  
+  --bg-card: #ffffff;             /* Form canvas paper, dialogs, preview cards */
+  --bg-card-hover: #fcfcfd;       /* Card hover state */
+  --bg-muted: #f3f3f5;            /* Pills, inactive sub-tabs, chip backgrounds */
+  --bg-muted-hover: #ebebed;      /* Hover on muted pills */
+  --bg-input: #ffffff;            /* Form input field backgrounds (Screenshot 5) */
+  --bg-modal: #ffffff;            /* Modal window background (Screenshot 2) */
+  --bg-drawer: #ffffff;           /* Slide-out drawer background */
+  --bg-popover: #ffffff;          /* Dropdown menus & popovers */
+  --bg-badge: #f0f0f2;            /* Generic badge pill background */
+  --bg-skeleton: #e8e8ec;         /* Skeleton shimmer base */
+  --bg-sidebar: #ffffff;          /* Builder sidebars (Screenshot 3) */
+  --bg-backdrop: rgba(25, 25, 25, 0.48); /* Modal dim backdrop (Screenshot 2) */
+  --bg-tooltip: #262627;          /* Dark tooltip background (Screenshot 1) */
+
+  /* Buttons & CTAs */
+  --bg-btn-primary: #262627;      /* Primary dark button "Copy link", "Start", "Add content" (Screenshot 1, 2, 3) */
+  --bg-btn-primary-hover: #000000;/* Hover on primary button */
+  --text-btn-primary: #ffffff;    /* Text on primary button */
+  
+  --bg-brand-plan: #04454d;       /* Typeform "View plans" top CTA (Screenshot 1, 3) */
+  --bg-brand-plan-hover: #033339; /* Hover on "View plans" */
+  --text-brand-plan: #ffffff;     /* Text on "View plans" */
+
+  /* User Avatar */
+  --bg-avatar: #ebd8be;           /* User avatar circle "SS" (Screenshot 1, 3) */
+  --text-avatar: #422006;         /* Avatar text */
+
+  /* ==========================================================================
+     2. Borders & Outlines
+     ========================================================================== */
+  --border-subtle: #f0f0f0;       /* Very faint dividers / separators */
+  --border-default: #e5e5e5;      /* Standard card, input, and toolbar border (Screenshot 1, 3) */
+  --border-strong: #cccccc;       /* Darker border for inputs & key badges (Screenshot 4) */
+  --border-focus: #191919;        /* Active focus ring / underline (Screenshot 4, 5) */
+  --border-dashed: #d4d4d4;       /* Drop-zones & add choice buttons */
+
+  /* ==========================================================================
+     3. Typography Colors
+     ========================================================================== */
+  --text-primary: #191919;        /* Signature Typeform near-black text (Screenshot 1, 3, 4) */
+  --text-secondary: #595959;      /* Descriptions, subheaders, inactive tabs (Screenshot 1, 3) */
+  --text-muted: #8c8c8c;          /* Helper text, character counters "5/24", meta info (Screenshot 3, 5) */
+  --text-placeholder: #a3a3a3;    /* Input placeholders "Enter your full name" (Screenshot 4, 5) */
+  --text-inverse: #ffffff;        /* White text on dark buttons & badges */
+
+  /* ==========================================================================
+     4. Semantic Status Colors
+     ========================================================================== */
+  --status-success: #059669;
+  --status-success-bg: #ecfdf5;
+  --status-success-border: #a7f3d0;
+  
+  --status-warning: #d97706;
+  --status-warning-bg: #fffbeb;
+  --status-warning-border: #fde68a;
+  
+  --status-error: #dc2626;
+  --status-error-bg: #fef2f2;
+  --status-error-border: #fecaca;
+
+  /* ==========================================================================
+     5. Question Type Badges (Screenshot 3, 4, 5)
+     ========================================================================== */
+  --badge-short-text-bg: #d0f0fd;
+  --badge-short-text-text: #0284c7;
+  
+  --badge-long-text-bg: #e0f2fe;
+  --badge-long-text-text: #0284c7;
+  
+  --badge-email-bg: #fce7f3;
+  --badge-email-text: #db2777;
+  
+  --badge-choice-bg: #ede9fe;
+  --badge-choice-text: #7c3aed;
+  
+  --badge-dropdown-bg: #e0e7ff;
+  --badge-dropdown-text: #4f46e5;
+  
+  --badge-number-bg: #ffedd5;
+  --badge-number-text: #ea580c;
+  
+  --badge-yesno-bg: #d1fae5;
+  --badge-yesno-text: #059669;
+  
+  --badge-rating-bg: #fef3c7;
+  --badge-rating-text: #d97706;
+  
+  --badge-upload-bg: #cffafe;
+  --badge-upload-text: #0891b2;
+  
+  --badge-welcome-bg: #e5e7eb;
+  --badge-welcome-text: #4b5563;
+  
+  --badge-ending-bg: #f3f4f6;
+  --badge-ending-text: #6b7280;
+
+  /* ==========================================================================
+     6. Typography Scale & Metrics
+     ========================================================================== */
+  /* Page Title (Screenshot 1: "Choose how you'd like to share your form") */
+  --font-page-title-size: 1.5rem;          /* 24px */
+  --font-page-title-line-height: 2rem;     /* 32px */
+  --font-page-title-weight: 600;
+  --font-page-title-tracking: -0.02em;
+
+  /* Section Title (Screenshot 1: "Embed form", Screenshot 2: "Get the QR code") */
+  --font-section-title-size: 1.25rem;      /* 20px */
+  --font-section-title-line-height: 1.75rem;/* 28px */
+  --font-section-title-weight: 600;
+  --font-section-title-tracking: -0.015em;
+
+  /* Subtitle / Card Title */
+  --font-card-title-size: 1rem;            /* 16px */
+  --font-card-title-line-height: 1.5rem;   /* 24px */
+  --font-card-title-weight: 600;
+  --font-card-title-tracking: -0.01em;
+
+  /* Body (Standard UI controls, options, labels) */
+  --font-body-size: 0.875rem;              /* 14px */
+  --font-body-line-height: 1.25rem;        /* 20px */
+  --font-body-weight: 400;
+  --font-body-tracking: 0;
+
+  /* Body Medium / Semibold */
+  --font-body-medium-weight: 500;
+  --font-body-semibold-weight: 600;
+
+  /* Caption / Small (Tab titles, secondary hints) */
+  --font-caption-size: 0.75rem;            /* 12px */
+  --font-caption-line-height: 1rem;        /* 16px */
+  --font-caption-weight: 400;
+  --font-caption-tracking: 0.01em;
+
+  /* Micro / Meta (Counters "5/24", tags, badges) */
+  --font-micro-size: 0.6875rem;            /* 11px */
+  --font-micro-line-height: 0.875rem;      /* 14px */
+  --font-micro-weight: 500;
+
+  /* Nano / Tiny Badge (Status indicators, pill counters) */
+  --font-nano-size: 0.625rem;              /* 10px */
+  --font-nano-line-height: 0.875rem;       /* 14px */
+  --font-nano-weight: 600;
+
+  /* Respondent Question Title (Screenshot 3, 4: "Your Internship Experience*") */
+  --font-respondent-question-size: 1.75rem;/* 28px */
+  --font-respondent-question-line-height: 2.25rem; /* 36px */
+  --font-respondent-question-weight: 500;
+  --font-respondent-question-tracking: -0.02em;
+
+  /* Respondent Input (Screenshot 4, 5: Underline input "Enter your full name") */
+  --font-respondent-input-size: 1.5rem;    /* 24px */
+  --font-respondent-input-line-height: 2rem;/* 32px */
+  --font-respondent-input-weight: 400;
+  --font-respondent-input-tracking: -0.01em;
+
+  /* ==========================================================================
+     7. Spacing Scale
+     ========================================================================== */
+  --spacing-1: 0.25rem;   /* 4px  */
+  --spacing-2: 0.5rem;    /* 8px  */
+  --spacing-3: 0.75rem;   /* 12px */
+  --spacing-4: 1rem;      /* 16px */
+  --spacing-5: 1.25rem;   /* 20px */
+  --spacing-6: 1.5rem;    /* 24px */
+  --spacing-8: 2rem;      /* 32px */
+  --spacing-10: 2.5rem;   /* 40px */
+  --spacing-12: 3rem;     /* 48px */
+  --spacing-16: 4rem;     /* 64px */
+
+  /* ==========================================================================
+     8. Radii (Border Radius)
+     ========================================================================== */
+  --radius-xs: 0.25rem;   /* 4px  - Small badges, indicators */
+  --radius-sm: 0.375rem;  /* 6px  - Sub-buttons, tiny chips */
+  --radius-md: 0.5rem;    /* 8px  - Standard buttons, inputs, dropdown items (Screenshot 1, 3) */
+  --radius-lg: 0.75rem;   /* 12px - Sidebar cards, menu popovers (Screenshot 3) */
+  --radius-xl: 1rem;      /* 16px - Canvas paper card, share cards (Screenshot 1, 3) */
+  --radius-2xl: 1.25rem;  /* 20px - Dialogs, large containers (Screenshot 2) */
+  --radius-3xl: 1.5rem;   /* 24px - Large modals (Screenshot 2) */
+  --radius-full: 9999px;  /* Pill shape - "Copy link", toggle switches, avatars */
+
+  /* ==========================================================================
+     9. Shadows
+     ========================================================================== */
+  --shadow-2xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 2px 8px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-dropdown: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  --shadow-tooltip: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+
+  /* ==========================================================================
+     10. Transitions & Animations
+     ========================================================================== */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slide: 400ms;
+
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   Creator Dark Mode (.dark)
+   Preserves contrast & token hierarchy for creator-facing interface
+   ========================================================================== */
+.dark {
+  --bg-app: #0f1117;
+  --bg-surface: #171923;
+  --bg-surface-hover: #1f2230;
+  --bg-surface-active: #282c3f;
+  --bg-surface-subtle: #141620;
+
+  --bg-card: #171923;
+  --bg-card-hover: #1c202c;
+  --bg-muted: #1c202e;
+  --bg-muted-hover: #23283a;
+  --bg-input: #12141c;
+  --bg-modal: #171923;
+  --bg-drawer: #171923;
+  --bg-popover: #1a1d29;
+  --bg-badge: #23283a;
+  --bg-skeleton: #23283a;
+  --bg-sidebar: #171923;
+  --bg-backdrop: rgba(0, 0, 0, 0.7);
+  --bg-tooltip: #262627;
+
+  --bg-btn-primary: #f8fafc;
+  --bg-btn-primary-hover: #e2e8f0;
+  --text-btn-primary: #0f1117;
+
+  --bg-brand-plan: #065e69;
+  --bg-brand-plan-hover: #087381;
+  --text-brand-plan: #ffffff;
+
+  --bg-avatar: #382717;
+  --text-avatar: #f4d3b2;
+
+  --border-subtle: #1e2230;
+  --border-default: #2a2f42;
+  --border-strong: #3b425d;
+  --border-focus: #f8fafc;
+  --border-dashed: #3b425d;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-placeholder: #475569;
+  --text-inverse: #0f1117;
+
+  --status-success: #10b981;
+  --status-success-bg: rgba(16, 185, 129, 0.12);
+  --status-success-border: rgba(16, 185, 129, 0.28);
+
+  --status-warning: #f59e0b;
+  --status-warning-bg: rgba(245, 158, 11, 0.12);
+  --status-warning-border: rgba(245, 158, 11, 0.28);
+
+  --status-error: #ef4444;
+  --status-error-bg: rgba(239, 68, 68, 0.12);
+  --status-error-border: rgba(239, 68, 68, 0.28);
+
+  --badge-short-text-bg: rgba(2, 132, 199, 0.2);
+  --badge-short-text-text: #38bdf8;
+
+  --badge-long-text-bg: rgba(2, 132, 199, 0.2);
+  --badge-long-text-text: #38bdf8;
+
+  --badge-email-bg: rgba(219, 39, 119, 0.2);
+  --badge-email-text: #f472b6;
+
+  --badge-choice-bg: rgba(124, 58, 237, 0.2);
+  --badge-choice-text: #a78bfa;
+
+  --badge-dropdown-bg: rgba(79, 70, 229, 0.2);
+  --badge-dropdown-text: #818cf8;
+
+  --badge-number-bg: rgba(234, 88, 12, 0.2);
+  --badge-number-text: #fb923c;
+
+  --badge-yesno-bg: rgba(5, 150, 105, 0.2);
+  --badge-yesno-text: #34d399;
+
+  --badge-rating-bg: rgba(217, 119, 6, 0.2);
+  --badge-rating-text: #fbbf24;
+
+  --badge-upload-bg: rgba(8, 145, 178, 0.2);
+  --badge-upload-text: #22d3ee;
+
+  --badge-welcome-bg: rgba(75, 85, 99, 0.3);
+  --badge-welcome-text: #9ca3af;
+
+  --badge-ending-bg: rgba(107, 114, 128, 0.3);
+  --badge-ending-text: #9ca3af;
+
+  --shadow-2xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 2px 8px 0 rgba(0, 0, 0, 0.35);
+  --shadow-dropdown: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  --shadow-tooltip: 0 4px 12px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* ==========================================================================
+   Public Respondent & Canvas Isolation
+   Ensures that public respondent forms and the builder canvas
+   strictly respect form theme tokens and are never overridden by app dark mode.
+   ========================================================================== */
+[data-theme-isolated="true"] {
+  background-color: var(--theme-bg, #ffffff) !important;
+  color: var(--theme-question, #191919) !important;
+}

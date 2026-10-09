@@ -22,7 +22,7 @@ export function RatingPreview({ question }: RendererProps) {
             className={`w-5 h-5 transition-transform ${
               isHovered
                 ? "fill-red-500 text-red-500 scale-110"
-                : "text-[#D4D4D4]"
+                : "text-muted"
             }`}
           />
         );
@@ -33,7 +33,7 @@ export function RatingPreview({ question }: RendererProps) {
             className={`w-5 h-5 transition-transform ${
               isHovered
                 ? "fill-blue-500 text-blue-500 scale-110"
-                : "text-[#D4D4D4]"
+                : "text-muted"
             }`}
           />
         );
@@ -41,7 +41,7 @@ export function RatingPreview({ question }: RendererProps) {
         return (
           <span
             className={`text-sm font-bold font-mono transition-colors ${
-              isHovered ? "text-amber-600" : "text-[#737373]"
+              isHovered ? "text-amber-600" : "text-secondary"
             }`}
           >
             {idx + 1}
@@ -54,7 +54,7 @@ export function RatingPreview({ question }: RendererProps) {
             className={`w-5 h-5 transition-transform ${
               isHovered
                 ? "fill-amber-400 text-amber-400 scale-110"
-                : "text-[#D4D4D4]"
+                : "text-muted"
             }`}
           />
         );
@@ -74,7 +74,7 @@ export function RatingPreview({ question }: RendererProps) {
               className={`w-11 h-11 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-2xs ${
                 isHighlighted
                   ? "bg-amber-50/50 border-amber-300"
-                  : "bg-white border-[#E5E5E5] hover:border-[#262627]"
+                  : "bg-surface border-default hover:border-focus"
               }`}
             >
               {renderIcon(idx, isHighlighted)}
@@ -83,7 +83,7 @@ export function RatingPreview({ question }: RendererProps) {
         })}
       </div>
 
-      <div className="flex items-center justify-between text-[11px] text-[#8C8C8C]">
+      <div className="flex items-center justify-between text-micro text-muted">
         <span>1 = Low</span>
         <span>{steps} = High</span>
       </div>

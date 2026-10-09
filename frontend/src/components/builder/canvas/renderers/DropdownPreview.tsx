@@ -56,14 +56,14 @@ export function DropdownPreview({ question, onUpdate }: RendererProps) {
   return (
     <div className="w-full max-w-xl space-y-3">
       {/* Visual Dropdown Trigger Mockup */}
-      <div className="w-full p-3 rounded-xl border border-[#D4D4D4] bg-white flex items-center justify-between text-sm text-[#A3A3A3] shadow-2xs">
+      <div className="w-full p-3 rounded-xl border border-strong bg-surface flex items-center justify-between text-sm text-placeholder shadow-2xs">
         <span>Select an option...</span>
-        <ChevronDown className="w-4 h-4 text-[#A3A3A3]" />
+        <ChevronDown className="w-4 h-4 text-placeholder" />
       </div>
 
       {/* Alphabetical Badge */}
       {isAlphabetical && (
-        <div className="flex items-center gap-1.5 text-[11px] text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 w-fit">
+        <div className="flex items-center gap-1.5 text-micro text-violet-700 bg-violet-50 px-2 py-0.5 rounded-full border border-violet-200 w-fit">
           <ArrowDownAZ className="w-3 h-3" />
           <span>Sorted alphabetically</span>
         </div>
@@ -71,7 +71,7 @@ export function DropdownPreview({ question, onUpdate }: RendererProps) {
 
       {/* Inline Choices Management List */}
       <div className="pt-2 space-y-1.5">
-        <div className="text-[11px] font-semibold text-[#8C8C8C] uppercase tracking-wider px-1">
+        <div className="text-micro font-semibold text-muted uppercase tracking-wider px-1">
           Choices list ({options.length})
         </div>
 
@@ -79,9 +79,9 @@ export function DropdownPreview({ question, onUpdate }: RendererProps) {
           {options.map((opt, idx) => (
             <div
               key={opt.id}
-              className="group flex items-center gap-2 p-2 rounded-lg border border-[#E5E5E5] bg-[#FBFBFC] hover:bg-white hover:border-[#262627] transition-all"
+              className="group flex items-center gap-2 p-2 rounded-lg border border-default bg-surface hover:bg-surface-hover hover:border-focus transition-all"
             >
-              <span className="w-5 text-[11px] font-mono font-semibold text-[#8C8C8C] text-center shrink-0">
+              <span className="w-5 text-micro font-mono font-semibold text-muted text-center shrink-0">
                 {idx + 1}
               </span>
 
@@ -90,14 +90,14 @@ export function DropdownPreview({ question, onUpdate }: RendererProps) {
                 value={opt.label}
                 onChange={(e) => handleUpdateOption(opt.id, e.target.value)}
                 placeholder={`Choice ${idx + 1}`}
-                className="flex-1 bg-transparent text-xs font-medium text-[#262627] focus:outline-none placeholder:text-[#A3A3A3]"
+                className="flex-1 bg-transparent text-xs font-medium text-primary focus:outline-none placeholder:text-placeholder"
               />
 
               <button
                 type="button"
                 onClick={() => handleDeleteOption(opt.id)}
                 disabled={options.length <= 1}
-                className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-[#A3A3A3] hover:text-red-600 hover:bg-red-50 disabled:hidden transition-all cursor-pointer"
+                className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-muted hover:text-red-600 hover:bg-red-50 disabled:hidden transition-all cursor-pointer"
                 title="Remove choice"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -110,7 +110,7 @@ export function DropdownPreview({ question, onUpdate }: RendererProps) {
         <button
           type="button"
           onClick={handleAddOption}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed border-[#D4D4D4] hover:border-[#262627] bg-white text-xs font-semibold text-[#262627] hover:text-black hover:bg-[#FBFBFC] transition-all cursor-pointer shadow-2xs mt-1"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed border-strong hover:border-focus bg-surface text-xs font-semibold text-primary hover:text-primary hover:bg-surface-hover transition-all cursor-pointer shadow-2xs mt-1"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add choice</span>

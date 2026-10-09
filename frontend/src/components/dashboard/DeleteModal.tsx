@@ -61,17 +61,17 @@ export function DeleteModal({
       }
     >
       <div className="flex items-start gap-3.5">
-        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0 text-red-600">
+        <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/50 flex items-center justify-center shrink-0 text-red-600 dark:text-red-400">
           <AlertTriangle className="w-5 h-5" />
         </div>
         <div className="text-sm">
-          <p className="text-[#262627] font-medium mb-1">
+          <p className="text-primary font-medium mb-1">
             Are you sure you want to delete &ldquo;{form.title}&rdquo;?
           </p>
-          <p className="text-[#737373] leading-relaxed">
+          <p className="text-secondary leading-relaxed">
             This action cannot be undone. All{" "}
-            <strong className="text-neutral-900">{form.question_count} questions</strong> and{" "}
-            <strong className="text-neutral-900">{form.response_count} collected responses</strong>{" "}
+            <strong className="text-primary font-semibold">{form.question_count} questions</strong> and{" "}
+            <strong className="text-primary font-semibold">{form.response_count} collected responses</strong>{" "}
             will be permanently removed.
           </p>
         </div>

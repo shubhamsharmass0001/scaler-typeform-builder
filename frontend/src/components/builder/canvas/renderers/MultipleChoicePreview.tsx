@@ -64,7 +64,7 @@ export function MultipleChoicePreview({ question, onUpdate }: RendererProps) {
   return (
     <div className="w-full max-w-xl space-y-3">
       {/* Configuration pills header */}
-      <div className="flex items-center gap-2 text-[11px] text-[#737373] pb-1">
+      <div className="flex items-center gap-2 text-micro text-secondary pb-1">
         {isMultiple && (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
             <CheckSquare className="w-3 h-3" />
@@ -86,10 +86,10 @@ export function MultipleChoicePreview({ question, onUpdate }: RendererProps) {
           return (
             <div
               key={opt.id}
-              className="group flex items-center gap-3 p-2.5 rounded-xl border border-[#E5E5E5] bg-white hover:border-[#262627] hover:shadow-xs transition-all duration-150"
+              className="group flex items-center gap-3 p-2.5 rounded-xl border border-default bg-surface hover:border-focus hover:shadow-xs transition-all duration-150"
             >
               {/* Key Badge */}
-              <span className="w-6 h-6 rounded-lg bg-[#F5F5F5] border border-[#E5E5E5] text-[#262627] font-semibold text-xs flex items-center justify-center font-mono shrink-0 shadow-2xs group-hover:bg-[#262627] group-hover:text-white group-hover:border-[#262627] transition-colors">
+              <span className="w-6 h-6 rounded-lg bg-muted border border-default text-primary font-semibold text-xs flex items-center justify-center font-mono shrink-0 shadow-2xs group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-colors">
                 {letter}
               </span>
 
@@ -99,7 +99,7 @@ export function MultipleChoicePreview({ question, onUpdate }: RendererProps) {
                 value={opt.label}
                 onChange={(e) => handleUpdateOption(opt.id, e.target.value)}
                 placeholder={`Choice ${idx + 1}`}
-                className="flex-1 bg-transparent text-sm font-medium text-[#262627] focus:outline-none placeholder:text-[#A3A3A3]"
+                className="flex-1 bg-transparent text-sm font-medium text-primary focus:outline-none placeholder:text-placeholder"
               />
 
               {/* Remove Action */}
@@ -107,7 +107,7 @@ export function MultipleChoicePreview({ question, onUpdate }: RendererProps) {
                 type="button"
                 onClick={() => handleDeleteOption(opt.id)}
                 disabled={options.length <= 1}
-                className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-[#A3A3A3] hover:text-red-600 hover:bg-red-50 disabled:hidden transition-all cursor-pointer"
+                className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-muted hover:text-red-600 hover:bg-red-50 disabled:hidden transition-all cursor-pointer"
                 title="Remove choice"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -118,15 +118,15 @@ export function MultipleChoicePreview({ question, onUpdate }: RendererProps) {
 
         {/* 'Other' Choice (if enabled) */}
         {allowOther && (
-          <div className="group flex items-center gap-3 p-2.5 rounded-xl border border-dashed border-[#D4D4D4] bg-[#FAFAFA] text-sm text-[#737373]">
-            <span className="w-6 h-6 rounded-lg bg-white border border-[#E5E5E5] text-[#737373] font-semibold text-xs flex items-center justify-center font-mono shrink-0">
+          <div className="group flex items-center gap-3 p-2.5 rounded-xl border border-dashed border-strong bg-surface-subtle text-sm text-secondary">
+            <span className="w-6 h-6 rounded-lg bg-surface border border-default text-secondary font-semibold text-xs flex items-center justify-center font-mono shrink-0">
               {String.fromCharCode(65 + options.length)}
             </span>
             <span className="flex-1 italic">Other (free text input)</span>
             <button
               type="button"
               onClick={() => handleToggleOther(false)}
-              className="p-1 rounded-md text-[#A3A3A3] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+              className="p-1 rounded-md text-muted hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
               title="Remove 'Other' option"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -141,7 +141,7 @@ export function MultipleChoicePreview({ question, onUpdate }: RendererProps) {
           type="button"
           data-testid="btn-canvas-add-choice"
           onClick={handleAddOption}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed border-[#D4D4D4] hover:border-[#262627] bg-white text-xs font-semibold text-[#262627] hover:text-black hover:bg-[#FBFBFC] transition-all cursor-pointer shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed border-strong hover:border-focus bg-surface text-xs font-semibold text-primary hover:text-primary hover:bg-surface-hover transition-all cursor-pointer shadow-2xs"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add choice</span>
@@ -152,7 +152,7 @@ export function MultipleChoicePreview({ question, onUpdate }: RendererProps) {
             type="button"
             data-testid="btn-canvas-add-other"
             onClick={() => handleToggleOther(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed border-[#E5E5E5] hover:border-[#262627] bg-white text-xs font-medium text-[#737373] hover:text-[#262627] transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed border-default hover:border-focus bg-surface text-xs font-medium text-secondary hover:text-primary transition-all cursor-pointer shadow-2xs"
           >
             <Sparkles className="w-3.5 h-3.5 text-purple-500" />
             <span>Add &quot;Other&quot;</span>

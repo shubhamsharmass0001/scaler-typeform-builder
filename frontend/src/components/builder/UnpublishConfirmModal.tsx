@@ -36,7 +36,7 @@ export function UnpublishConfirmModal({
           <span>The current public URL will return a 404 until you publish again.</span>
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#ECECEC]">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-subtle">
           <Button variant="ghost" size="sm" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>

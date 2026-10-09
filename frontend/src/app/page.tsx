@@ -28,6 +28,8 @@ import {
   ChevronDown,
   RefreshCw,
   AlertCircle,
+  Edit3,
+  ArrowDownAZ,
 } from "lucide-react";
 
 import {
@@ -41,7 +43,6 @@ import { FormListItem } from "@/types";
 import { TopNav } from "@/components/dashboard/TopNav";
 import { TopTabs } from "@/components/dashboard/TopTabs";
 import { Sidebar } from "@/components/dashboard/Sidebar";
-import { PromoBanner } from "@/components/dashboard/PromoBanner";
 import { SuggestionBanner } from "@/components/dashboard/SuggestionBanner";
 import { FormRow } from "@/components/dashboard/FormRow";
 import { FormCard } from "@/components/dashboard/FormCard";
@@ -50,6 +51,7 @@ import { DeleteModal } from "@/components/dashboard/DeleteModal";
 import { FormRowSkeleton, FormCardSkeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
+import { DropdownMenu } from "@/components/ui/DropdownMenu";
 
 type SortOption = "created" | "updated" | "alphabetical";
 
@@ -58,6 +60,7 @@ export default function WorkspaceDashboard() {
   const queryClient = useQueryClient();
 
   // Local UI State
+  const [workspaceName, setWorkspaceName] = useState("My workspace");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list"); // List view is default in Typeform screenshot
   const [sortBy, setSortBy] = useState<SortOption>("created");
@@ -67,6 +70,10 @@ export default function WorkspaceDashboard() {
   // Modals
   const [formToRename, setFormToRename] = useState<FormListItem | null>(null);
   const [formToDelete, setFormToDelete] = useState<FormListItem | null>(null);
+
+  React.useEffect(() => {
+    document.title = "My workspace | FormCraft";
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Data Queries
@@ -142,8 +149,9 @@ export default function WorkspaceDashboard() {
   const handleCopyLink = (form: FormListItem) => {
     if (!form.slug) return;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const publicUrl = `${origin}/forms/${form.slug}`;
+    const publicUrl = `${origin}/f/${form.slug}`;
     navigator.clipboard.writeText(publicUrl);
+
     toast.success("Public link copied to clipboard!");
   };
 
@@ -184,7 +192,7 @@ export default function WorkspaceDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans">
+    <div className="min-h-screen bg-app text-primary flex flex-col font-sans">
       {/* 1. Top Navbar */}
       <TopNav onToggleMobileSidebar={() => setMobileSidebarOpen(true)} />
 
@@ -207,39 +215,62 @@ export default function WorkspaceDashboard() {
 
         {/* Content Pane */}
         <main className="flex-1 min-w-0 px-6 sm:px-10 py-6 max-w-7xl mx-auto">
-          {/* Promo Upgrade Banner */}
-          <PromoBanner />
-
           {/* Workspace Title & Controls Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             {/* Title & Actions */}
             <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold text-[#262627] tracking-tight">
-                My workspace
+              <h1 className="text-xl sm:text-2xl font-bold text-primary tracking-tight">
+                {workspaceName}
               </h1>
 
-              {/* Workspace dots menu */}
-              <button
-                type="button"
-                className="p-1 rounded-md text-[#737373] hover:text-[#262627] hover:bg-[#EBEBEB] transition-colors cursor-pointer"
-                title="Workspace settings"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
+              {/* Workspace dots menu (Screenshot 3) */}
+              <DropdownMenu
+                trigger={
+                  <button
+                    type="button"
+                    className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer"
+                    title="Workspace settings"
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                }
+                align="left"
+                items={[
+                  {
+                    label: "Rename",
+                    onClick: () => {
+                      const newName = prompt("Rename workspace:", workspaceName);
+                      if (newName && newName.trim()) {
+                        setWorkspaceName(newName.trim());
+                        toast.success("Workspace renamed");
+                      }
+                    },
+                  },
+                  {
+                    label: "Leave",
+                    onClick: () => toast.info("Left workspace"),
+                  },
+                  {
+                    label: "Delete",
+                    destructive: true,
+                    onClick: () => toast.error("Cannot delete default workspace"),
+                  },
+                ]}
+              />
 
               {/* + Invite button */}
               <button
                 type="button"
                 onClick={() => alert("Workspace collaboration invite modal")}
-                className="flex items-center gap-1.5 text-xs font-medium text-[#262627] hover:bg-[#EBEBEB] px-2.5 py-1 rounded-md transition-colors cursor-pointer ml-1"
+                className="flex items-center gap-1.5 text-xs font-medium text-primary hover:bg-surface-hover px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ml-0.5"
               >
-                <UserPlus className="w-3.5 h-3.5 text-[#525252]" />
+                <UserPlus className="w-3.5 h-3.5 text-secondary" />
                 <span>Invite</span>
               </button>
 
               {/* Diamond badge */}
               <div
-                className="w-5 h-5 rounded-full border border-emerald-300 bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 cursor-pointer"
+                className="w-5 h-5 rounded-full border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 cursor-pointer"
                 title="Upgrade to Pro"
               >
                 <Sparkles className="w-2.5 h-2.5" />
@@ -248,50 +279,58 @@ export default function WorkspaceDashboard() {
 
             {/* Right Controls: Sort Dropdown & List/Grid View Switcher */}
             <div className="flex items-center gap-2.5 self-end sm:self-auto">
-              {/* Sort By Dropdown */}
+              {/* Sort By Dropdown (Screenshot 1) */}
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                  className="flex items-center gap-2 text-xs font-medium text-[#262627] bg-white border border-[#E5E5E5] px-3 py-1.5 rounded-lg hover:bg-[#F5F5F5] transition-colors cursor-pointer"
+                  className="flex items-center gap-2 text-xs font-medium text-primary bg-surface border border-default px-3 py-1.5 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer shadow-2xs"
                 >
-                  <Calendar className="w-3.5 h-3.5 text-[#737373]" />
+                  <Calendar className="w-3.5 h-3.5 text-muted" />
                   <span>{sortLabels[sortBy]}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#737373]" />
+                  <ChevronDown className="w-3.5 h-3.5 text-muted" />
                 </button>
 
                 {isSortDropdownOpen && (
-                  <div className="absolute right-0 mt-1 w-36 rounded-xl bg-white shadow-lg border border-[#E5E5E5] py-1 text-xs z-30">
-                    {(["created", "updated", "alphabetical"] as SortOption[]).map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => {
-                          setSortBy(opt);
-                          setIsSortDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-1.5 transition-colors cursor-pointer ${
-                          sortBy === opt
-                            ? "bg-[#F5F5F5] font-semibold text-[#262627]"
-                            : "text-[#525252] hover:bg-[#F9F9F9]"
-                        }`}
-                      >
-                        {sortLabels[opt]}
-                      </button>
-                    ))}
+                  <div className="absolute right-0 mt-1 w-40 rounded-2xl bg-surface shadow-dropdown border border-default p-1 text-xs z-30 animate-in fade-in zoom-in-95 duration-100">
+                    {[
+                      { key: "created", label: "Date created", icon: Calendar },
+                      { key: "updated", label: "Last updated", icon: Edit3 },
+                      { key: "alphabetical", label: "Alphabetical", icon: ArrowDownAZ },
+                    ].map((opt) => {
+                      const Icon = opt.icon;
+                      return (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          onClick={() => {
+                            setSortBy(opt.key as SortOption);
+                            setIsSortDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer ${
+                            sortBy === opt.key
+                              ? "bg-surface-hover font-semibold text-primary"
+                              : "text-secondary hover:bg-surface-hover hover:text-primary"
+                          }`}
+                        >
+                          <Icon className="w-3.5 h-3.5 text-muted shrink-0" />
+                          <span className="truncate">{opt.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
 
               {/* Segmented Toggle: List / Grid */}
-              <div className="flex items-center bg-white border border-[#E5E5E5] p-0.5 rounded-lg shadow-2xs">
+              <div className="flex items-center bg-surface border border-default p-0.5 rounded-lg shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
                   className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
                     viewMode === "list"
-                      ? "bg-[#F0F0F0] text-[#262627] font-semibold"
-                      : "text-[#737373] hover:text-[#262627]"
+                      ? "bg-muted text-primary font-semibold"
+                      : "text-secondary hover:text-primary"
                   }`}
                 >
                   <ListIcon className="w-3.5 h-3.5" />
@@ -303,8 +342,8 @@ export default function WorkspaceDashboard() {
                   onClick={() => setViewMode("grid")}
                   className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
                     viewMode === "grid"
-                      ? "bg-[#F0F0F0] text-[#262627] font-semibold"
-                      : "text-[#737373] hover:text-[#262627]"
+                      ? "bg-muted text-primary font-semibold"
+                      : "text-secondary hover:text-primary"
                   }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
@@ -322,7 +361,7 @@ export default function WorkspaceDashboard() {
 
           {/* List View Column Headers */}
           {viewMode === "list" && !isLoading && !isError && processedForms.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-2 text-xs font-medium text-[#737373] mb-1">
+            <div className="flex items-center justify-between px-4 py-2 text-xs font-medium text-secondary mb-1">
               <div className="flex-1">
                 {/* Title spacer */}
               </div>
@@ -354,14 +393,14 @@ export default function WorkspaceDashboard() {
               </div>
             )
           ) : isError ? (
-            <div className="bg-white rounded-2xl border border-red-200 p-8 text-center max-w-md mx-auto my-12">
-              <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
+            <div className="bg-card rounded-2xl border border-red-500/20 p-8 text-center max-w-md mx-auto my-12">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mx-auto mb-3">
                 <AlertCircle className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-semibold text-[#262627] mb-1">
+              <h3 className="text-base font-semibold text-primary mb-1">
                 Unable to load forms
               </h3>
-              <p className="text-sm text-[#737373] mb-5 leading-relaxed">
+              <p className="text-sm text-secondary mb-5 leading-relaxed">
                 {(error as Error)?.message ||
                   "Check if the backend server is running on port 8000."}
               </p>

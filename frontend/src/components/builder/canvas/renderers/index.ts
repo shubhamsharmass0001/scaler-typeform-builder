@@ -14,6 +14,7 @@ import { MultipleChoicePreview } from "./MultipleChoicePreview";
 import { DropdownPreview } from "./DropdownPreview";
 import { YesNoPreview } from "./YesNoPreview";
 import { RatingPreview } from "./RatingPreview";
+import { FileUploadPreview } from "./FileUploadPreview";
 
 export interface QuestionRendererProps {
   question: Question;
@@ -32,4 +33,5 @@ export const QUESTION_RENDERERS: Record<
   dropdown: DropdownPreview,
   yes_no: YesNoPreview,
   rating: RatingPreview,
+  file_upload: FileUploadPreview,
 };

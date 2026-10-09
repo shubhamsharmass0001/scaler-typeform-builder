@@ -12,12 +12,19 @@
  */
 
 import React, { createContext, useContext, useReducer, useEffect } from "react";
+import { toast } from "sonner";
 import { Form, Question, QuestionType } from "@/types";
 import { QUESTION_TYPES } from "@/lib/questionTypes";
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 export type SelectedId = number | string | "welcome" | "thank_you" | null;
+
+export interface HistorySnapshot {
+  questions: Question[];
+  selectedId: SelectedId;
+  formMeta?: Partial<Form>;
+}
 
 export interface BuilderState {
   form: Form | null;
@@ -27,6 +34,8 @@ export interface BuilderState {
   saveStatus: SaveStatus;
   lastSavedAt: Date | null;
   errorMessage: string | null;
+  past: HistorySnapshot[];
+  future: HistorySnapshot[];
 }
 
 export type BuilderAction =
@@ -39,7 +48,37 @@ export type BuilderAction =
   | { type: "SELECT_QUESTION"; payload: SelectedId }
   | { type: "UPDATE_FORM_META"; payload: Partial<Form> }
   | { type: "SET_SAVE_STATUS"; payload: { status: SaveStatus; errorMessage?: string } }
-  | { type: "QUESTIONS_PERSISTED"; payload: { questions: Question[]; selectedId?: SelectedId } };
+  | { type: "QUESTIONS_PERSISTED"; payload: { questions: Question[]; selectedId?: SelectedId } }
+  | { type: "UNDO" }
+  | { type: "REDO" };
+
+const MAX_HISTORY = 50;
+
+function pushSnapshot(state: BuilderState): BuilderState {
+  const currentSnapshot: HistorySnapshot = {
+    questions: JSON.parse(JSON.stringify(state.questions)),
+    selectedId: state.selectedId,
+    formMeta: state.form
+      ? {
+          title: state.form.title,
+          description: state.form.description,
+          welcome_title: state.form.welcome_title,
+          welcome_description: state.form.welcome_description,
+          thank_you_title: state.form.thank_you_title,
+          thank_you_message: state.form.thank_you_message,
+        }
+      : undefined,
+  };
+  const newPast = [...state.past, currentSnapshot];
+  if (newPast.length > MAX_HISTORY) {
+    newPast.shift();
+  }
+  return {
+    ...state,
+    past: newPast,
+    future: [],
+  };
+}
 
 const initialState: BuilderState = {
   form: null,
@@ -49,6 +88,8 @@ const initialState: BuilderState = {
   saveStatus: "saved",
   lastSavedAt: null,
   errorMessage: null,
+  past: [],
+  future: [],
 };
 
 function generateTempId(): string {
@@ -79,17 +120,20 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
         saveStatus: "saved",
         lastSavedAt: new Date(),
         errorMessage: null,
+        past: [],
+        future: [],
       };
     }
 
     case "ADD_QUESTION": {
+      const baseState = pushSnapshot(state);
       const { type, afterId } = action.payload;
       const typeDef = QUESTION_TYPES[type];
       const newId = generateTempId();
 
       const newQuestion: Question = {
         id: newId,
-        form_id: state.form?.id,
+        form_id: baseState.form?.id,
         type,
         title: typeDef.label,
         description: null,
@@ -98,7 +142,7 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
         properties: JSON.parse(JSON.stringify(typeDef.defaultProperties)),
       };
 
-      const updated = [...state.questions];
+      const updated = [...baseState.questions];
       if (afterId && afterId !== "welcome" && afterId !== "thank_you") {
         const afterIndex = updated.findIndex((q) => q.id === afterId);
         if (afterIndex !== -1) {
@@ -113,7 +157,7 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
       const reindexed = reindexPositions(updated);
 
       return {
-        ...state,
+        ...baseState,
         questions: reindexed,
         selectedId: newId,
         isDirty: true,
@@ -122,8 +166,9 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
     }
 
     case "UPDATE_QUESTION": {
+      const baseState = pushSnapshot(state);
       const { id, patch } = action.payload;
-      const updated = state.questions.map((q) => {
+      const updated = baseState.questions.map((q) => {
         if (String(q.id) === String(id)) {
           return {
             ...q,
@@ -137,7 +182,7 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
       });
 
       return {
-        ...state,
+        ...baseState,
         questions: updated,
         isDirty: true,
         saveStatus: "idle",
@@ -145,16 +190,17 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
     }
 
     case "DELETE_QUESTION": {
+      const baseState = pushSnapshot(state);
       const { id } = action.payload;
-      const indexToDelete = state.questions.findIndex((q) => String(q.id) === String(id));
+      const indexToDelete = baseState.questions.findIndex((q) => String(q.id) === String(id));
       if (indexToDelete === -1) return state;
 
-      const updated = state.questions.filter((q) => String(q.id) !== String(id));
+      const updated = baseState.questions.filter((q) => String(q.id) !== String(id));
       const reindexed = reindexPositions(updated);
 
       // Select adjacent question or fallback to welcome screen
-      let nextSelected: SelectedId = state.selectedId;
-      if (String(state.selectedId) === String(id)) {
+      let nextSelected: SelectedId = baseState.selectedId;
+      if (String(baseState.selectedId) === String(id)) {
         if (reindexed.length > 0) {
           const nextIndex = Math.min(indexToDelete, reindexed.length - 1);
           nextSelected = reindexed[nextIndex].id;
@@ -164,7 +210,7 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
       }
 
       return {
-        ...state,
+        ...baseState,
         questions: reindexed,
         selectedId: nextSelected,
         isDirty: true,
@@ -173,11 +219,12 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
     }
 
     case "DUPLICATE_QUESTION": {
+      const baseState = pushSnapshot(state);
       const { id } = action.payload;
-      const targetIndex = state.questions.findIndex((q) => String(q.id) === String(id));
+      const targetIndex = baseState.questions.findIndex((q) => String(q.id) === String(id));
       if (targetIndex === -1) return state;
 
-      const target = state.questions[targetIndex];
+      const target = baseState.questions[targetIndex];
       const newId = generateTempId();
       const duplicated: Question = {
         ...JSON.parse(JSON.stringify(target)),
@@ -185,12 +232,12 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
         title: `Copy of ${target.title}`,
       };
 
-      const updated = [...state.questions];
+      const updated = [...baseState.questions];
       updated.splice(targetIndex + 1, 0, duplicated);
       const reindexed = reindexPositions(updated);
 
       return {
-        ...state,
+        ...baseState,
         questions: reindexed,
         selectedId: newId,
         isDirty: true,
@@ -202,13 +249,14 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
       const { fromIndex, toIndex } = action.payload;
       if (fromIndex === toIndex) return state;
 
-      const updated = [...state.questions];
+      const baseState = pushSnapshot(state);
+      const updated = [...baseState.questions];
       const [moved] = updated.splice(fromIndex, 1);
       updated.splice(toIndex, 0, moved);
       const reindexed = reindexPositions(updated);
 
       return {
-        ...state,
+        ...baseState,
         questions: reindexed,
         isDirty: true,
         saveStatus: "idle",
@@ -224,12 +272,75 @@ function builderReducer(state: BuilderState, action: BuilderAction): BuilderStat
 
     case "UPDATE_FORM_META": {
       if (!state.form) return state;
+      const baseState = pushSnapshot(state);
       return {
-        ...state,
+        ...baseState,
         form: {
-          ...state.form,
+          ...baseState.form!,
           ...action.payload,
         },
+        isDirty: true,
+        saveStatus: "idle",
+      };
+    }
+
+    case "UNDO": {
+      if (state.past.length === 0) return state;
+      const newPast = [...state.past];
+      const previous = newPast.pop()!;
+      const currentSnapshot: HistorySnapshot = {
+        questions: JSON.parse(JSON.stringify(state.questions)),
+        selectedId: state.selectedId,
+        formMeta: state.form
+          ? {
+              title: state.form.title,
+              description: state.form.description,
+              welcome_title: state.form.welcome_title,
+              welcome_description: state.form.welcome_description,
+              thank_you_title: state.form.thank_you_title,
+              thank_you_message: state.form.thank_you_message,
+            }
+          : undefined,
+      };
+
+      return {
+        ...state,
+        questions: previous.questions,
+        selectedId: previous.selectedId,
+        form: state.form && previous.formMeta ? { ...state.form, ...previous.formMeta } : state.form,
+        past: newPast,
+        future: [currentSnapshot, ...state.future].slice(0, MAX_HISTORY),
+        isDirty: true,
+        saveStatus: "idle",
+      };
+    }
+
+    case "REDO": {
+      if (state.future.length === 0) return state;
+      const newFuture = [...state.future];
+      const next = newFuture.shift()!;
+      const currentSnapshot: HistorySnapshot = {
+        questions: JSON.parse(JSON.stringify(state.questions)),
+        selectedId: state.selectedId,
+        formMeta: state.form
+          ? {
+              title: state.form.title,
+              description: state.form.description,
+              welcome_title: state.form.welcome_title,
+              welcome_description: state.form.welcome_description,
+              thank_you_title: state.form.thank_you_title,
+              thank_you_message: state.form.thank_you_message,
+            }
+          : undefined,
+      };
+
+      return {
+        ...state,
+        questions: next.questions,
+        selectedId: next.selectedId,
+        form: state.form && next.formMeta ? { ...state.form, ...next.formMeta } : state.form,
+        past: [...state.past, currentSnapshot].slice(-MAX_HISTORY),
+        future: newFuture,
         isDirty: true,
         saveStatus: "idle",
       };
@@ -273,6 +384,10 @@ interface BuilderContextValue {
   reorderQuestions: (fromIndex: number, toIndex: number) => void;
   selectQuestion: (id: SelectedId) => void;
   updateFormMeta: (patch: Partial<Form>) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   selectedQuestion: Question | null;
 }
 
@@ -301,8 +416,18 @@ export function BuilderProvider({
     dispatch({ type: "UPDATE_QUESTION", payload: { id, patch } });
   };
 
+  const undo = () => dispatch({ type: "UNDO" });
+  const redo = () => dispatch({ type: "REDO" });
+
   const deleteQuestion = (id: number | string) => {
     dispatch({ type: "DELETE_QUESTION", payload: { id } });
+    toast("Question deleted", {
+      action: {
+        label: "Undo",
+        onClick: () => dispatch({ type: "UNDO" }),
+      },
+      duration: 4000,
+    });
   };
 
   const duplicateQuestion = (id: number | string) => {
@@ -340,6 +465,10 @@ export function BuilderProvider({
         reorderQuestions,
         selectQuestion,
         updateFormMeta,
+        undo,
+        redo,
+        canUndo: state.past.length > 0,
+        canRedo: state.future.length > 0,
         selectedQuestion,
       }}
     >

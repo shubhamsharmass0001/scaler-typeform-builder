@@ -15,17 +15,17 @@ export function NumberPreview({ question }: RendererProps) {
 
   return (
     <div className="w-full max-w-xl space-y-2">
-      <div className="flex items-center gap-2.5 border-b-2 border-[#D4D4D4] hover:border-[#A3A3A3] transition-colors pb-2">
-        <Hash className="w-5 h-5 text-[#A3A3A3] shrink-0" />
+      <div className="flex items-center gap-2.5 border-b-2 border-strong hover:border-focus transition-colors pb-2">
+        <Hash className="w-5 h-5 text-muted shrink-0" />
         <input
           type="text"
           disabled
           placeholder="0"
-          className="w-full bg-transparent text-lg sm:text-xl text-[#262627] placeholder:text-[#A3A3A3] cursor-not-allowed focus:outline-none"
+          className="w-full bg-transparent text-lg sm:text-xl text-primary placeholder:text-placeholder cursor-not-allowed focus:outline-none"
         />
       </div>
       {(min !== undefined || max !== undefined) && (
-        <div className="flex items-center gap-3 text-[11px] text-[#8C8C8C] font-mono">
+        <div className="flex items-center gap-3 text-micro text-muted font-mono">
           {min !== undefined && <span>Min: {min}</span>}
           {min !== undefined && max !== undefined && <span>•</span>}
           {max !== undefined && <span>Max: {max}</span>}

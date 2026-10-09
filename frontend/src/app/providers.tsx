@@ -11,6 +11,28 @@
 import React, { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+
+function ThemedToaster() {
+  const { resolvedTheme } = useTheme();
+
+  return (
+    <Toaster
+      position="top-right"
+      theme={resolvedTheme}
+      richColors
+      closeButton
+      duration={3000}
+      toastOptions={{
+        style: {
+          borderRadius: "12px",
+          fontSize: "14px",
+          fontFamily: "var(--font-sans)",
+        },
+      }}
+    />
+  );
+}
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -33,18 +55,10 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
-      <Toaster
-        position="top-right"
-        richColors
-        closeButton
-        toastOptions={{
-          style: {
-            borderRadius: "12px",
-            fontSize: "14px",
-          },
-        }}
-      />
+      <ThemeProvider>
+        {children}
+        <ThemedToaster />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

@@ -10,6 +10,7 @@ import clsx from "clsx";
 export interface DropdownMenuItem {
   label: string;
   icon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
   onClick: () => void;
   destructive?: boolean;
   disabled?: boolean;
@@ -65,7 +66,7 @@ export function DropdownMenu({
       {isOpen && (
         <div
           className={clsx(
-            "absolute z-30 mt-1.5 w-48 rounded-xl bg-white shadow-lg border border-[#E5E5E5] py-1 text-sm focus:outline-none animate-in fade-in zoom-in-95 duration-100",
+            "absolute z-30 mt-1.5 w-44 sm:w-48 rounded-2xl bg-surface shadow-dropdown border border-default p-1.5 text-sm focus:outline-none animate-in fade-in zoom-in-95 duration-150",
             align === "right" ? "right-0" : "left-0",
             className
           )}
@@ -74,7 +75,7 @@ export function DropdownMenu({
           {items.map((item, idx) => (
             <React.Fragment key={idx}>
               {item.dividerBefore && (
-                <div className="my-1 border-t border-[#F0F0F0]" />
+                <div className="my-1 border-t border-default" />
               )}
               <button
                 type="button"
@@ -85,17 +86,22 @@ export function DropdownMenu({
                   item.onClick();
                 }}
                 className={clsx(
-                  "w-full flex items-center gap-2.5 px-3.5 py-2 text-left text-sm transition-colors cursor-pointer",
+                  "w-full flex items-center justify-between gap-2.5 px-3 py-1.5 rounded-lg text-left text-sm transition-colors cursor-pointer",
                   item.destructive
-                    ? "text-red-600 hover:bg-red-50"
-                    : "text-[#262627] hover:bg-[#F5F5F5]",
+                    ? "text-red-600 dark:text-red-400 hover:bg-red-500/10 font-normal"
+                    : "text-primary hover:bg-surface-hover font-normal",
                   item.disabled && "opacity-40 pointer-events-none"
                 )}
               >
-                {item.icon && (
-                  <span className="shrink-0 text-current">{item.icon}</span>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {item.icon && (
+                    <span className="shrink-0 text-secondary">{item.icon}</span>
+                  )}
+                  <span className="truncate">{item.label}</span>
+                </div>
+                {item.rightIcon && (
+                  <span className="shrink-0 text-muted">{item.rightIcon}</span>
                 )}
-                <span className="truncate">{item.label}</span>
               </button>
             </React.Fragment>
           ))}

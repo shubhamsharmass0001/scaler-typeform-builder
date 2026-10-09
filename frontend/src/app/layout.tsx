@@ -9,21 +9,27 @@
  */
 
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-// Load Inter with the Latin subset only (keeps the bundle small).
-// `variable` makes the font available as a CSS custom property.
-const inter = Inter({
+// Load Plus Jakarta Sans (closest freely-available Google Font to Typeform's Aperçu)
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap", // Show fallback text while the font loads
+  variable: "--font-sans",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "FormCraft — Build beautiful forms",
+  title: {
+    template: "%s | FormCraft",
+    default: "FormCraft — Build beautiful forms",
+  },
   description:
     "A Typeform-inspired form builder. Create, share, and analyze forms with a clean, conversational UI.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 import { Providers } from "./providers";
@@ -36,9 +42,29 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${plusJakartaSans.variable} h-full antialiased font-sans`}
     >
-      <body className="min-h-full bg-[#FAFAFA] text-[#262627]">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var m = localStorage.getItem("theme-mode") || "system";
+                  var isDark = m === "dark" || (m === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+                  if (isDark) {
+                    document.documentElement.classList.add("dark");
+                  } else {
+                    document.documentElement.classList.remove("dark");
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-full bg-app text-primary">
         <Providers>{children}</Providers>
       </body>
     </html>

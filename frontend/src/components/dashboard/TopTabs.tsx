@@ -29,7 +29,7 @@ export function TopTabs() {
   ];
 
   return (
-    <div className="bg-white border-b border-[#ECECEC] px-4 sm:px-6 flex items-center gap-1 sm:gap-4 overflow-x-auto scrollbar-hide text-xs sm:text-sm">
+    <div className="bg-surface border-b border-default px-4 sm:px-6 flex items-center gap-1 sm:gap-4 overflow-x-auto scrollbar-hide text-xs sm:text-sm">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         return (
@@ -39,26 +39,26 @@ export function TopTabs() {
             className={clsx(
               "relative flex items-center gap-2 py-3 px-2 sm:px-3 font-medium whitespace-nowrap transition-colors cursor-pointer select-none",
               tab.active
-                ? "text-[#191919]"
-                : "text-[#5E5E60] hover:text-[#191919]"
+                ? "text-primary"
+                : "text-secondary hover:text-primary"
             )}
           >
             <Icon className="w-4 h-4 shrink-0 text-current" />
             <span>{tab.label}</span>
 
             {tab.hasGem && (
-              <Sparkles className="w-3 h-3 text-emerald-600 shrink-0" />
+              <Sparkles className="w-3 h-3 text-emerald-500 shrink-0" />
             )}
 
             {tab.badge && (
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.2 rounded-sm bg-blue-50 text-blue-600 border border-blue-100">
+              <span className="text-nano font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-blue-500/10 text-blue-500 border border-blue-500/20">
                 {tab.badge}
               </span>
             )}
 
             {/* Active underline indicator */}
             {tab.active && (
-              <span className="absolute bottom-0 left-2 right-2 sm:left-3 sm:right-3 h-0.5 bg-[#191919] rounded-full" />
+              <span className="absolute bottom-0 left-2 right-2 sm:left-3 sm:right-3 h-0.5 bg-primary rounded-full" />
             )}
           </button>
         );

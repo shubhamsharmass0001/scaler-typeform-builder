@@ -14,7 +14,7 @@ export function Skeleton({
   return (
     <div
       className={clsx(
-        "animate-pulse rounded-md bg-[#EBEBEB]",
+        "animate-pulse rounded-md bg-skeleton",
         className
       )}
       {...props}
@@ -24,10 +24,10 @@ export function Skeleton({
 
 export function FormCardSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-[#E5E5E5] p-5 flex flex-col justify-between h-[210px] shadow-xs">
+    <div className="bg-surface rounded-xl border border-default p-5 flex flex-col justify-between h-[210px] shadow-card">
       <div>
         {/* Thumbnail preview placeholder */}
-        <div className="w-full h-20 rounded-lg bg-[#F5F5F5] mb-4 flex items-center justify-center p-3">
+        <div className="w-full h-20 rounded-lg bg-muted mb-4 flex items-center justify-center p-3">
           <div className="w-full space-y-1.5 opacity-60">
             <Skeleton className="h-2 w-3/4" />
             <Skeleton className="h-1.5 w-1/2" />
@@ -37,7 +37,7 @@ export function FormCardSkeleton() {
         <Skeleton className="h-3 w-1/3" />
       </div>
 
-      <div className="flex items-center justify-between pt-3 border-t border-[#F5F5F5]">
+      <div className="flex items-center justify-between pt-3 border-t border-default">
         <Skeleton className="h-4 w-16 rounded-full" />
         <Skeleton className="h-3 w-20" />
       </div>
@@ -47,19 +47,29 @@ export function FormCardSkeleton() {
 
 export function FormRowSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-[#E5E5E5] p-4 flex items-center justify-between shadow-xs">
-      <div className="flex items-center gap-3.5 flex-1">
-        <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
-        <div className="space-y-1.5 flex-1 max-w-md">
-          <Skeleton className="h-4 w-3/5" />
-          <Skeleton className="h-3 w-2/5" />
+    <div className="bg-surface rounded-xl border border-default px-4 py-3.5 flex items-center justify-between gap-4 shadow-card">
+      <div className="flex items-center gap-3.5 min-w-0 flex-1">
+        <Skeleton className="w-8 h-8 rounded-lg shrink-0" />
+        <div className="min-w-0 flex-1 max-w-xs">
+          <Skeleton className="h-4 w-44" />
         </div>
       </div>
-      <div className="flex items-center gap-8">
-        <Skeleton className="h-5 w-16 rounded-full" />
-        <Skeleton className="h-3 w-24" />
-        <Skeleton className="h-3 w-20" />
-        <Skeleton className="w-8 h-8 rounded-lg" />
+      <div className="flex items-center gap-8 sm:gap-14 shrink-0">
+        <div className="w-16 flex justify-center hidden sm:flex">
+          <Skeleton className="h-4 w-6" />
+        </div>
+        <div className="w-16 flex justify-center hidden sm:flex">
+          <Skeleton className="h-4 w-6" />
+        </div>
+        <div className="w-24 hidden md:block">
+          <Skeleton className="h-4 w-20" />
+        </div>
+        <div className="w-8 justify-center hidden lg:flex">
+          <Skeleton className="w-4 h-4 rounded" />
+        </div>
+        <div className="w-8 flex justify-end">
+          <Skeleton className="w-4 h-4 rounded" />
+        </div>
       </div>
     </div>
   );

@@ -23,16 +23,16 @@ export function RenameModal({
   onClose,
   onRename,
 }: RenameModalProps) {
-  const [title, setTitle] = useState("");
+  const [prevFormId, setPrevFormId] = useState<number | null>(form?.id ?? null);
+  const [title, setTitle] = useState(form?.title ?? "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (form) {
-      setTitle(form.title);
-      setError(null);
-    }
-  }, [form, isOpen]);
+  if (form && form.id !== prevFormId) {
+    setPrevFormId(form.id);
+    setTitle(form.title);
+    setError(null);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
