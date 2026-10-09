@@ -199,7 +199,7 @@ export function BuilderTopBar({
           <Link
             href="/"
             aria-label="Return to Workspace forms"
-            className="shrink-0 p-1 rounded-md text-secondary hover:text-primary hover:bg-surface-hover transition-colors"
+            className="hidden sm:inline-flex shrink-0 p-1 rounded-md text-secondary hover:text-primary hover:bg-surface-hover transition-colors"
             title="Forms workspace"
           >
             <LayoutTemplate className="w-4 h-4 text-secondary" />
@@ -209,18 +209,18 @@ export function BuilderTopBar({
           <nav className="flex items-center gap-1 text-sm min-w-0" aria-label="Breadcrumb">
             <Link
               href="/"
-              className="text-secondary hover:text-primary transition-colors font-normal shrink-0 text-xs sm:text-sm focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:outline-none rounded px-0.5"
+              className="hidden sm:inline text-secondary hover:text-primary transition-colors font-normal shrink-0 text-xs sm:text-sm focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:outline-none rounded px-0.5"
             >
               Forms
             </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-muted shrink-0" aria-hidden="true" />
+            <ChevronRight className="hidden sm:inline w-3.5 h-3.5 text-muted shrink-0" aria-hidden="true" />
             <input
               type="text"
               value={titleInput}
               onChange={handleTitleChange}
               placeholder="New form"
               aria-label="Form title"
-              className="font-medium text-xs sm:text-sm text-primary bg-transparent hover:bg-surface-hover focus:bg-surface rounded px-1.5 py-0.5 border border-transparent focus:border-default focus-visible:ring-2 focus-visible:ring-neutral-400 focus:outline-none transition-colors min-w-0 max-w-[130px] sm:max-w-[220px] md:max-w-[260px] truncate"
+              className="font-medium text-xs sm:text-sm text-primary bg-transparent hover:bg-surface-hover focus:bg-surface rounded px-1.5 py-0.5 border border-transparent focus:border-default focus-visible:ring-2 focus-visible:ring-neutral-400 focus:outline-none transition-colors min-w-0 max-w-[90px] sm:max-w-[220px] md:max-w-[260px] truncate"
             />
           </nav>
         </div>
@@ -344,8 +344,8 @@ export function BuilderTopBar({
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
                   <>
-                    <Play className="w-3 h-3 text-secondary" />
-                    <span>Publish edits</span>
+                    <span className="hidden sm:inline">Publish edits</span>
+                    <span className="sm:hidden">Publish</span>
                   </>
                 )}
               </button>
@@ -353,7 +353,7 @@ export function BuilderTopBar({
                 data-testid="btn-unpublish"
                 onClick={() => setShowUnpublishConfirm(true)}
                 disabled={isPublishing}
-                className="px-2 py-1.5 text-xs text-secondary hover:text-primary rounded-lg border border-transparent hover:border-default transition-all cursor-pointer"
+                className="hidden sm:inline-flex px-2 py-1.5 text-xs text-secondary hover:text-primary rounded-lg border border-transparent hover:border-default transition-all cursor-pointer"
                 title="Revert to draft"
               >
                 Unpublish

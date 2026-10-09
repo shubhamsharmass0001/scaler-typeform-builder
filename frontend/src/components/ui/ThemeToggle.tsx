@@ -1,17 +1,19 @@
 "use client";
 
 /**
- * components/ui/ThemeToggle.tsx — Sun / Moon / Monitor Creator Theme Toggle
+ * components/ui/ThemeToggle.tsx — Light / Dark Segmented Theme Selector
  *
  * Implements:
- *   - 3-option segmented control: Light (Sun), Dark (Moon), System (Monitor)
- *   - Visual indicator showing current active mode
- *   - High contrast accessibility (WCAG AA) with ARIA attributes and tooltips
- *   - Usable in Dashboard navigation, Builder top bar, Results, and Share headers
+ *   - 2-option segmented control: Light (Sun) and Dark (Moon)
+ *   - Both options visible side-by-side inside a rounded pill segmented control
+ *   - Active option highlighted with rounded pill background, subtle border & contrast text
+ *   - Inactive option clearly visible with readable text and icon colors
+ *   - System option completely removed from UI and selector logic
+ *   - Responsive on desktop and mobile without clipping
  */
 
 import React from "react";
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { useTheme, ThemeMode } from "@/context/ThemeContext";
 
 interface ThemeToggleProps {
@@ -25,10 +27,9 @@ export function ThemeToggle({ className = "", size = "sm" }: ThemeToggleProps) {
   const options: { id: ThemeMode; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: "light", label: "Light", icon: Sun },
     { id: "dark", label: "Dark", icon: Moon },
-    { id: "system", label: "System", icon: Monitor },
   ];
 
-  const btnPadding = size === "sm" ? "p-1.5" : "px-2.5 py-1.5";
+  const btnPadding = size === "sm" ? "px-2.5 py-1" : "px-3 py-1.5";
   const iconSize = size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4";
 
   return (
@@ -36,7 +37,7 @@ export function ThemeToggle({ className = "", size = "sm" }: ThemeToggleProps) {
       role="radiogroup"
       aria-label="Theme mode switcher"
       data-testid="theme-toggle-group"
-      className={`inline-flex items-center p-0.5 rounded-xl border border-default bg-muted/60 transition-colors select-none ${className}`}
+      className={`inline-flex items-center p-0.5 rounded-full border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800/90 transition-colors select-none shrink-0 ${className}`}
     >
       {options.map((opt) => {
         const Icon = opt.icon;
@@ -52,16 +53,14 @@ export function ThemeToggle({ className = "", size = "sm" }: ThemeToggleProps) {
             data-testid={`theme-toggle-${opt.id}`}
             title={`${opt.label} mode`}
             onClick={() => setMode(opt.id)}
-            className={`flex items-center gap-1.5 ${btnPadding} rounded-lg text-xs font-medium transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none ${
+            className={`flex items-center gap-1.5 ${btnPadding} rounded-full text-xs font-medium leading-none whitespace-nowrap transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none ${
               isActive
-                ? "bg-surface text-primary shadow-xs font-semibold border border-default/50"
-                : "text-muted hover:text-primary hover:bg-surface/50"
+                ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 font-semibold shadow-2xs border border-neutral-300/80 dark:border-neutral-700"
+                : "border border-transparent text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50"
             }`}
           >
-            <Icon className={iconSize} />
-            <span className="sr-only sm:not-sr-only text-micro font-medium hidden sm:inline">
-              {opt.label}
-            </span>
+            <Icon className={`${iconSize} shrink-0 stroke-[2]`} />
+            <span className="text-xs font-medium">{opt.label}</span>
           </button>
         );
       })}

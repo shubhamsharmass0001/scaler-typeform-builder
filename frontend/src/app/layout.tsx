@@ -51,8 +51,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
             __html: `
               (function() {
                 try {
-                  var m = localStorage.getItem("theme-mode") || "system";
-                  var isDark = m === "dark" || (m === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+                  var m = localStorage.getItem("theme-mode");
+                  var isDark = m === "dark" || (!m && window.matchMedia("(prefers-color-scheme: dark)").matches);
                   if (isDark) {
                     document.documentElement.classList.add("dark");
                   } else {
