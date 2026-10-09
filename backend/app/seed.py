@@ -1,13 +1,13 @@
 """
 seed.py — Database seed script
 
-Seeds realistic initial data for demonstration:
-  - Demo Creator user (id=1)
-  - Form 1: "Customer Satisfaction Survey" (published, 8 questions using all 8 types, 20 responses)
-  - Form 2: "Event Registration" (published, 6 mixed questions, 18 responses)
-  - Form 3: "Untitled Draft" (draft, 2 questions, 0 responses)
+Seeds realistic, production-grade initial data for demonstration:
+  - Demo Creator user (id=1, name='Shubham', email='sshubham3_be23@thapar.edu')
+  - Form 1: "Customer Satisfaction Survey" (published, slug 'csat2026', 8 questions using all 8 types, 20 responses, 80% completion rate)
+  - Form 2: "Event Registration" (published, slug 'eventreg', 6 questions, 24 responses, 79.2% completion rate)
+  - Form 3: "Untitled Draft" (draft, no slug, 2 questions, 0 responses)
 
-Idempotent: Only runs if the users table is empty.
+Idempotent: Only runs if the users table is empty (unless force=True).
 """
 
 from datetime import datetime, timedelta
@@ -23,7 +23,10 @@ from app.models.response import Response
 from app.models.answer import Answer
 
 
-REALISTIC_RESPONDENTS = [
+# ---------------------------------------------------------------------------
+# Form 1: Customer Satisfaction Survey (20 distinct respondents)
+# ---------------------------------------------------------------------------
+FORM1_RESPONDENTS = [
     {
         "name": "Sarah Jenkins",
         "email": "sarah.jenkins@acmeproducts.io",
@@ -32,11 +35,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 5,
         "team_size": 12,
         "recommend": True,
-        "feedback": "The keyboard shortcuts and smooth transitions make filling forms feel like a delight.",
-        "ticket": "opt_2",  # VIP Pass
-        "tracks": ["opt_1", "opt_3"],  # AI & ML, System Design
-        "accommodations": False,
-        "event_goals": "Looking to meet frontend engineers working on large-scale web applications.",
+        "feedback": "The keyboard navigation and smooth transitions make filling forms feel like a delight. Our respondents actually comment on how nice it looks.",
     },
     {
         "name": "Michael Chang",
@@ -46,11 +45,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 4,
         "team_size": 45,
         "recommend": True,
-        "feedback": "Analytics charts are clean. Would love an automated weekly digest to Slack.",
-        "ticket": "opt_1",  # General Admission
-        "tracks": ["opt_2", "opt_3"],  # Frontend Architecture, System Design
-        "accommodations": False,
-        "event_goals": "Excited for the deep dive on state management and caching strategies.",
+        "feedback": "Analytics charts are clean and insightful. Would love a scheduled weekly email digest for our leadership team.",
     },
     {
         "name": "Elena Rossi",
@@ -60,25 +55,17 @@ REALISTIC_RESPONDENTS = [
         "rating": 5,
         "team_size": 8,
         "recommend": True,
-        "feedback": "The typography presets and theme customization match our brand guidelines effortlessly.",
-        "ticket": "opt_2",
-        "tracks": ["opt_2"],
-        "accommodations": True,
-        "event_goals": "Interested in design token sync workflows between Figma and Next.js.",
+        "feedback": "The typography presets and theme customization match our agency brand guidelines effortlessly.",
     },
     {
-        "name": "Priya Patel",
-        "email": "priya.patel@fintechglobal.com",
+        "name": "Priya Nair",
+        "email": "priya.nair@fintechglobal.com",
         "plan": "opt_3",
         "use_case": "opt_4",  # Research & Surveys
         "rating": 5,
         "team_size": 80,
         "recommend": True,
-        "feedback": "High completion rates compared to our previous static forms. Conversion jumped 24%.",
-        "ticket": "opt_2",
-        "tracks": ["opt_1", "opt_4"],
-        "accommodations": False,
-        "event_goals": "Connecting with engineering leadership teams scaling multi-tenant APIs.",
+        "feedback": "High completion rates compared to our previous static Google forms. Survey conversion jumped 24%.",
     },
     {
         "name": "David Kim",
@@ -88,11 +75,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 4,
         "team_size": 4,
         "recommend": True,
-        "feedback": "Super fast onboarding. Had our first waitlist form live within 10 minutes.",
-        "ticket": "opt_3",  # Virtual Attendee
-        "tracks": ["opt_1"],
-        "accommodations": False,
-        "event_goals": "Catching keynote recordings and workshop practical exercises remotely.",
+        "feedback": "Super fast onboarding. Had our first beta waitlist live within ten minutes.",
     },
     {
         "name": "Jessica Taylor",
@@ -102,11 +85,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 4,
         "team_size": 15,
         "recommend": True,
-        "feedback": "The CSV export includes full headers and question mappings, saving our ops team hours.",
-        "ticket": "opt_1",
-        "tracks": ["opt_3", "opt_4"],
-        "accommodations": False,
-        "event_goals": "Benchmarking our event check-in architecture against modern industry stacks.",
+        "feedback": "The CSV export includes full headers and question mappings, saving our operations staff hours of manual cleanup.",
     },
     {
         "name": "Alexander Wright",
@@ -116,11 +95,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 5,
         "team_size": 22,
         "recommend": True,
-        "feedback": "Clean REST API and predictable SQLite schema made data pipeline ingestion trivial.",
-        "ticket": "opt_2",
-        "tracks": ["opt_1", "opt_2", "opt_3"],
-        "accommodations": False,
-        "event_goals": "Discovering modern tooling paradigms across Next.js and FastAPI ecosystems.",
+        "feedback": "Clean REST API and predictable SQLite schema made data pipeline ingestion completely seamless.",
     },
     {
         "name": "Aisha Al-Mansoor",
@@ -130,11 +105,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 5,
         "team_size": 35,
         "recommend": True,
-        "feedback": "Zero friction on mobile browsers. Our international respondents praise the speed.",
-        "ticket": "opt_2",
-        "tracks": ["opt_4"],
-        "accommodations": False,
-        "event_goals": "Networking with startup founders and platform builders.",
+        "feedback": "Zero lag on mobile browsers. Our international respondents praise the speed.",
     },
     {
         "name": "Carlos Gomez",
@@ -144,11 +115,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 3,
         "team_size": 6,
         "recommend": False,
-        "feedback": "Good experience overall, but would appreciate built-in webhook triggers on response.",
-        "ticket": "opt_1",
-        "tracks": ["opt_3"],
-        "accommodations": True,
-        "event_goals": "Learning best practices for high-availability backend microservices.",
+        "feedback": "Decent experience overall, but webhook triggers on submission would be very helpful.",
     },
     {
         "name": "Hannah Schmidt",
@@ -159,10 +126,6 @@ REALISTIC_RESPONDENTS = [
         "team_size": 18,
         "recommend": True,
         "feedback": "The one-question-per-screen paradigm keeps survey respondents focused without cognitive overload.",
-        "ticket": "opt_3",
-        "tracks": ["opt_1"],
-        "accommodations": False,
-        "event_goals": "Understanding real-world deployment patterns for inference pipelines.",
     },
     {
         "name": "Lucas Morales",
@@ -172,11 +135,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 4,
         "team_size": 3,
         "recommend": True,
-        "feedback": "Intuitive drag-and-drop question reordering in the admin builder.",
-        "ticket": "opt_1",
-        "tracks": ["opt_2"],
-        "accommodations": False,
-        "event_goals": "Exploring clean Tailwind design systems and component reusability.",
+        "feedback": "Intuitive drag-and-drop question reordering in the builder.",
     },
     {
         "name": "Chloe Martin",
@@ -187,10 +146,6 @@ REALISTIC_RESPONDENTS = [
         "team_size": 60,
         "recommend": True,
         "feedback": "Hosted customer feedback forms feel like an integrated extension of our flagship website.",
-        "ticket": "opt_2",
-        "tracks": ["opt_2", "opt_4"],
-        "accommodations": False,
-        "event_goals": "Learning how top engineering teams maintain consistent design velocity.",
     },
     {
         "name": "Daniel Murphy",
@@ -200,11 +155,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 4,
         "team_size": 14,
         "recommend": True,
-        "feedback": "The response summary breakdown with percentage distributions gives instant insights.",
-        "ticket": "opt_1",
-        "tracks": ["opt_3"],
-        "accommodations": False,
-        "event_goals": "Evaluating database indexing patterns for analytical queries.",
+        "feedback": "The response breakdown with percentage distributions gives instant clarity.",
     },
     {
         "name": "Zoe Takahashi",
@@ -214,11 +165,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 5,
         "team_size": 9,
         "recommend": True,
-        "feedback": "Sleek aesthetics and responsive animations match Typeform's signature polish.",
-        "ticket": "opt_3",
-        "tracks": ["opt_2"],
-        "accommodations": False,
-        "event_goals": "Studying motion design implementation with Framer Motion in Next.js.",
+        "feedback": "Sleek aesthetics and responsive micro-animations match Typeform signature polish.",
     },
     {
         "name": "Liam O'Connor",
@@ -228,11 +175,7 @@ REALISTIC_RESPONDENTS = [
         "rating": 4,
         "team_size": 5,
         "recommend": True,
-        "feedback": "Really appreciate how lightweight the public form loading is — loads in under 200ms.",
-        "ticket": "opt_1",
-        "tracks": ["opt_1", "opt_2"],
-        "accommodations": False,
-        "event_goals": "Practical full-stack architecture tips for React and Python projects.",
+        "feedback": "Really appreciate how lightweight the public form is. Loads in under 200 milliseconds.",
     },
     {
         "name": "Olivia Bennett",
@@ -242,53 +185,41 @@ REALISTIC_RESPONDENTS = [
         "rating": 5,
         "team_size": 110,
         "recommend": True,
-        "feedback": "The cascade delete safeguards and foreign key enforcement ensure zero orphan data.",
-        "ticket": "opt_2",
-        "tracks": ["opt_3", "opt_4"],
-        "accommodations": False,
-        "event_goals": "Meeting fellow directors of engineering navigating platform modernization.",
+        "feedback": "Foreign key cascade rules and relational integrity ensure zero orphan data in our tables.",
     },
+    # 4 Partial respondents (dropped at different questions)
     {
         "name": "Marcus Johnson",
         "email": "mjohnson@chicagoapps.dev",
         "plan": "opt_2",
         "use_case": "opt_1",
         "rating": 4,
-        "team_size": 25,
-        "recommend": True,
-        "feedback": "Validation messages display immediately when respondents skip required fields.",
-        "ticket": "opt_1",
-        "tracks": ["opt_1"],
-        "accommodations": False,
-        "event_goals": "Practical integration of AI capabilities into customer feedback loops.",
+        "team_size": None,
+        "recommend": None,
+        "feedback": None,
+        "drop_at_index": 4,  # Dropped at Rating question
     },
     {
         "name": "Ryan Cooper",
         "email": "rcooper@austincapital.com",
         "plan": "opt_1",
-        "use_case": "opt_4",
-        "rating": 3,
-        "team_size": 7,
-        "recommend": True,
-        "feedback": "Very reliable form builder. Would love multi-page branching logic in the future.",
-        "ticket": "opt_1",
-        "tracks": ["opt_4"],
-        "accommodations": False,
-        "event_goals": "Exploring software investing trends in developer productivity tools.",
+        "use_case": None,
+        "rating": None,
+        "team_size": None,
+        "recommend": None,
+        "feedback": None,
+        "drop_at_index": 2,  # Dropped at Plan question
     },
     {
         "name": "Nathaniel Brooks",
         "email": "nate.brooks@seattlecloud.org",
-        "plan": "opt_2",
-        "use_case": "opt_2",
-        "rating": 5,
-        "team_size": 30,
-        "recommend": True,
-        "feedback": "The drop-off tracking per question made it immediately clear where users lost momentum.",
-        "ticket": "opt_2",
-        "tracks": ["opt_1", "opt_3"],
-        "accommodations": False,
-        "event_goals": "Learning distributed data architecture and transactional consistency.",
+        "plan": None,
+        "use_case": None,
+        "rating": None,
+        "team_size": None,
+        "recommend": None,
+        "feedback": None,
+        "drop_at_index": 1,  # Dropped at Email question
     },
     {
         "name": "Emma Watson",
@@ -297,14 +228,245 @@ REALISTIC_RESPONDENTS = [
         "use_case": "opt_4",
         "rating": 5,
         "team_size": 11,
-        "recommend": True,
-        "feedback": "Academic participants found the interface engaging and completed questionnaires quickly.",
-        "ticket": "opt_3",
-        "tracks": ["opt_1", "opt_4"],
-        "accommodations": False,
-        "event_goals": "Benchmarking data collection platforms for behavioral research.",
+        "recommend": None,
+        "feedback": None,
+        "drop_at_index": 6,  # Dropped at Recommend question
     },
 ]
+
+
+# ---------------------------------------------------------------------------
+# Form 2: Event Registration (24 completely distinct respondents)
+# ---------------------------------------------------------------------------
+FORM2_RESPONDENTS = [
+    {
+        "name": "Ananya Sharma",
+        "email": "ananya.sharma@nexushealth.in",
+        "ticket": "opt_2",  # VIP Pass
+        "tracks": ["opt_1", "opt_3"],  # AI & Machine Learning, System Design
+        "accommodations": False,
+        "topics": "Practical implementation of LLM agents in production healthcare workflows.",
+    },
+    {
+        "name": "Benjamin Hayes",
+        "email": "bhayes@auroratech.io",
+        "ticket": "opt_1",  # General Admission
+        "tracks": ["opt_2", "opt_3"],  # Frontend Architecture, System Design
+        "accommodations": False,
+        "topics": "Next.js App Router performance tuning and hydration reduction at scale.",
+    },
+    {
+        "name": "Camille Dubois",
+        "email": "camille.dubois@paris-analytics.fr",
+        "ticket": "opt_2",
+        "tracks": ["opt_4"],  # Leadership & Strategy
+        "accommodations": True,
+        "topics": "Building cross-functional engineering cultures across globally distributed teams.",
+    },
+    {
+        "name": "Derek Vance",
+        "email": "derek.vance@vancemedia.com",
+        "ticket": "opt_1",
+        "tracks": ["opt_1"],
+        "accommodations": False,
+        "topics": "Multimodal AI architectures and vector search benchmarks.",
+    },
+    {
+        "name": "Fatima Zahra",
+        "email": "f.zahra@casablancatech.ma",
+        "ticket": "opt_2",
+        "tracks": ["opt_2", "opt_4"],
+        "accommodations": False,
+        "topics": "Design tokens and unified component systems bridging Figma and React.",
+    },
+    {
+        "name": "Gabriel Silva",
+        "email": "gabriel.silva@saopaulolabs.br",
+        "ticket": "opt_1",
+        "tracks": ["opt_3"],
+        "accommodations": False,
+        "topics": "Event-driven microservices with Kafka and SQLite caching layers.",
+    },
+    {
+        "name": "Harper Collins",
+        "email": "hcollins@austintech.org",
+        "ticket": "opt_3",  # Virtual Attendee
+        "tracks": ["opt_1", "opt_2"],
+        "accommodations": False,
+        "topics": "Generative UI patterns and real-time streaming interfaces.",
+    },
+    {
+        "name": "Isaac Newton",
+        "email": "isaac.k@cambridgeconsulting.co.uk",
+        "ticket": "opt_2",
+        "tracks": ["opt_3", "opt_4"],
+        "accommodations": False,
+        "topics": "Platform engineering maturity models for high-growth tech companies.",
+    },
+    {
+        "name": "Ji-hoon Park",
+        "email": "jihoon.park@seoulventures.kr",
+        "ticket": "opt_1",
+        "tracks": ["opt_2"],
+        "accommodations": False,
+        "topics": "State management best practices and reducing re-renders in complex dashboards.",
+    },
+    {
+        "name": "Katrina Ivanova",
+        "email": "k.ivanova@nordiccloud.fi",
+        "ticket": "opt_2",
+        "tracks": ["opt_1", "opt_3"],
+        "accommodations": True,
+        "topics": "High-throughput inference endpoints and async job queues.",
+    },
+    {
+        "name": "Lars Lindqvist",
+        "email": "lars@stockholmlogic.se",
+        "ticket": "opt_1",
+        "tracks": ["opt_3"],
+        "accommodations": False,
+        "topics": "Zero-downtime database schema migration strategies.",
+    },
+    {
+        "name": "Maya Lin",
+        "email": "maya.lin@bayareasoftware.com",
+        "ticket": "opt_2",
+        "tracks": ["opt_4"],
+        "accommodations": False,
+        "topics": "Retaining top engineering talent and transparent career ladders.",
+    },
+    {
+        "name": "Noah Al-Fassi",
+        "email": "noah.fassi@dubaiinnovate.ae",
+        "ticket": "opt_1",
+        "tracks": ["opt_2", "opt_3"],
+        "accommodations": False,
+        "topics": "Microfrontends and module federation in enterprise apps.",
+    },
+    {
+        "name": "Olivia Tremblay",
+        "email": "o.tremblay@montrealai.ca",
+        "ticket": "opt_3",
+        "tracks": ["opt_1"],
+        "accommodations": False,
+        "topics": "Fine-tuning open weights models for specialized customer support.",
+    },
+    {
+        "name": "Patrick Weber",
+        "email": "pweber@zurichfin.ch",
+        "ticket": "opt_2",
+        "tracks": ["opt_3", "opt_4"],
+        "accommodations": False,
+        "topics": "Resilient API gateway architectures and rate-limiting patterns.",
+    },
+    {
+        "name": "Quinn Roberts",
+        "email": "quinn.r@sydneycode.com.au",
+        "ticket": "opt_1",
+        "tracks": ["opt_2"],
+        "accommodations": False,
+        "topics": "Accessible web components and WCAG AAA compliance testing.",
+    },
+    {
+        "name": "Ravi Teja",
+        "email": "ravi.teja@bengalurudevs.in",
+        "ticket": "opt_1",
+        "tracks": ["opt_1", "opt_3"],
+        "accommodations": False,
+        "topics": "FastAPI performance optimizations and asynchronous database connection pooling.",
+    },
+    {
+        "name": "Sofia Mendoza",
+        "email": "sofia.mendoza@mexicodigital.mx",
+        "ticket": "opt_2",
+        "tracks": ["opt_4"],
+        "accommodations": True,
+        "topics": "Transitioning from individual contributor to engineering manager.",
+    },
+    {
+        "name": "Tyler Evans",
+        "email": "tevans@denvercloud.net",
+        "ticket": "opt_1",
+        "tracks": ["opt_3"],
+        "accommodations": False,
+        "topics": "Disaster recovery scenarios and multiregion failover testing.",
+    },
+    # 5 Partial respondents (dropped across different questions)
+    {
+        "name": "Uma Krishnan",
+        "email": "uma.k@chennaitech.in",
+        "ticket": None,
+        "tracks": None,
+        "accommodations": None,
+        "topics": None,
+        "drop_at_index": 1,  # Dropped at Work Email
+    },
+    {
+        "name": "Victor Hugo",
+        "email": "vhugo@lisbondev.pt",
+        "ticket": "opt_1",
+        "tracks": None,
+        "accommodations": None,
+        "topics": None,
+        "drop_at_index": 2,  # Dropped at Ticket Tier
+    },
+    {
+        "name": "Wendy Zhang",
+        "email": "wendy.zhang@singaporeops.sg",
+        "ticket": "opt_2",
+        "tracks": ["opt_1"],
+        "accommodations": None,
+        "topics": None,
+        "drop_at_index": 3,  # Dropped at Tracks
+    },
+    {
+        "name": "Xavier Dupont",
+        "email": "xdupont@brusselscode.be",
+        "ticket": "opt_1",
+        "tracks": ["opt_2"],
+        "accommodations": False,
+        "topics": None,
+        "drop_at_index": 4,  # Dropped at Accommodations
+    },
+    {
+        "name": "Yasmine Badawi",
+        "email": "yasmine@cairoventures.eg",
+        "ticket": "opt_2",
+        "tracks": ["opt_1", "opt_4"],
+        "accommodations": False,
+        "topics": None,
+        "drop_at_index": 5,  # Dropped at Topics
+    },
+]
+
+
+def generate_realistic_timestamps(n_responses: int, seed_key: int = 42) -> list[datetime]:
+    """
+    Generate realistic timestamps spread over the last 14 days relative to now,
+    with more responses on weekdays (Mon-Fri) than weekends.
+    """
+    now = datetime.utcnow()
+    rng = random.Random(seed_key)
+
+    # Build pool of days weighted towards weekdays
+    day_pool: list[int] = []
+    for d in range(14, 0, -1):
+        target_date = now - timedelta(days=d)
+        weight = 3 if target_date.weekday() < 5 else 1
+        day_pool.extend([d] * weight)
+
+    chosen_days = sorted(rng.sample(day_pool, n_responses), reverse=True)
+
+    timestamps = []
+    for day_offset in chosen_days:
+        base_date = now - timedelta(days=day_offset)
+        hour = rng.randint(9, 18)
+        minute = rng.randint(0, 59)
+        second = rng.randint(0, 59)
+        dt = base_date.replace(hour=hour, minute=minute, second=second, microsecond=0)
+        timestamps.append(dt)
+
+    return sorted(timestamps)
 
 
 def seed_database(force: bool = False):
@@ -318,7 +480,7 @@ def seed_database(force: bool = False):
     try:
         user_count = db.query(User).count()
         if user_count > 0 and not force:
-            print("✓ Database already seeded (users table not empty). Skipping seed.")
+            print("Database already seeded (users table not empty). Skipping seed.")
             return
 
         if force:
@@ -330,6 +492,8 @@ def seed_database(force: bool = False):
             db.query(User).delete()
             db.commit()
 
+        now = datetime.utcnow()
+
         # -------------------------------------------------------------------
         # 1. Creator User
         # -------------------------------------------------------------------
@@ -337,12 +501,12 @@ def seed_database(force: bool = False):
             id=1,
             name="Shubham",
             email="sshubham3_be23@thapar.edu",
-            created_at=datetime.utcnow() - timedelta(days=30),
+            created_at=now - timedelta(days=30),
         )
         db.add(creator)
         db.commit()
         db.refresh(creator)
-        print("✓ Created Creator (id=1, name='Shubham', email='sshubham3_be23@thapar.edu')")
+        print("Created Creator (id=1, name='Shubham', email='sshubham3_be23@thapar.edu')")
 
         # -------------------------------------------------------------------
         # 2. Form 1: Customer Satisfaction Survey (Published, all 8 types)
@@ -350,22 +514,22 @@ def seed_database(force: bool = False):
         form_1 = Form(
             user_id=creator.id,
             title="Customer Satisfaction Survey",
-            description="We'd love to hear your feedback on how we're doing and how we can improve.",
+            description="We would love to hear your feedback on how we are doing and how we can improve our product.",
             status=FormStatus.PUBLISHED,
             slug="csat2026",
             theme={
                 "backgroundColor": "#FFFFFF",
                 "textColor": "#191919",
-                "buttonColor": "#0445AF",
+                "buttonColor": "#30283B",
                 "fontFamily": "Inter",
             },
             welcome_title="Customer Satisfaction Survey",
             welcome_description="Takes 2 minutes. Your feedback directly shapes our product roadmap.",
             welcome_button_text="Start Survey",
             thank_you_title="Thank you for your feedback!",
-            thank_you_message="We appreciate your time. Our team reviews every submission.",
-            created_at=datetime.utcnow() - timedelta(days=20),
-            updated_at=datetime.utcnow() - timedelta(days=15),
+            thank_you_message="We appreciate your time. Our product team reviews every submission.",
+            created_at=now - timedelta(days=20),
+            updated_at=now - timedelta(days=15),
         )
         db.add(form_1)
         db.flush()
@@ -384,7 +548,7 @@ def seed_database(force: bool = False):
                 form_id=form_1.id,
                 type=QuestionType.EMAIL,
                 title="What is your email address?",
-                description="We'll never send spam",
+                description="We will never share your email address with third parties",
                 required=True,
                 position=1,
                 properties={"placeholder": "name@company.com"},
@@ -402,7 +566,6 @@ def seed_database(force: bool = False):
                         {"id": "opt_2", "label": "Pro"},
                         {"id": "opt_3", "label": "Enterprise"},
                     ],
-                    "allowOther": True,
                     "multiple": False,
                 },
             ),
@@ -410,7 +573,7 @@ def seed_database(force: bool = False):
                 form_id=form_1.id,
                 type=QuestionType.DROPDOWN,
                 title="What is your primary use case?",
-                description="Choose the one that best describes your workflow",
+                description="Choose the workflow that best describes your team",
                 required=True,
                 position=3,
                 properties={
@@ -461,10 +624,10 @@ def seed_database(force: bool = False):
         ]
         db.add_all(f1_questions)
         db.flush()
-        print(f"✓ Form 1 '{form_1.title}' created with 8 questions (slug: '{form_1.slug}')")
+        print(f"Created Form 1 '{form_1.title}' with 8 questions (slug: '{form_1.slug}')")
 
         # -------------------------------------------------------------------
-        # 3. Form 2: Event Registration (Published, 6 mixed questions)
+        # 3. Form 2: Event Registration (Published, 6 questions)
         # -------------------------------------------------------------------
         form_2 = Form(
             user_id=creator.id,
@@ -475,16 +638,16 @@ def seed_database(force: bool = False):
             theme={
                 "backgroundColor": "#FAFAFA",
                 "textColor": "#0F172A",
-                "buttonColor": "#4F46E5",
+                "buttonColor": "#005E5D",
                 "fontFamily": "Inter",
             },
             welcome_title="Product & Engineering Summit 2026",
             welcome_description="Join 500+ builders for keynotes, interactive workshops, and networking.",
             welcome_button_text="Register Now",
-            thank_you_title="You're registered!",
+            thank_you_title="You are registered!",
             thank_you_message="Check your email for your confirmation ticket and calendar invite.",
-            created_at=datetime.utcnow() - timedelta(days=18),
-            updated_at=datetime.utcnow() - timedelta(days=12),
+            created_at=now - timedelta(days=18),
+            updated_at=now - timedelta(days=12),
         )
         db.add(form_2)
         db.flush()
@@ -494,7 +657,7 @@ def seed_database(force: bool = False):
                 form_id=form_2.id,
                 type=QuestionType.SHORT_TEXT,
                 title="Full Name",
-                description="First and last name as it should appear on your badge",
+                description="First and last name as it should appear on your attendee badge",
                 required=True,
                 position=0,
                 properties={"placeholder": "e.g. Alex Morgan"},
@@ -503,7 +666,7 @@ def seed_database(force: bool = False):
                 form_id=form_2.id,
                 type=QuestionType.EMAIL,
                 title="Work Email",
-                description="Where we'll send your registration pass",
+                description="Where we will send your registration pass and schedule updates",
                 required=True,
                 position=1,
                 properties={"placeholder": "name@work.com"},
@@ -556,15 +719,15 @@ def seed_database(force: bool = False):
                 description="Help our keynote speakers tailor content to your interests",
                 required=False,
                 position=5,
-                properties={"placeholder": "e.g. Microfrontends, GraphQL federation, etc."},
+                properties={"placeholder": "e.g. Next.js App Router, Microfrontends, etc."},
             ),
         ]
         db.add_all(f2_questions)
         db.flush()
-        print(f"✓ Form 2 '{form_2.title}' created with 6 questions (slug: '{form_2.slug}')")
+        print(f"Created Form 2 '{form_2.title}' with 6 questions (slug: '{form_2.slug}')")
 
         # -------------------------------------------------------------------
-        # 4. Form 3: Untitled Draft (Draft status, 2 questions)
+        # 4. Form 3: Untitled Draft (Draft status, 2 questions, 0 responses)
         # -------------------------------------------------------------------
         form_3 = Form(
             user_id=creator.id,
@@ -575,16 +738,16 @@ def seed_database(force: bool = False):
             theme={
                 "backgroundColor": "#FFFFFF",
                 "textColor": "#191919",
-                "buttonColor": "#0445AF",
+                "buttonColor": "#30283B",
                 "fontFamily": "Inter",
             },
             welcome_title="Team Onboarding Questionnaire",
-            welcome_description="A quick checklist for your first week.",
+            welcome_description="A quick checklist for your first week on the team.",
             welcome_button_text="Get Started",
             thank_you_title="All set!",
             thank_you_message="Welcome aboard to the team.",
-            created_at=datetime.utcnow() - timedelta(days=2),
-            updated_at=datetime.utcnow() - timedelta(days=1),
+            created_at=now - timedelta(days=2),
+            updated_at=now - timedelta(days=1),
         )
         db.add(form_3)
         db.flush()
@@ -611,44 +774,46 @@ def seed_database(force: bool = False):
         ]
         db.add_all(f3_questions)
         db.flush()
-        print(f"✓ Form 3 '{form_3.title}' created (draft, no slug)")
+        print(f"Created Form 3 '{form_3.title}' (draft, no slug, 2 questions)")
 
         # -------------------------------------------------------------------
-        # 5. Seed Responses for Form 1 (20 responses, ~80% complete, ~20% partial)
+        # 5. Seed Responses for Form 1 (20 responses: 16 complete, 4 partial)
         # -------------------------------------------------------------------
         print("Seeding realistic responses for Form 1...")
-        for i, data in enumerate(REALISTIC_RESPONDENTS):
-            # Timestamp varied over past 14 days
-            days_ago = (14 * (i + 1)) / (len(REALISTIC_RESPONDENTS) + 1)
-            hours_offset = (i * 3) % 24
-            started_time = datetime.utcnow() - timedelta(days=days_ago, hours=hours_offset)
+        f1_timestamps = generate_realistic_timestamps(len(FORM1_RESPONDENTS), seed_key=101)
+        durations_f1 = [95, 140, 110, 205, 75, 160, 185, 130, 220, 145, 80, 240, 165, 125, 90, 260]
 
-            # ~80% complete (first 16 complete, last 4 partial)
-            is_complete = i < 16
+        f1_completed_count = 0
+        f1_partial_count = 0
+
+        for i, data in enumerate(FORM1_RESPONDENTS):
+            started_time = f1_timestamps[i]
+            drop_at = data.get("drop_at_index")
+            is_complete = drop_at is None
 
             if is_complete:
-                submitted_time = started_time + timedelta(minutes=random.randint(1, 4), seconds=random.randint(10, 50))
-                drop_off_qid = None
-                drop_index = len(f1_questions)
+                duration_secs = durations_f1[f1_completed_count % len(durations_f1)]
+                submitted_time = started_time + timedelta(seconds=duration_secs)
+                drop_qid = None
+                answered_count = len(f1_questions)
+                f1_completed_count += 1
             else:
                 submitted_time = None
-                # Realistic drop-offs spread across questions 1, 2, 4, 6
-                partial_indices = [1, 2, 4, 6]
-                drop_index = partial_indices[(i - 16) % len(partial_indices)]
-                drop_off_qid = f1_questions[drop_index].id
+                drop_qid = f1_questions[drop_at].id
+                answered_count = drop_at
+                f1_partial_count += 1
 
             resp = Response(
                 form_id=form_1.id,
                 started_at=started_time,
                 submitted_at=submitted_time,
                 is_complete=is_complete,
-                last_question_id=drop_off_qid,
+                last_question_id=drop_qid,
             )
             db.add(resp)
             db.flush()
 
-            # Answers answered up to the drop-off question
-            possible_f1_answers = [
+            raw_answers = [
                 (f1_questions[0].id, data["name"]),
                 (f1_questions[1].id, data["email"]),
                 (f1_questions[2].id, data["plan"]),
@@ -658,69 +823,95 @@ def seed_database(force: bool = False):
                 (f1_questions[6].id, data["recommend"]),
                 (f1_questions[7].id, data["feedback"]),
             ]
+
             answers_to_add = [
                 Answer(response_id=resp.id, question_id=qid, value=val)
-                for idx, (qid, val) in enumerate(possible_f1_answers)
-                if idx < drop_index
+                for idx, (qid, val) in enumerate(raw_answers)
+                if idx < answered_count and val is not None
             ]
             db.add_all(answers_to_add)
 
-        print(f"✓ Form 1: Seeded 20 responses (16 complete, 4 partial)")
-
         # -------------------------------------------------------------------
-        # 6. Seed Responses for Form 2 (18 responses, ~80% complete, ~20% partial)
+        # 6. Seed Responses for Form 2 (24 responses: 19 complete, 5 partial)
         # -------------------------------------------------------------------
         print("Seeding realistic responses for Form 2...")
-        f2_respondents = REALISTIC_RESPONDENTS[:18]
-        for i, data in enumerate(f2_respondents):
-            days_ago = (13 * (i + 1)) / (len(f2_respondents) + 1)
-            hours_offset = (i * 4) % 24
-            started_time = datetime.utcnow() - timedelta(days=days_ago, hours=hours_offset)
+        f2_timestamps = generate_realistic_timestamps(len(FORM2_RESPONDENTS), seed_key=202)
+        durations_f2 = [115, 85, 145, 90, 160, 130, 75, 195, 105, 170, 120, 140, 155, 95, 180, 110, 135, 165, 125]
 
-            # ~80% complete (first 14 complete, last 4 partial)
-            is_complete = i < 14
+        f2_completed_count = 0
+        f2_partial_count = 0
+
+        for i, data in enumerate(FORM2_RESPONDENTS):
+            started_time = f2_timestamps[i]
+            drop_at = data.get("drop_at_index")
+            is_complete = drop_at is None
+
             if is_complete:
-                submitted_time = started_time + timedelta(minutes=random.randint(1, 3), seconds=random.randint(15, 45))
-                drop_off_qid = None
-                drop_index = len(f2_questions)
+                duration_secs = durations_f2[f2_completed_count % len(durations_f2)]
+                submitted_time = started_time + timedelta(seconds=duration_secs)
+                drop_qid = None
+                answered_count = len(f2_questions)
+                f2_completed_count += 1
             else:
                 submitted_time = None
-                # Realistic drop-offs spread across questions 1, 2, 3, 5
-                partial_indices = [1, 2, 3, 5]
-                drop_index = partial_indices[(i - 14) % len(partial_indices)]
-                drop_off_qid = f2_questions[drop_index].id
+                drop_qid = f2_questions[drop_at].id
+                answered_count = drop_at
+                f2_partial_count += 1
 
             resp = Response(
                 form_id=form_2.id,
                 started_at=started_time,
                 submitted_at=submitted_time,
                 is_complete=is_complete,
-                last_question_id=drop_off_qid,
+                last_question_id=drop_qid,
             )
             db.add(resp)
             db.flush()
 
-            possible_f2_answers = [
+            raw_answers = [
                 (f2_questions[0].id, data["name"]),
                 (f2_questions[1].id, data["email"]),
                 (f2_questions[2].id, data["ticket"]),
                 (f2_questions[3].id, data["tracks"]),
                 (f2_questions[4].id, data["accommodations"]),
-                (f2_questions[5].id, data["event_goals"]),
+                (f2_questions[5].id, data["topics"]),
             ]
+
             answers_to_add = [
                 Answer(response_id=resp.id, question_id=qid, value=val)
-                for idx, (qid, val) in enumerate(possible_f2_answers)
-                if idx < drop_index
+                for idx, (qid, val) in enumerate(raw_answers)
+                if idx < answered_count and val is not None
             ]
             db.add_all(answers_to_add)
 
-        print(f"✓ Form 2: Seeded 18 responses (14 complete, 4 partial)")
-
         db.commit()
+
+        # -------------------------------------------------------------------
+        # 7. Print Seed Summary
+        # -------------------------------------------------------------------
+        total_forms = db.query(Form).count()
+        total_questions = db.query(Question).count()
+        total_responses = db.query(Response).count()
+        total_completed = db.query(Response).filter(Response.is_complete == True).count()
+        f1_total = db.query(Response).filter(Response.form_id == form_1.id).count()
+        f1_comp = db.query(Response).filter(Response.form_id == form_1.id, Response.is_complete == True).count()
+        f2_total = db.query(Response).filter(Response.form_id == form_2.id).count()
+        f2_comp = db.query(Response).filter(Response.form_id == form_2.id, Response.is_complete == True).count()
+
+        f1_rate = (f1_comp / f1_total * 100) if f1_total > 0 else 0.0
+        f2_rate = (f2_comp / f2_total * 100) if f2_total > 0 else 0.0
+        overall_rate = (total_completed / total_responses * 100) if total_responses > 0 else 0.0
+
         print("\n============================================================")
-        print("✓ SEEDING COMPLETED SUCCESSFULLY!")
+        print("SEED SUMMARY")
         print("============================================================")
+        print(f"Forms:       {total_forms} (2 published, 1 draft)")
+        print(f"Questions:   {total_questions} (Form 1: {len(f1_questions)}, Form 2: {len(f2_questions)}, Form 3: {len(f3_questions)})")
+        print(f"Responses:   {total_responses} total (Form 1: {f1_total}, Form 2: {f2_total}, Form 3: 0)")
+        print(f"Form 1 Rate: {f1_rate:.1f}% ({f1_comp}/{f1_total} completed, {f1_total - f1_comp} partial)")
+        print(f"Form 2 Rate: {f2_rate:.1f}% ({f2_comp}/{f2_total} completed, {f2_total - f2_comp} partial)")
+        print(f"Overall:     {overall_rate:.1f}% ({total_completed}/{total_responses} completed)")
+        print("============================================================\n")
 
     finally:
         db.close()
