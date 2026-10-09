@@ -1,0 +1,35 @@
+sequenceDiagram
+    autonumber
+    actor Respondent as Respondent
+    participant Browser as FormRunner UI
+    participant API as Public Router
+    participant Svc as Public Service
+    participant Val as Validator Registry
+    participant DB as SQLite DB
+
+    Respondent->>Browser: Navigate to /f/{slug}
+    Browser->>API: GET /api/public/forms/{slug}
+    API->>Svc: get_public_form_by_slug()
+    Svc->>DB: SELECT form WHERE slug=:slug AND status='published'
+    DB-->>Browser: 200 OK (PublicForm with ordered questions)
+
+    Respondent->>Browser: Click "Start" on Welcome screen
+    Browser->>API: POST /api/public/forms/{slug}/start
+    API->>Svc: start_response_session()
+    Svc->>DB: INSERT response (is_complete=false)
+    DB-->>Browser: 201 Created (response_id)
+
+    loop Each Question
+        Respondent->>Browser: Answer & press Enter / OK
+        Browser->>API: PATCH /api/public/forms/{slug}/progress (last_question_id)
+        API->>DB: UPDATE response.last_question_id
+    end
+
+    Respondent->>Browser: Click "Submit" on final question
+    Browser->>API: POST /api/public/forms/{slug}/submit (response_id, answers)
+    API->>Svc: submit_form_response()
+    Svc->>Svc: compute_visited_path()
+    Svc->>Val: validate_answer() per question type
+    Svc->>DB: INSERT answers, mark is_complete=true, set submitted_at
+    DB-->>Browser: 200 OK (PublicSubmitOut)
+    Browser->>Respondent: Render Thank-You screen

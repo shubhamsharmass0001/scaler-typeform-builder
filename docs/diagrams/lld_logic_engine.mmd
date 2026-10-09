@@ -1,0 +1,40 @@
+flowchart TD
+    classDef step fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#92400e;
+    classDef term fill:#d1fae5,stroke:#059669,stroke-width:1.5px,color:#065f46;
+    classDef err fill:#fee2e2,stroke:#dc2626,stroke-width:1.5px,color:#991b1b;
+
+    subgraph EvalFlow["next_question(question, answers, ordered_questions)"]
+        EvalStart(["Evaluate Jump for Question"]):::step
+        LoopRules["Iterate rules in properties.logic<br/>(Order: first match wins)"]:::step
+        RuleMatch{"Condition matches<br/>(all / any)?"}:::decision
+        ReturnTarget(["Return rule target_question_id<br/>or 'end'"]):::term
+
+        HasDefault{"logicDefault<br/>defined?"}:::decision
+        ReturnDefault(["Return logicDefault target"]):::term
+        HasNext{"Next question in<br/>ordered list exists?"}:::decision
+        ReturnNext(["Return ordered_questions[idx + 1].id"]):::term
+        ReturnEnd(["Return 'end'"]):::term
+
+        EvalStart --> LoopRules --> RuleMatch
+        RuleMatch -- Yes --> ReturnTarget
+        RuleMatch -- No rules match --> HasDefault
+        HasDefault -- Yes --> ReturnDefault
+        HasDefault -- No --> HasNext
+        HasNext -- Yes --> ReturnNext
+        HasNext -- No --> ReturnEnd
+    end
+
+    subgraph ValidateFlow["validate_logic(form, questions) Cycle & DAG Check"]
+        ValStart(["Bulk Save Validation"]):::step
+        CheckProps["Verify operators valid for type<br/>Verify targets exist, reject self-jumps"]:::step
+        BuildGraph["Construct directed graph:<br/>rules + logicDefault + sequential edges"]:::step
+        RunDFS["DFS Cycle Detection with<br/>recursion stack tracking"]:::step
+        HasCycle{"Cycle found in<br/>recursion stack?"}:::decision
+        RaiseCycleErr["Raise HTTP 422<br/>'Circular logic path: Q2 -> Q5 -> Q2'"]:::err
+        PassDAG(["Logic Graph Valid (Acyclic DAG)"]):::term
+
+        ValStart --> CheckProps --> BuildGraph --> RunDFS --> HasCycle
+        HasCycle -- Yes --> RaiseCycleErr
+        HasCycle -- No --> PassDAG
+    end

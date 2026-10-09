@@ -1,0 +1,49 @@
+stateDiagram-v2
+    [*] --> WelcomeScreen : Load /f/{slug} (hasWelcome = true)
+    [*] --> QuestionStep : Load /f/{slug} (hasWelcome = false)
+
+    WelcomeScreen --> QuestionStep : Click 'Start' / Enter / Down\n[Pushes Q1 to path stack, starts session]
+
+    state QuestionStep {
+        [*] --> DisplayingQuestion
+        DisplayingQuestion : Renders currentQuestion from path top
+        DisplayingQuestion : Autofocuses active input
+        DisplayingQuestion --> Answering : Key input / Selection
+        Answering : Updates answers map
+        Answering : Prunes invalid downstream answers
+    }
+
+    QuestionStep --> Validating : Press Enter / OK / Down / Auto-advance (400ms)
+    QuestionStep --> QuestionStep : Press Up / Back button\n[Pops top from path stack]
+
+    state Validating {
+        [*] --> CheckRules
+        CheckRules : validateQuestionAnswer(currentQuestion, value)
+    }
+
+    Validating --> ShakeError : Invalid answer
+    state ShakeError {
+        [*] --> ShowInlineError
+        ShowInlineError : Shake animation (400ms)
+        ShowInlineError : Announce to screen reader
+    }
+    ShakeError --> QuestionStep : User corrects value
+
+    Validating --> EvaluatingJump : Valid answer
+    state EvaluatingJump {
+        [*] --> RunNextQuestion
+        RunNextQuestion : getNextQuestion(question, answers, questions)
+    }
+
+    EvaluatingJump --> QuestionStep : Next question returned\n[Pushes nextId to path stack]
+    EvaluatingJump --> Submitting : Target is 'end' or last question
+
+    state Submitting {
+        [*] --> PostSubmit
+        PostSubmit : POST /api/public/forms/{slug}/submit\n(answers on visited path)
+    }
+
+    Submitting --> ThankYouScreen : Success (HTTP 200)\n[Clear sessionStorage]
+    Submitting --> SubmitError : Failure (HTTP 422 / 500)
+    SubmitError --> QuestionStep : Allow retry
+    ThankYouScreen --> [*]

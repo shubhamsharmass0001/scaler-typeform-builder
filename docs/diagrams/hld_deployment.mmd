@@ -1,0 +1,24 @@
+flowchart TD
+    classDef fe fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef be fill:#d1fae5,stroke:#059669,stroke-width:1.5px,color:#065f46;
+    classDef db fill:#ffedd5,stroke:#ea580c,stroke-width:1.5px,color:#9a3412;
+    classDef ext fill:#f3f4f6,stroke:#4b5563,stroke-width:1.5px,color:#1f2937;
+
+    Client["Client Browser<br/>(Creator / Respondent)"]:::ext
+    GitHub["GitHub Repository<br/>(main branch)"]:::ext
+
+    subgraph VercelEdge["Vercel Cloud Platform"]
+        VercelApp["Next.js Application<br/>Env: NEXT_PUBLIC_API_URL"]:::fe
+    end
+
+    subgraph RenderPlatform["Render Cloud Platform"]
+        FastAPIApp["FastAPI Service<br/>Env: FRONTEND_ORIGIN<br/>Env: DATABASE_URL"]:::be
+        Disk[("Persistent Disk<br/>SQLite & uploads/")]:::db
+    end
+
+    GitHub -->|"Git push auto-deploy"| VercelApp
+    GitHub -->|"Git push auto-deploy"| FastAPIApp
+    Client -->|"HTTPS requests"| VercelApp
+    Client -->|"Direct API & Upload calls"| FastAPIApp
+    VercelApp -.->|"CORS Boundary<br/>Origin verification"| FastAPIApp
+    FastAPIApp -->|"Reads & writes"| Disk

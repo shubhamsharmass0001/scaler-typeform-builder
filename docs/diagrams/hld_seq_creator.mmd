@@ -1,0 +1,30 @@
+sequenceDiagram
+    autonumber
+    actor Creator as Creator
+    participant UI as Builder UI
+    participant Hook as useAutosave
+    participant API as FastAPI Router
+    participant Svc as Form & Question Svc
+    participant DB as SQLite DB
+
+    Creator->>UI: Create new form
+    UI->>API: POST /api/forms (title, theme)
+    API->>Svc: create_form()
+    Svc->>DB: INSERT form & default Q1
+    DB-->>UI: 201 Created (FormOut)
+
+    Creator->>UI: Add question, edit title, reorder
+    UI->>Hook: State changed (isDirty = true)
+    Note over Hook: Debounce timer: 800ms
+    Hook->>API: PUT /api/forms/{id}/questions (bulk list)
+    Hook->>API: PATCH /api/forms/{id} (metadata)
+    API->>Svc: bulk_save_questions() & update_form()
+    Svc->>Svc: validate_logic() (DAG & cycle check)
+    Svc->>DB: Upsert questions, delete omitted, sync positions
+    DB-->>UI: 200 OK (persisted IDs replace tmp_* IDs)
+
+    Creator->>UI: Click "Publish"
+    UI->>API: POST /api/forms/{id}/publish
+    API->>Svc: publish_form()
+    Svc->>DB: Generate 8-char slug, set status='published'
+    DB-->>UI: 200 OK (PublishOut with slug)

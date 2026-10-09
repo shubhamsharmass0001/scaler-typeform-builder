@@ -1,0 +1,73 @@
+erDiagram
+    users ||--o{ forms : "owns (cascade)"
+    forms ||--o{ questions : "contains (cascade)"
+    forms ||--o{ responses : "receives (cascade)"
+    forms ||--o{ uploads : "stores (cascade)"
+    responses ||--o{ answers : "contains (cascade)"
+    responses ||--o{ uploads : "attaches (cascade)"
+    questions ||--o{ answers : "targets (cascade)"
+
+    users {
+        int id PK
+        string name
+        string email UK "unique, indexed"
+        datetime created_at
+    }
+
+    forms {
+        int id PK
+        int user_id FK "indexed"
+        string title
+        text description "nullable"
+        string status "draft | published"
+        string slug UK "unique, indexed, nullable"
+        json theme "visual tokens"
+        string welcome_title "nullable"
+        text welcome_description "nullable"
+        string welcome_button_text "default 'Start'"
+        string thank_you_title "nullable"
+        text thank_you_message "nullable"
+        datetime created_at
+        datetime updated_at
+    }
+
+    questions {
+        int id PK
+        int form_id FK "indexed"
+        string type "enum: 9 question types"
+        string title
+        text description "nullable"
+        boolean required "default false"
+        int position "indexed with form_id"
+        json properties "options, logic, rules"
+        datetime created_at
+        datetime updated_at
+    }
+
+    responses {
+        int id PK
+        int form_id FK "indexed"
+        datetime started_at
+        datetime submitted_at "nullable"
+        boolean is_complete "default false"
+        int last_question_id "nullable"
+    }
+
+    answers {
+        int id PK
+        int response_id FK "unique with question_id"
+        int question_id FK "unique with response_id"
+        json value "structured answer"
+        datetime created_at
+    }
+
+    uploads {
+        int id PK
+        int form_id FK "indexed"
+        int response_id FK "nullable, indexed"
+        string original_name
+        string stored_name UK "unique, indexed"
+        string mime_type
+        int size_bytes
+        datetime created_at
+    }

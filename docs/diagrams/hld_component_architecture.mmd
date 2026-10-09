@@ -1,0 +1,33 @@
+flowchart TD
+    classDef fe fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef be fill:#d1fae5,stroke:#059669,stroke-width:1.5px,color:#065f46;
+
+    subgraph Frontend["Frontend Modules (Next.js)"]
+        FE_UI["Dashboard & Pages<br/>(app/page.tsx, forms/[id])"]:::fe
+        FE_Builder["Builder Module<br/>(BuilderContext, useAutosave)"]:::fe
+        FE_Runner["Runner Module<br/>(FormRunner, useFormRunner)"]:::fe
+        FE_Results["Results Module<br/>(SummaryTab, ResponsesTab)"]:::fe
+        FE_Theme["Theme Context & Tokens<br/>(ThemeContext, themes.ts)"]:::fe
+        FE_API["API Client<br/>(lib/api.ts)"]:::fe
+    end
+
+    subgraph Backend["Backend Layers (FastAPI)"]
+        BE_Routers["Routers Layer<br/>(forms.py, public.py)"]:::be
+        BE_Schemas["Pydantic Schemas<br/>(form, question, public)"]:::be
+        BE_Services["Services Layer<br/>(form, public, logic, upload)"]:::be
+        BE_Validators["Validator Registry<br/>(validators/registry.py)"]:::be
+        BE_Models["SQLAlchemy Models<br/>(Form, Question, Response, Answer)"]:::be
+    end
+
+    FE_UI --> FE_API
+    FE_Builder --> FE_API
+    FE_Runner --> FE_API
+    FE_Results --> FE_API
+    FE_Builder --> FE_Theme
+    FE_Runner --> FE_Theme
+
+    FE_API -->|"HTTP JSON"| BE_Routers
+    BE_Routers --> BE_Schemas
+    BE_Routers --> BE_Services
+    BE_Services --> BE_Validators
+    BE_Services --> BE_Models

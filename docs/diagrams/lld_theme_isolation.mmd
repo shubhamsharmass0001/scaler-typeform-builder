@@ -1,0 +1,33 @@
+flowchart TD
+    classDef creator fill:#312e81,stroke:#4338ca,stroke-width:1.5px,color:#e0e7ff;
+    classDef bridge fill:#f3f4f6,stroke:#4b5563,stroke-width:1.5px,color:#1f2937;
+    classDef isolate fill:#047857,stroke:#059669,stroke-width:1.5px,color:#ecfdf5;
+
+    subgraph CreatorChrome["Creator Chrome Application (Light / Dark Mode)"]
+        HTMLNode["<html class='dark'> or <html class='light'>"]:::creator
+        ThemeCtx["ThemeContext.tsx<br/>(mode: 'light' | 'dark' | 'system')"]:::creator
+        StorageKey["localStorage['theme-mode']<br/>OS prefers-color-scheme listener"]:::creator
+        TokensCSS["src/styles/tokens.css<br/>(:root & .dark semantic tokens)"]:::creator
+        CreatorUI["Dashboard, Builder Chrome, Results UI<br/>(Reads --bg-app, --bg-surface, --text-primary)"]:::creator
+
+        StorageKey --> ThemeCtx --> HTMLNode
+        HTMLNode --> TokensCSS --> CreatorUI
+    end
+
+    subgraph RespondentBoundary["Theme Isolation Boundary"]
+        ContainerNode["<div data-theme-isolated='true'>"]:::bridge
+        CSSRule["CSS Override Rule:<br/>[data-theme-isolated='true'] {<br/>  background-color: var(--theme-bg) !important;<br/>  color: var(--theme-question) !important;<br/>}"]:::bridge
+    end
+
+    subgraph PerFormTheme["Respondent Flow (Per-Form Custom Theme)"]
+        FormThemeJSON["Form.theme in Database<br/>(preset, colors, font, scale, radius)"]:::isolate
+        GetThemeStyles["getThemeStyles(form.theme)<br/>maps tokens to CSS variables"]:::isolate
+        InlineVars["Inline Style Properties:<br/>--theme-bg, --theme-question,<br/>--theme-answer, --theme-btn-bg,<br/>--theme-font, --theme-btn-radius"]:::isolate
+        RunnerUI["FormRunner & Question Inputs<br/>(Canvas Preview & /f/:slug)"]:::isolate
+
+        FormThemeJSON --> GetThemeStyles --> InlineVars
+        InlineVars --> ContainerNode
+    end
+
+    HTMLNode -.->|"BLOCKED by data-theme-isolated override"| ContainerNode
+    ContainerNode --> CSSRule --> RunnerUI

@@ -1,0 +1,66 @@
+flowchart TD
+    classDef page fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef comp fill:#f3f4f6,stroke:#4b5563,stroke-width:1.5px,color:#1f2937;
+    classDef modal fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#92400e;
+
+    subgraph P_Dashboard["/ (Dashboard)"]
+        DashboardPage["page.tsx"]:::page
+        TopNav["TopNav"]:::comp
+        TopTabs["TopTabs"]:::comp
+        Sidebar["Sidebar"]:::comp
+        FormRow["FormRow / FormCard"]:::comp
+        CreateModal["CreateFormModal"]:::modal
+        RenameModal["RenameModal"]:::modal
+        DeleteModal["DeleteModal"]:::modal
+
+        DashboardPage --> TopNav
+        DashboardPage --> TopTabs
+        DashboardPage --> Sidebar
+        DashboardPage --> FormRow
+        DashboardPage --> CreateModal
+        DashboardPage --> RenameModal
+        DashboardPage --> DeleteModal
+    end
+
+    subgraph P_Builder["/forms/[id]/edit (Builder)"]
+        BuilderPage["edit/page.tsx"]:::page
+        BuilderTopBar["BuilderTopBar"]:::comp
+        QuestionList["QuestionListPane"]:::comp
+        CanvasPane["CanvasPane"]:::comp
+        SettingsPane["SettingsPane"]:::comp
+        AddQModal["AddQuestionModal"]:::modal
+        DesignDrawer["DesignDrawer"]:::modal
+        PreviewModal["PreviewModal"]:::modal
+
+        BuilderPage --> BuilderTopBar
+        BuilderPage --> QuestionList
+        BuilderPage --> CanvasPane
+        BuilderPage --> SettingsPane
+        BuilderPage --> AddQModal
+        BuilderPage --> DesignDrawer
+        BuilderPage --> PreviewModal
+    end
+
+    subgraph P_Runner["/f/[slug] (Respondent Runner)"]
+        RunnerPage["f/[slug]/page.tsx"]:::page
+        FormRunner["FormRunner"]:::comp
+        ThemeFontLoader["ThemeFontLoader"]:::comp
+        Inputs["Question Inputs<br/>(TextInput, LongText, MultipleChoice,<br/>YesNo, Rating, Dropdown, FileUpload)"]:::comp
+
+        RunnerPage --> FormRunner
+        FormRunner --> ThemeFontLoader
+        FormRunner --> Inputs
+    end
+
+    subgraph P_Results["/forms/[id]/results (Results)"]
+        ResultsPage["results/page.tsx"]:::page
+        ResultsTopBar["ResultsTopBar"]:::comp
+        SummaryTab["SummaryTab"]:::comp
+        ResponsesTab["ResponsesTab"]:::comp
+        DetailDrawer["ResponseDetailDrawer"]:::modal
+
+        ResultsPage --> ResultsTopBar
+        ResultsPage --> SummaryTab
+        ResultsPage --> ResponsesTab
+        ResponsesTab --> DetailDrawer
+    end

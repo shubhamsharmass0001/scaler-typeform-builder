@@ -1,0 +1,56 @@
+flowchart TD
+    classDef router fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef service fill:#d1fae5,stroke:#059669,stroke-width:1.5px,color:#065f46;
+    classDef val fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#92400e;
+    classDef model fill:#ffedd5,stroke:#ea580c,stroke-width:1.5px,color:#9a3412;
+
+    subgraph Routers["FastAPI Routers"]
+        R_Forms["routers/forms.py"]:::router
+        R_Public["routers/public.py"]:::router
+    end
+
+    subgraph Services["Domain Services"]
+        S_Form["form_service.py"]:::service
+        S_Question["question_service.py"]:::service
+        S_Response["response_service.py"]:::service
+        S_Public["public_service.py"]:::service
+        S_Logic["logic.py"]:::service
+        S_Upload["upload_service.py"]:::service
+    end
+
+    subgraph ValidatorRegistry["Validator Strategy Pattern (validators/registry.py)"]
+        V_Reg["validate_answer() Dispatcher"]:::val
+        V_Text["validate_short_text / long_text"]:::val
+        V_Email["validate_email"]:::val
+        V_Num["validate_number / rating"]:::val
+        V_Choice["validate_multiple_choice / dropdown"]:::val
+        V_File["validate_file_upload"]:::val
+    end
+
+    subgraph Models["SQLAlchemy ORM Models"]
+        M_Entities["Form, Question, Response, Answer, Upload"]:::model
+    end
+
+    R_Forms --> S_Form
+    R_Forms --> S_Question
+    R_Forms --> S_Response
+    R_Forms --> S_Upload
+
+    R_Public --> S_Public
+    R_Public --> S_Upload
+
+    S_Question --> S_Logic
+    S_Public --> S_Logic
+    S_Public --> V_Reg
+
+    V_Reg --> V_Text
+    V_Reg --> V_Email
+    V_Reg --> V_Num
+    V_Reg --> V_Choice
+    V_Reg --> V_File
+
+    S_Form --> M_Entities
+    S_Question --> M_Entities
+    S_Response --> M_Entities
+    S_Public --> M_Entities
+    S_Upload --> M_Entities

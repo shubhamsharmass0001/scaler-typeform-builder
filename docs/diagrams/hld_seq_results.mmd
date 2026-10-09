@@ -1,0 +1,28 @@
+sequenceDiagram
+    autonumber
+    actor Creator as Creator
+    participant UI as Results Page
+    participant API as Forms Router
+    participant Svc as Response Service
+    participant DB as SQLite DB
+
+    Creator->>UI: Navigate to /forms/{id}/results
+    UI->>API: GET /api/forms/{id}/summary
+    API->>Svc: get_form_summary()
+    Svc->>DB: Run aggregate queries (completion rate, drop-offs, per-type metrics)
+    DB-->>UI: 200 OK (FormSummaryOut)
+    UI->>Creator: Render Summary tab with metric cards & drop-off funnel
+
+    Creator->>UI: Click "Responses" tab
+    UI->>API: GET /api/forms/{id}/responses?page=1&page_size=20
+    API->>Svc: get_form_responses()
+    Svc->>DB: Query paginated responses joined with answers
+    DB-->>UI: 200 OK (PaginatedResponsesOut)
+    UI->>Creator: Display submissions table with answer badges
+
+    Creator->>UI: Click "Download CSV"
+    UI->>API: GET /api/forms/{id}/export.csv?status=completed
+    API->>Svc: stream_responses_csv()
+    Svc->>DB: Fetch completed responses and question titles
+    Svc-->>API: Stream UTF-8 BOM CSV rows with formula protection
+    API-->>Creator: Download <form-title>-responses-<date>.csv

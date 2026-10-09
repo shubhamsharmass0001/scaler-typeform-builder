@@ -1,0 +1,19 @@
+flowchart TD
+    classDef fe fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef be fill:#d1fae5,stroke:#059669,stroke-width:1.5px,color:#065f46;
+    classDef db fill:#ffedd5,stroke:#ea580c,stroke-width:1.5px,color:#9a3412;
+    classDef user fill:#f3f4f6,stroke:#4b5563,stroke-width:1.5px,color:#1f2937;
+
+    Creator["Form Creator"]:::user
+    Respondent["Form Respondent"]:::user
+    Frontend["Next.js Frontend<br/>(App Router, Port 3000)"]:::fe
+    Backend["FastAPI Backend<br/>(Uvicorn, Port 8000)"]:::be
+    Database[("SQLite Database<br/>(typeform_clone.db)")]:::db
+    Storage[("Uploads Storage<br/>(backend/uploads/)")]:::db
+
+    Creator -->|"Browser UI / HTTPS"| Frontend
+    Respondent -->|"Browser UI / HTTPS"| Frontend
+    Frontend -->|"REST API / JSON<br/>(NEXT_PUBLIC_API_URL)"| Backend
+    Respondent -.->|"Multipart Upload<br/>POST /api/public/forms/:slug/upload"| Backend
+    Backend -->|"SQLAlchemy ORM / SQL"| Database
+    Backend -->|"Chunked File I/O"| Storage

@@ -1,0 +1,34 @@
+stateDiagram-v2
+    [*] --> IdleSaved : SET_INITIAL_DATA
+
+    state IdleSaved {
+        [*] --> Saved
+        Saved : saveStatus = 'saved'
+        Saved : isDirty = false
+    }
+
+    state Dirty {
+        [*] --> UnsavedChanges
+        UnsavedChanges : isDirty = true
+        UnsavedChanges : Triggered by ADD, UPDATE, DELETE, REORDER
+    }
+
+    state Saving {
+        [*] --> Persisting
+        Persisting : saveStatus = 'saving'
+        Persisting : Parallel bulkSaveQuestions & updateForm
+    }
+
+    state SaveError {
+        [*] --> ErrorState
+        ErrorState : saveStatus = 'error'
+        ErrorState : Displays toast error message
+    }
+
+    IdleSaved --> Dirty : User edits question or metadata
+    Dirty --> Dirty : User continues typing (resets 800ms debounce)
+    Dirty --> Saving : 800ms debounce expires or saveNow()
+    Saving --> IdleSaved : Success -> QUESTIONS_PERSISTED (tmp IDs replaced by DB IDs)
+    Saving --> SaveError : Network error or 422 validation failure
+    SaveError --> Dirty : User modifies form
+    SaveError --> Saving : User clicks Retry button

@@ -1,0 +1,87 @@
+classDiagram
+    class User {
+        +int id
+        +string name
+        +string email
+        +datetime created_at
+        +list~Form~ forms
+    }
+
+    class Form {
+        +int id
+        +int user_id
+        +string title
+        +string description
+        +FormStatus status
+        +string slug
+        +dict theme
+        +string welcome_title
+        +string welcome_description
+        +string welcome_button_text
+        +string thank_you_title
+        +string thank_you_message
+        +datetime created_at
+        +datetime updated_at
+        +User user
+        +list~Question~ questions
+        +list~Response~ responses
+        +list~Upload~ uploads
+    }
+
+    class Question {
+        +int id
+        +int form_id
+        +QuestionType type
+        +string title
+        +string description
+        +bool required
+        +int position
+        +dict properties
+        +datetime created_at
+        +datetime updated_at
+        +Form form
+        +list~Answer~ answers
+    }
+
+    class Response {
+        +int id
+        +int form_id
+        +datetime started_at
+        +datetime submitted_at
+        +bool is_complete
+        +int last_question_id
+        +Form form
+        +list~Answer~ answers
+        +list~Upload~ uploads
+    }
+
+    class Answer {
+        +int id
+        +int response_id
+        +int question_id
+        +any value
+        +datetime created_at
+        +Response response
+        +Question question
+    }
+
+    class Upload {
+        +int id
+        +int form_id
+        +int response_id
+        +string original_name
+        +string stored_name
+        +string mime_type
+        +int size_bytes
+        +datetime created_at
+        +Form form
+        +Response response
+    }
+
+    User "1" --> "*" Form : owns
+    Form "1" --> "*" Question : contains
+    Form "1" --> "*" Response : receives
+    Form "1" --> "*" Upload : stores
+    Response "1" --> "*" Answer : contains
+    Response "1" --> "*" Upload : attaches
+    Question "1" --> "*" Answer : targets

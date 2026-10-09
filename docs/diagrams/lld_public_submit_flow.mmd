@@ -1,0 +1,39 @@
+flowchart TD
+    classDef action fill:#e0f2fe,stroke:#0284c7,stroke-width:1.5px,color:#0369a1;
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#92400e;
+    classDef err fill:#fee2e2,stroke:#dc2626,stroke-width:1.5px,color:#991b1b;
+    classDef success fill:#d1fae5,stroke:#059669,stroke-width:1.5px,color:#065f46;
+
+    Start(["Submit Payload Received<br/>(response_id, answers)"]):::action
+    LoadForm["Load Form by Slug"]:::action
+    IsPublished{"Form published?"}:::decision
+    Err404["Raise HTTP 404<br/>Not Found"]:::err
+
+    Start --> LoadForm --> IsPublished
+    IsPublished -- No --> Err404
+    IsPublished -- Yes --> CheckSession{"response_id provided?"}:::decision
+
+    CheckSession -- Yes --> LoadSession["Fetch Response record<br/>Check is_complete"]:::action
+    CheckSession -- No --> CreateSession["Auto-create Response record"]:::action
+
+    LoadSession --> IsComplete{"Already complete?"}:::decision
+    IsComplete -- Yes --> Err400["Raise HTTP 400<br/>Already submitted"]:::err
+    IsComplete -- No --> ComputePath
+    CreateSession --> ComputePath
+
+    ComputePath["logic.compute_visited_path()<br/>Walk rules from Q1"]:::action
+    ValidateAnswers["Validate answers for questions<br/>in visited path via registry"]:::action
+    CheckBypassed["Check answers for bypassed<br/>or invalid questions"]:::action
+    CheckUploads["Validate file upload ownership<br/>& duplicate attachment"]:::action
+
+    ComputePath --> ValidateAnswers --> CheckBypassed --> CheckUploads
+    CheckUploads --> HasErrors{"Any validation<br/>errors collected?"}:::decision
+
+    HasErrors -- Yes --> Err422["Raise FormSubmissionValidationError<br/>HTTP 422 {errors: {qid: msg}}"]:::err
+    HasErrors -- No --> Persist["Delete previous draft answers<br/>INSERT validated answers<br/>Link uploads to response_id"]:::action
+
+    Finalize["Mark is_complete=true<br/>Set submitted_at=now<br/>Set last_question_id"]:::action
+    Commit["db.commit()"]:::action
+    Return200(["Return HTTP 200<br/>{status: 'success', response_id, submitted_at}"]):::success
+
+    Persist --> Finalize --> Commit --> Return200
