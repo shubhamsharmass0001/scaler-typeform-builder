@@ -45,6 +45,7 @@ import { YesNoInput } from "./inputs/YesNoInput";
 import { RatingInput } from "./inputs/RatingInput";
 import { DropdownInput } from "./inputs/DropdownInput";
 import { FileUploadInput } from "./inputs/FileUploadInput";
+import { WelcomeIllustration } from "@/components/ui/WelcomeIllustration";
 
 export interface FormRunnerProps {
   mode?: "preview" | "live";
@@ -53,46 +54,6 @@ export interface FormRunnerProps {
   onComplete?: (answers: Record<string | number, unknown>) => void;
   isMobilePreview?: boolean;
 }
-
-/**
- * Line-art SVG matching Typeform Welcome screen reference (Screenshot 1)
- */
-function WelcomeIllustration({ className = "w-36 h-28" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 200 140"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {/* Sun with geometric rays */}
-      <circle cx="100" cy="55" r="16" />
-      <path d="M100 32v-5M100 83v-5M77 55h-5M128 55h-5M84 39l-4-4M120 71l-4-4M84 71l-4 4M120 39l-4 4" />
-
-      {/* Clouds */}
-      <path d="M50 48a12 12 0 0 1 22-4 10 10 0 0 1 14 9h-36z" strokeWidth="1.2" />
-
-      {/* Flying Birds */}
-      <path
-        d="M142 35c2-2 4-2 6 0 2-2 4-2 6 0M156 42c1.5-1.5 3-1.5 4.5 0 1.5-1.5 3-1.5 4.5 0"
-        strokeWidth="1.2"
-      />
-
-      {/* Rolling Hills & landscape */}
-      <path d="M20 120c30-18 60-15 90-4 30 11 60 12 80 4" />
-      <path d="M50 125c35-12 70-8 110 5" strokeWidth="1.2" strokeDasharray="3 3" />
-
-      {/* Evergreen Trees */}
-      <path d="M52 112l-5 8h10zM52 106l-4 7h8zM52 120v4" strokeWidth="1.2" />
-      <path d="M62 114l-4 7h8zM62 121v3" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
 export function FormRunner({
   mode = "preview",
   form,

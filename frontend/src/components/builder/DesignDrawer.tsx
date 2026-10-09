@@ -35,6 +35,7 @@ import {
   ALLOWED_FONT_SCALES,
   ALLOWED_BUTTON_RADII,
   BUILTIN_GRADIENTS,
+  BUILTIN_LIGHT_BACKGROUNDS,
   normalizeTheme,
   checkWcagContrast,
 } from "@/lib/themes";
@@ -486,10 +487,97 @@ export function DesignDrawer({ isOpen, onClose }: DesignDrawerProps) {
               )}
             </div>
 
+            {/* Light Background Patterns (Signature & Curated) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="block text-micro font-bold text-primary">
+                  Light Color Background Patterns
+                </span>
+                <span className="text-nano font-medium px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                  Typeform Style
+                </span>
+              </div>
+              <p className="text-nano text-secondary">
+                Soft, light-colored aesthetic backdrops with curved arches, geometric shapes, and pastels.
+              </p>
+
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                {BUILTIN_LIGHT_BACKGROUNDS.map((bg) => {
+                  const isSelected =
+                    (bg.dataUrl && theme.backgroundImageUrl === bg.dataUrl) ||
+                    (!bg.dataUrl && !theme.backgroundImageUrl && theme.backgroundColor.toLowerCase() === bg.backgroundColor.toLowerCase());
+
+                  return (
+                    <button
+                      key={bg.id}
+                      type="button"
+                      onClick={() => {
+                        handleUpdateTheme({
+                          backgroundImageUrl: bg.dataUrl,
+                          backgroundColor: bg.backgroundColor,
+                          questionColor: bg.textColor,
+                          answerColor: bg.answerColor,
+                          buttonColor: bg.buttonColor,
+                          buttonTextColor: bg.buttonTextColor,
+                          preset: "custom",
+                        });
+                      }}
+                      style={{
+                        background: bg.dataUrl ? `url("${bg.dataUrl}") center/cover no-repeat` : bg.css,
+                      }}
+                      className={`h-24 rounded-xl border flex flex-col justify-between p-2.5 transition-all hover:scale-[1.02] cursor-pointer shadow-xs relative text-left group overflow-hidden ${
+                        isSelected
+                          ? "ring-2 ring-blue-600 border-white shadow-md"
+                          : "border-black/10 dark:border-white/10 hover:border-blue-400"
+                      }`}
+                    >
+                      {/* Top Row: Name + Signature badge / checkmark */}
+                      <div className="flex items-start justify-between w-full relative z-10">
+                        <div className="bg-black/40 backdrop-blur-xs px-2 py-0.5 rounded-md max-w-[85%]">
+                          <span className="text-nano font-bold text-white block truncate">
+                            {bg.name}
+                          </span>
+                        </div>
+                        {isSelected && (
+                          <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Bottom Row: Mini simulated button preview */}
+                      <div className="flex items-center justify-between w-full relative z-10 pt-2">
+                        {bg.isSignature ? (
+                          <span className="text-[10px] font-bold text-blue-900 bg-white/90 px-1.5 py-0.5 rounded shadow-2xs">
+                            ★ Image 1
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-white/90 font-medium bg-black/30 px-1.5 py-0.5 rounded truncate">
+                            {bg.desc.split(" ")[0]}
+                          </span>
+                        )}
+                        <span
+                          style={{
+                            backgroundColor: bg.buttonColor,
+                            color: bg.buttonTextColor,
+                          }}
+                          className="text-[9px] font-bold px-2 py-0.5 rounded shadow-2xs shrink-0"
+                        >
+                          Button
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <hr className="border-default" />
+
             {/* 6 Curated Built-in Gradients */}
             <div className="space-y-1.5">
               <span className="block text-micro font-semibold text-primary">
-                6 Curated Gradient Presets
+                Vibrant Gradients
               </span>
               <div className="grid grid-cols-3 gap-2">
                 {BUILTIN_GRADIENTS.map((g) => {

@@ -12,6 +12,8 @@
 
 import React from "react";
 import { FormTheme, ThemePresetName, FontFamilyName, FontScale, ButtonRadius } from "@/types";
+export { BUILTIN_LIGHT_BACKGROUNDS } from "./lightBackgrounds";
+export type { LightBackgroundPreset } from "./lightBackgrounds";
 
 export const ALLOWED_PRESETS: ThemePresetName[] = [
   "classic",
@@ -199,6 +201,14 @@ export function normalizeTheme(raw?: Partial<FormTheme> | null): FormTheme {
  * Returns CSS variable mappings applied to the root element.
  * Components read exclusively from these CSS variables.
  */
+export function formatBackgroundImageUrl(url?: string | null): string {
+  if (!url || url === "none") return "none";
+  if (url.startsWith("url(") || url.startsWith("linear-gradient(") || url.startsWith("radial-gradient(")) {
+    return url;
+  }
+  return `url("${url}")`;
+}
+
 export function getThemeStyles(theme?: Partial<FormTheme> | null): React.CSSProperties {
   const t = normalizeTheme(theme);
 
@@ -228,7 +238,7 @@ export function getThemeStyles(theme?: Partial<FormTheme> | null): React.CSSProp
     "--theme-title-size": scaleConf.title,
     "--theme-desc-size": scaleConf.desc,
     "--theme-bg-overlay": `rgba(0, 0, 0, ${t.backgroundOverlay})`,
-    "--theme-bg-image": t.backgroundImageUrl ? `url("${t.backgroundImageUrl}")` : "none",
+    "--theme-bg-image": formatBackgroundImageUrl(t.backgroundImageUrl),
   } as React.CSSProperties;
 }
 

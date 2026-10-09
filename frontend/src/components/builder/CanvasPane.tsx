@@ -13,12 +13,13 @@
 
 import React, { useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CornerDownLeft } from "lucide-react";
+import { CornerDownLeft, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useBuilderStore } from "./BuilderContext";
 import { QUESTION_TYPES } from "@/lib/questionTypes";
 import { QUESTION_RENDERERS } from "./canvas/renderers";
 import { getThemeStyles, ThemeFontLoader } from "@/lib/themes";
+import { WelcomeIllustration } from "@/components/ui/WelcomeIllustration";
 
 export function CanvasPane() {
   const { state, updateQuestion, updateFormMeta, selectedQuestion } = useBuilderStore();
@@ -66,8 +67,13 @@ export function CanvasPane() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="w-full max-w-2xl text-center space-y-6 relative z-10 mx-auto py-8"
+            className="w-full max-w-2xl text-center space-y-5 relative z-10 mx-auto py-4"
           >
+            {/* Typeform Welcome Illustration matching Image 1 */}
+            <div className="flex justify-center mb-1 text-current opacity-90">
+              <WelcomeIllustration className="w-36 h-24 sm:w-44 sm:h-28" />
+            </div>
+
             <input
               ref={welcomeTitleRef}
               type="text"
@@ -99,7 +105,7 @@ export function CanvasPane() {
               className="w-full text-center text-secondary font-medium placeholder:text-placeholder bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1 resize-none leading-relaxed transition-colors max-w-lg mx-auto"
             />
 
-            <div className="pt-2 flex flex-col items-center justify-center gap-3">
+            <div className="pt-2 flex flex-col items-center justify-center gap-2.5">
               <button
                 type="button"
                 style={{
@@ -111,6 +117,11 @@ export function CanvasPane() {
               >
                 <span>{form?.welcome_button_text || "Start"}</span>
               </button>
+
+              <div className="flex items-center gap-1.5 text-micro text-secondary font-medium opacity-85 mt-0.5">
+                <Clock className="w-3.5 h-3.5" />
+                <span>Takes 3 minutes</span>
+              </div>
             </div>
           </motion.div>
         </AnimatePresence>
@@ -346,6 +357,7 @@ export function CanvasPane() {
           backgroundImage: "var(--theme-bg-image)",
           backgroundSize: "cover",
           backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
           fontFamily: "var(--theme-font)",
           color: "var(--theme-question)",
         }}
