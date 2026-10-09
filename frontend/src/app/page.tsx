@@ -22,6 +22,7 @@ import {
   MoreHorizontal,
   UserPlus,
   Sparkles,
+  Gem,
   Calendar,
   List as ListIcon,
   LayoutGrid,
@@ -219,16 +220,16 @@ export default function WorkspaceDashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             {/* Title & Actions */}
             <div className="flex items-center gap-2.5">
-              <h1 className="text-xl sm:text-2xl font-bold text-primary tracking-tight">
+              <h1 className="text-[22px] font-semibold text-[#191919] tracking-tight">
                 {workspaceName}
               </h1>
 
-              {/* Workspace dots menu (Screenshot 3) */}
+              {/* Workspace dots menu */}
               <DropdownMenu
                 trigger={
                   <button
                     type="button"
-                    className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg text-[#65636d] hover:text-[#191919] hover:bg-[#f4f3f6] transition-colors cursor-pointer"
                     title="Workspace settings"
                   >
                     <MoreHorizontal className="w-4 h-4" />
@@ -262,37 +263,37 @@ export default function WorkspaceDashboard() {
               <button
                 type="button"
                 onClick={() => alert("Workspace collaboration invite modal")}
-                className="flex items-center gap-1.5 text-xs font-medium text-primary hover:bg-surface-hover px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ml-0.5"
+                className="flex items-center gap-1.5 text-[13px] font-medium text-[#2d2b33] hover:bg-[#f4f3f6] px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ml-0.5"
               >
-                <UserPlus className="w-3.5 h-3.5 text-secondary" />
+                <UserPlus className="w-3.5 h-3.5 text-[#65636d]" />
                 <span>Invite</span>
               </button>
 
               {/* Diamond badge */}
               <div
-                className="w-5 h-5 rounded-full border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 cursor-pointer"
+                className="w-5 h-5 rounded-full border border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-950/60 text-[#008775] flex items-center justify-center shrink-0 cursor-pointer"
                 title="Upgrade to Pro"
               >
-                <Sparkles className="w-2.5 h-2.5" />
+                <Gem className="w-3 h-3 text-[#008775]" strokeWidth={1.75} />
               </div>
             </div>
 
             {/* Right Controls: Sort Dropdown & List/Grid View Switcher */}
             <div className="flex items-center gap-2.5 self-end sm:self-auto">
-              {/* Sort By Dropdown (Screenshot 1) */}
+              {/* Sort By Dropdown */}
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                  className="flex items-center gap-2 text-xs font-medium text-primary bg-surface border border-default px-3 py-1.5 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer shadow-2xs"
+                  className="flex items-center gap-2 text-[13px] font-medium text-[#2d2b33] bg-white border border-[#ecebf0] px-3 py-1.5 rounded-lg hover:bg-[#f4f3f6] transition-colors cursor-pointer shadow-2xs"
                 >
-                  <Calendar className="w-3.5 h-3.5 text-muted" />
+                  <Calendar className="w-3.5 h-3.5 text-[#71717a]" />
                   <span>{sortLabels[sortBy]}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-muted" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[#71717a]" />
                 </button>
 
                 {isSortDropdownOpen && (
-                  <div className="absolute right-0 mt-1 w-40 rounded-2xl bg-surface shadow-dropdown border border-default p-1 text-xs z-30 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="absolute right-0 mt-1 w-40 rounded-2xl bg-white shadow-dropdown border border-[#ecebf0] p-1 text-xs z-30 animate-in fade-in zoom-in-95 duration-100">
                     {[
                       { key: "created", label: "Date created", icon: Calendar },
                       { key: "updated", label: "Last updated", icon: Edit3 },
@@ -307,13 +308,13 @@ export default function WorkspaceDashboard() {
                             setSortBy(opt.key as SortOption);
                             setIsSortDropdownOpen(false);
                           }}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer ${
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer text-[13px] ${
                             sortBy === opt.key
-                              ? "bg-surface-hover font-semibold text-primary"
-                              : "text-secondary hover:bg-surface-hover hover:text-primary"
+                              ? "bg-[#ecebf0] font-medium text-[#191919]"
+                              : "text-[#65636d] hover:bg-[#f4f3f6] hover:text-[#191919]"
                           }`}
                         >
-                          <Icon className="w-3.5 h-3.5 text-muted shrink-0" />
+                          <Icon className="w-3.5 h-3.5 text-[#71717a] shrink-0" />
                           <span className="truncate">{opt.label}</span>
                         </button>
                       );
@@ -323,14 +324,14 @@ export default function WorkspaceDashboard() {
               </div>
 
               {/* Segmented Toggle: List / Grid */}
-              <div className="flex items-center bg-surface border border-default p-0.5 rounded-lg shadow-2xs">
+              <div className="flex items-center bg-white border border-[#ecebf0] p-0.5 rounded-lg shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-[13px] font-medium rounded-md transition-colors cursor-pointer ${
                     viewMode === "list"
-                      ? "bg-muted text-primary font-semibold"
-                      : "text-secondary hover:text-primary"
+                      ? "bg-[#ecebf0] text-[#191919]"
+                      : "text-[#65636d] hover:text-[#191919]"
                   }`}
                 >
                   <ListIcon className="w-3.5 h-3.5" />
@@ -340,10 +341,10 @@ export default function WorkspaceDashboard() {
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-[13px] font-medium rounded-md transition-colors cursor-pointer ${
                     viewMode === "grid"
-                      ? "bg-muted text-primary font-semibold"
-                      : "text-secondary hover:text-primary"
+                      ? "bg-[#ecebf0] text-[#191919]"
+                      : "text-[#65636d] hover:text-[#191919]"
                   }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
@@ -353,15 +354,9 @@ export default function WorkspaceDashboard() {
             </div>
           </div>
 
-          {/* Suggestion Recommendation Card */}
-          <SuggestionBanner
-            onCreateForm={() => createMutation.mutate()}
-            isLoading={createMutation.isPending}
-          />
-
           {/* List View Column Headers */}
           {viewMode === "list" && !isLoading && !isError && processedForms.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-2 text-xs font-medium text-secondary mb-1">
+            <div className="flex items-center justify-between px-4 py-2 text-[12px] font-normal text-[#65636d] mb-1">
               <div className="flex-1">
                 {/* Title spacer */}
               </div>
@@ -475,6 +470,12 @@ export default function WorkspaceDashboard() {
         onDelete={async (id) => {
           await deleteMutation.mutateAsync(id);
         }}
+      />
+
+      {/* Floating feedback tab on right edge matching Screenshot 2 */}
+      <div
+        className="fixed right-0 top-[72%] -translate-y-1/2 w-2.5 h-14 bg-[#005e5d] rounded-l-md shadow-xs z-30 cursor-pointer hidden md:block"
+        title="Feedback"
       />
     </div>
   );

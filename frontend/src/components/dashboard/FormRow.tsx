@@ -95,54 +95,66 @@ export function FormRow({
     ? Math.max(1, Math.round(form.response_count * 0.8))
     : "-";
 
+  // Check if form should have blue squircle (e.g. templates or specific id) vs amber squircle
+  const isBlueThumbnail =
+    form.title.toLowerCase().includes("template") ||
+    form.title.toLowerCase().includes("employee") ||
+    form.id === 1;
+
   return (
     <div
       onClick={() => router.push(`/forms/${form.id}/edit`)}
-      className="group bg-surface rounded-xl border border-default px-4 py-3.5 flex items-center justify-between gap-4 transition-all duration-150 hover:border-strong hover:bg-surface-hover shadow-card cursor-pointer select-none"
+      className="group bg-white rounded-xl border border-[#ecebf0] px-4 py-3 flex items-center justify-between gap-4 transition-all duration-150 hover:border-[#dcdbe0] hover:bg-[#fafafc] shadow-[0_1px_2px_rgba(0,0,0,0.02)] cursor-pointer select-none"
     >
       {/* Title & Thumbnail Squircle */}
       <div className="flex items-center gap-3.5 min-w-0 flex-1">
         {/* Squircle Thumbnail matching Typeform's icon style */}
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-700 to-amber-900 shadow-2xs flex items-center justify-center shrink-0">
-          <div className="w-3.5 h-3.5 rounded-xs border border-white/40" />
+        <div
+          className={`w-8 h-8 rounded-lg ${
+            isBlueThumbnail
+              ? "bg-[#67b0f0]"
+              : "bg-[#b86a34]"
+          } shadow-2xs flex items-center justify-center shrink-0`}
+        >
+          <div className="grid grid-cols-2 gap-0.5 p-1">
+            <div className="w-2 h-2 rounded-full bg-white/40" />
+            <div className="w-2 h-2 rounded-full bg-white/40" />
+            <div className="w-2 h-2 rounded-full bg-white/40" />
+            <div className="w-2 h-2 rounded-full bg-white/40" />
+          </div>
         </div>
 
         <div className="min-w-0 flex-1 flex items-center gap-2">
-          <span className="font-medium text-sm text-primary truncate group-hover:text-primary">
+          <span className="font-normal sm:font-medium text-[13px] text-[#2d2b33] truncate group-hover:text-[#191919]">
             {form.title}
           </span>
-          {form.status === "draft" && (
-            <span className="text-nano font-medium px-1.5 py-0.5 rounded-sm bg-muted text-muted uppercase tracking-wider border border-default">
-              Draft
-            </span>
-          )}
         </div>
       </div>
 
       {/* Middle & Right columns: Responses | Completed | Updated | Integrations | Actions */}
-      <div className="flex items-center gap-8 sm:gap-14 text-xs text-secondary shrink-0">
+      <div className="flex items-center gap-8 sm:gap-14 text-[13px] text-[#65636d] shrink-0">
         {/* Responses */}
         <div className="w-16 text-center hidden sm:block">
-          <span className="text-primary font-medium">
+          <span className="text-[#65636d] font-normal">
             {hasResponses ? form.response_count : "-"}
           </span>
         </div>
 
         {/* Completed */}
         <div className="w-16 text-center hidden sm:block">
-          <span className="text-primary font-medium">
+          <span className="text-[#65636d] font-normal">
             {completedCount}
           </span>
         </div>
 
         {/* Updated Date */}
         <div className="w-24 text-left hidden md:block">
-          <span className="text-secondary whitespace-nowrap">
+          <span className="text-[#65636d] whitespace-nowrap font-normal">
             {formatDate(form.updated_at)}
           </span>
         </div>
 
-        {/* Integrations icon */}
+        {/* Integrations icon with small plus badge */}
         <div className="hidden lg:flex items-center justify-center w-8">
           <button
             type="button"
@@ -150,10 +162,13 @@ export function FormRow({
               e.stopPropagation();
               alert("Integrations modal");
             }}
-            className="p-1 rounded-md text-muted hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer"
+            className="p-1 rounded-md text-gray-500 hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer relative"
             title="Integrations"
           >
-            <LayoutGrid className="w-4 h-4" />
+            <div className="relative inline-flex items-center justify-center">
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span className="absolute -top-1 -right-1 text-[8px] font-bold leading-none">+</span>
+            </div>
           </button>
         </div>
 
@@ -163,7 +178,7 @@ export function FormRow({
             trigger={
               <button
                 type="button"
-                className="p-1.5 rounded-md text-muted hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer"
+                className="p-1.5 rounded-md text-gray-400 hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer"
                 aria-label="More options"
               >
                 <MoreHorizontal className="w-4 h-4" />

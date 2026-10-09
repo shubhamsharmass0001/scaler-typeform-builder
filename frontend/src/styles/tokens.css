@@ -16,46 +16,46 @@
   /* ==========================================================================
      1. Surfaces & Backgrounds
      ========================================================================== */
-  --bg-app: #f5f5f7;              /* Main canvas / builder backdrop (Screenshot 1, 3) */
-  --bg-surface: #ffffff;          /* Top bar, sidebar, white cards (Screenshot 1, 3, 4) */
-  --bg-surface-hover: #f7f7f8;    /* Interactive item hover (Screenshot 3 left pane) */
-  --bg-surface-active: #efefef;   /* Selected card / page in builder list (Screenshot 3, 5) */
-  --bg-surface-subtle: #fafafa;   /* Sub-bars, secondary panels */
+  --bg-app: #fafafc;              /* Main workspace backdrop matching reference */
+  --bg-surface: #ffffff;          /* Top bar, white cards */
+  --bg-surface-hover: #f4f3f6;    /* Interactive item hover */
+  --bg-surface-active: #ecebf0;   /* Selected item in list / workspace */
+  --bg-surface-subtle: #fbfbfc;   /* Sub-bars, sidebar */
   
   --bg-card: #ffffff;             /* Form canvas paper, dialogs, preview cards */
   --bg-card-hover: #fcfcfd;       /* Card hover state */
-  --bg-muted: #f3f3f5;            /* Pills, inactive sub-tabs, chip backgrounds */
-  --bg-muted-hover: #ebebed;      /* Hover on muted pills */
-  --bg-input: #ffffff;            /* Form input field backgrounds (Screenshot 5) */
-  --bg-modal: #ffffff;            /* Modal window background (Screenshot 2) */
+  --bg-muted: #ecebf0;            /* Pills, active tabs, chip backgrounds */
+  --bg-muted-hover: #e2e1e7;      /* Hover on muted pills */
+  --bg-input: #ffffff;            /* Form input field backgrounds */
+  --bg-modal: #ffffff;            /* Modal window background */
   --bg-drawer: #ffffff;           /* Slide-out drawer background */
   --bg-popover: #ffffff;          /* Dropdown menus & popovers */
-  --bg-badge: #f0f0f2;            /* Generic badge pill background */
+  --bg-badge: #ecebf0;            /* Generic badge pill background */
   --bg-skeleton: #e8e8ec;         /* Skeleton shimmer base */
-  --bg-sidebar: #ffffff;          /* Builder sidebars (Screenshot 3) */
-  --bg-backdrop: rgba(25, 25, 25, 0.48); /* Modal dim backdrop (Screenshot 2) */
-  --bg-tooltip: #262627;          /* Dark tooltip background (Screenshot 1) */
+  --bg-sidebar: #fbfbfc;          /* Left sidebar backdrop matching Screenshot 4 */
+  --bg-backdrop: rgba(25, 25, 25, 0.48); /* Modal dim backdrop */
+  --bg-tooltip: #262627;          /* Dark tooltip background */
 
   /* Buttons & CTAs */
-  --bg-btn-primary: #262627;      /* Primary dark button "Copy link", "Start", "Add content" (Screenshot 1, 2, 3) */
-  --bg-btn-primary-hover: #000000;/* Hover on primary button */
+  --bg-btn-primary: #30283b;      /* Primary dark aubergine button "Create form" (Screenshot 4) */
+  --bg-btn-primary-hover: #231d2c;/* Hover on primary button */
   --text-btn-primary: #ffffff;    /* Text on primary button */
   
-  --bg-brand-plan: #04454d;       /* Typeform "View plans" top CTA (Screenshot 1, 3) */
-  --bg-brand-plan-hover: #033339; /* Hover on "View plans" */
+  --bg-brand-plan: #005e5d;       /* Typeform "View plans" top CTA */
+  --bg-brand-plan-hover: #004d4c; /* Hover on "View plans" */
   --text-brand-plan: #ffffff;     /* Text on "View plans" */
 
   /* User Avatar */
-  --bg-avatar: #ebd8be;           /* User avatar circle "SS" (Screenshot 1, 3) */
+  --bg-avatar: #eedbc5;           /* User avatar circle "SS" */
   --text-avatar: #422006;         /* Avatar text */
 
   /* ==========================================================================
      2. Borders & Outlines
      ========================================================================== */
-  --border-subtle: #f0f0f0;       /* Very faint dividers / separators */
-  --border-default: #e5e5e5;      /* Standard card, input, and toolbar border (Screenshot 1, 3) */
-  --border-strong: #cccccc;       /* Darker border for inputs & key badges (Screenshot 4) */
-  --border-focus: #191919;        /* Active focus ring / underline (Screenshot 4, 5) */
+  --border-subtle: #f4f3f6;       /* Very faint dividers / separators */
+  --border-default: #ecebf0;      /* Standard card, input, and toolbar border (Screenshot 4) */
+  --border-strong: #dcdbe0;       /* Darker border for inputs & key badges */
+  --border-focus: #191919;        /* Active focus ring / underline */
   --border-dashed: #d4d4d4;       /* Drop-zones & add choice buttons */
 
   /* ==========================================================================

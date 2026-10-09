@@ -41,9 +41,9 @@ export function formatRelativeTime(dateString: string): string {
 export function formatDate(dateString: string): string {
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString("en-US", {
       month: "short",
-      day: "numeric",
+      day: "2-digit",
       year: "numeric",
     });
   } catch {

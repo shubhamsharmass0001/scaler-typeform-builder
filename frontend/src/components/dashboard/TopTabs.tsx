@@ -14,7 +14,7 @@ import {
   LineChart,
   Layout,
   Compass,
-  Sparkles,
+  Gem,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -29,7 +29,7 @@ export function TopTabs() {
   ];
 
   return (
-    <div className="bg-surface border-b border-default px-4 sm:px-6 flex items-center gap-1 sm:gap-4 overflow-x-auto scrollbar-hide text-xs sm:text-sm">
+    <div className="bg-white border-b border-[#ecebf0] px-4 sm:px-6 h-12 flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide text-[13px]">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         return (
@@ -37,28 +37,28 @@ export function TopTabs() {
             key={tab.label}
             type="button"
             className={clsx(
-              "relative flex items-center gap-2 py-3 px-2 sm:px-3 font-medium whitespace-nowrap transition-colors cursor-pointer select-none",
+              "relative flex items-center gap-2 py-1.5 px-3 rounded-lg font-medium text-[13px] whitespace-nowrap transition-colors cursor-pointer select-none",
               tab.active
-                ? "text-primary"
-                : "text-secondary hover:text-primary"
+                ? "bg-[#ecebf0] text-[#191919]"
+                : "text-[#59595d] hover:text-[#191919] hover:bg-[#f4f3f6]"
             )}
           >
             <Icon className="w-4 h-4 shrink-0 text-current" />
             <span>{tab.label}</span>
 
             {tab.hasGem && (
-              <Sparkles className="w-3 h-3 text-emerald-500 shrink-0" />
+              <Gem className="w-3.5 h-3.5 text-[#008775] shrink-0" strokeWidth={1.75} />
             )}
 
             {tab.badge && (
-              <span className="text-nano font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-blue-500/10 text-blue-500 border border-blue-500/20">
+              <span className="text-[11px] font-medium leading-none px-1.5 py-0.5 rounded-full bg-[#e6f4fe] text-[#0284c7] border border-[#bae6fd]">
                 {tab.badge}
               </span>
             )}
 
-            {/* Active underline indicator */}
+            {/* Active underline indicator spanning under the tab at bottom border */}
             {tab.active && (
-              <span className="absolute bottom-0 left-2 right-2 sm:left-3 sm:right-3 h-0.5 bg-primary rounded-full" />
+              <span className="absolute -bottom-[9px] left-3 right-3 h-[2px] bg-[#191919]" />
             )}
           </button>
         );

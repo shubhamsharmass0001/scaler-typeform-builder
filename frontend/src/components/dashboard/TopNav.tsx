@@ -19,7 +19,6 @@ import {
   Check,
 } from "lucide-react";
 import { BASE_URL } from "@/lib/api";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface TopNavProps {
   onToggleMobileSidebar?: () => void;
@@ -91,8 +90,8 @@ export function TopNav({
 
           {/* Organization Switcher Dropdown (Screenshot 2) */}
           {isOrgMenuOpen && (
-            <div className="absolute left-0 mt-1.5 w-60 rounded-2xl bg-surface shadow-dropdown border border-default p-2 text-xs z-50 animate-in fade-in zoom-in-95 duration-100">
-              <div className="px-2.5 py-1.5 text-micro font-semibold uppercase tracking-wider text-muted">
+            <div className="absolute left-0 mt-1.5 w-64 rounded-2xl bg-white shadow-xl border border-[#ecebf0] p-2 text-xs z-50 animate-in fade-in zoom-in-95 duration-100">
+              <div className="px-2.5 py-1.5 text-[11px] font-medium text-[#71717a]">
                 Organization
               </div>
 
@@ -100,64 +99,63 @@ export function TopNav({
                 <button
                   type="button"
                   onClick={() => setIsOrgMenuOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-primary hover:bg-surface-hover transition-colors text-left cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#2d2b33] hover:bg-[#f4f3f6] transition-colors text-left text-[13px] font-normal cursor-pointer"
                 >
-                  <Settings className="w-3.5 h-3.5 text-muted" />
+                  <Settings className="w-4 h-4 text-[#71717a]" />
                   <span>Admin settings</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsOrgMenuOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-primary hover:bg-surface-hover transition-colors text-left cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#2d2b33] hover:bg-[#f4f3f6] transition-colors text-left text-[13px] font-normal cursor-pointer"
                 >
-                  <Users className="w-3.5 h-3.5 text-muted" />
+                  <Users className="w-4 h-4 text-[#71717a]" />
                   <span>Org members</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsOrgMenuOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-primary hover:bg-surface-hover transition-colors text-left cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#2d2b33] hover:bg-[#f4f3f6] transition-colors text-left text-[13px] font-normal cursor-pointer"
                 >
-                  <CreditCard className="w-3.5 h-3.5 text-muted" />
+                  <CreditCard className="w-4 h-4 text-[#71717a]" />
                   <span>Plan & billing</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsOrgMenuOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-primary hover:bg-surface-hover transition-colors text-left cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#2d2b33] hover:bg-[#f4f3f6] transition-colors text-left text-[13px] font-normal cursor-pointer"
                 >
-                  <Code className="w-3.5 h-3.5 text-muted" />
+                  <Code className="w-4 h-4 text-[#71717a]" />
                   <span>Developer apps</span>
                 </button>
               </div>
 
-              <div className="my-1.5 border-t border-default" />
+              <div className="my-1.5 border-t border-[#ecebf0]" />
 
-              <div className="px-2.5 py-1 text-micro font-semibold uppercase tracking-wider text-muted">
+              <div className="px-2.5 py-1 text-[11px] font-medium text-[#71717a]">
                 All organizations
               </div>
 
               {/* Current Org Card */}
-              <div className="mt-1 p-2 rounded-xl bg-surface-hover border border-default flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-amber-600 to-amber-800 text-white font-semibold text-xs flex items-center justify-center shrink-0">
+              <div className="mt-1 p-2 rounded-xl bg-[#f8f7fa] border border-[#ecebf0] flex items-center justify-between">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-[#b86a34] text-white font-medium text-xs flex items-center justify-center shrink-0">
                     S
                   </div>
                   <div className="min-w-0 text-left">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-primary truncate max-w-[95px]">
+                      <span className="font-medium text-[13px] text-[#2d2b33] truncate max-w-[105px]">
                         {username}
                       </span>
-                      <span className="text-micro px-1 py-0.2 rounded bg-muted text-secondary font-medium">
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#ecebf0] text-[#71717a] font-normal">
                         Owner
                       </span>
                     </div>
-                    <p className="text-micro text-muted truncate">
+                    <p className="text-[11px] text-[#71717a] truncate">
                       Free Plan &bull; 1 member
                     </p>
                   </div>
                 </div>
-                <Check className="w-3.5 h-3.5 text-primary shrink-0" />
               </div>
             </div>
           )}
@@ -185,28 +183,25 @@ export function TopNav({
           <span>Brand kit</span>
         </button>
 
-        {/* "View plans" solid dark teal button matching Screenshot 1 */}
+        {/* "View plans" solid dark teal button matching Screenshot 2 */}
         <button
           type="button"
           onClick={() => alert("Free tier: 10 responses/month")}
-          className="bg-brand-plan hover:bg-brand-plan-hover text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer shadow-xs"
+          className="bg-brand-plan hover:bg-brand-plan-hover text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer shadow-xs"
         >
           View plans
         </button>
 
         <button
           type="button"
-          className="p-1.5 rounded-full text-muted hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer"
+          className="p-1.5 rounded-full text-secondary hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer"
           title="Help & Support"
         >
           <HelpCircle className="w-4 h-4" />
         </button>
 
-        {/* Theme Toggle (Light / Dark / System) */}
-        <ThemeToggle size="sm" />
-
         {/* Profile Circle Avatar with 'SS' */}
-        <div className="ml-0.5 flex items-center justify-center">
+        <div className="ml-1 flex items-center justify-center">
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-avatar text-avatar font-semibold text-xs flex items-center justify-center border border-default shadow-2xs select-none">
             SS
           </div>
