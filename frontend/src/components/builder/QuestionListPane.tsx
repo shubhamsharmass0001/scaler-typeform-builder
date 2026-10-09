@@ -490,9 +490,12 @@ export function QuestionListPane({
       <div className="border-t border-default p-3 bg-surface">
         <p className="text-nano text-muted font-medium">Responses collected</p>
         <div className="mt-1 bg-muted rounded-full h-1 overflow-hidden">
-          <div className="bg-primary h-1 rounded-full transition-all duration-300" style={{ width: "0%" }} />
+          <div
+            className="bg-primary h-1 rounded-full transition-all duration-300"
+            style={{ width: `${Math.min(100, Math.round(((form?.response_count || 0) / 1000) * 100))}%` }}
+          />
         </div>
-        <p className="text-nano text-muted mt-1">0 / 10</p>
+        <p className="text-nano text-muted mt-1">{(form?.response_count || 0).toLocaleString()} / 1,000</p>
       </div>
     </aside>
   );

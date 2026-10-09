@@ -267,75 +267,44 @@ def get_form_summary(
         average_completion_seconds=avg_seconds,
     )
 
-    # 2. Drop-off funnel analysis via aggregate SQL query
-    LastQuestion = aliased(Question)
-    dropoff_rows = (
-        db.query(
-            Question.id.label("question_id"),
-            Question.title.label("title"),
-            Question.position.label("position"),
-            func.count(func.distinct(Response.id)).label("reached_count"),
-            func.count(
-                func.distinct(
-                    case(
-                        (
-                            and_(
-                                Response.is_complete == False,
-                                Response.last_question_id == Question.id,
-                            ),
-                            Response.id,
-                        ),
-                        else_=None,
-                    )
-                )
-            ).label("dropped_here_count"),
+    # 2. Drop-off funnel analysis
+    ordered_questions = sorted(form.questions, key=lambda q: q.position)
+    dropped_counts: dict[int, int] = {q.id: 0 for q in ordered_questions}
+
+    if partial > 0 and ordered_questions:
+        partial_rows = (
+            db.query(Response.last_question_id)
+            .filter(Response.form_id == form_id, Response.is_complete == False)
+            .all()
         )
-        .outerjoin(
-            Response,
-            and_(
-                Response.form_id == Question.form_id,
-                or_(
-                    Response.is_complete == True,
-                    exists().where(
-                        and_(
-                            Answer.response_id == Response.id,
-                            Answer.question_id == Question.id,
-                        )
-                    ),
-                    exists().where(
-                        and_(
-                            LastQuestion.id == Response.last_question_id,
-                            LastQuestion.form_id == Question.form_id,
-                            LastQuestion.position >= Question.position,
-                        )
-                    ),
-                ),
-            ),
-        )
-        .filter(Question.form_id == form_id)
-        .group_by(Question.id, Question.title, Question.position)
-        .order_by(Question.position.asc())
-        .all()
-    )
+        for prow in partial_rows:
+            last_qid = prow[0]
+            if last_qid in dropped_counts:
+                dropped_counts[last_qid] += 1
+            else:
+                # Fallback to the first question if unassigned
+                dropped_counts[ordered_questions[0].id] += 1
 
     dropoff_list: list[DropoffQuestion] = []
     drop_off_stats: dict[str, int] = {}
-    for row in dropoff_rows:
-        reached = int(row.reached_count or 0)
-        dropped = int(row.dropped_here_count or 0)
-        pct = round((dropped / reached) * 100, 1) if reached > 0 else 0.0
+    current_reached = started
+
+    for q in ordered_questions:
+        dropped = dropped_counts.get(q.id, 0)
+        pct = round((dropped / current_reached) * 100, 1) if current_reached > 0 else 0.0
         dropoff_list.append(
             DropoffQuestion(
-                question_id=row.question_id,
-                title=row.title,
-                position=row.position,
-                reached_count=reached,
+                question_id=q.id,
+                title=q.title,
+                position=q.position,
+                reached_count=current_reached,
                 dropped_here_count=dropped,
                 dropoff_percent=pct,
             )
         )
         if dropped > 0:
-            drop_off_stats[str(row.question_id)] = dropped
+            drop_off_stats[str(q.id)] = dropped
+        current_reached = max(0, current_reached - dropped)
 
     # Fetch all answers for this form
     answers = (
@@ -353,7 +322,7 @@ def get_form_summary(
 
     question_summaries: list[QuestionSummary] = []
 
-    for q in form.questions:
+    for q in ordered_questions:
         q_answers = answers_by_question.get(q.id, [])
         valid_answers = [a for a in q_answers if a.value is not None]
         total_answered = len(valid_answers)
@@ -365,21 +334,22 @@ def get_form_summary(
         if q.type in (QuestionType.MULTIPLE_CHOICE, QuestionType.DROPDOWN, QuestionType.YES_NO):
             # Tally counts for each chosen option
             counts: dict[str, int] = {}
-            # Initialize configured options with 0 counts
+            # Initialize configured options with 0 counts in order
             configured_options: list[str] = []
             if q.type == QuestionType.YES_NO:
                 configured_options = ["Yes", "No"]
             else:
-                opts = q.properties.get("options", [])
+                opts = (q.properties or {}).get("options", [])
                 for opt in opts:
                     if isinstance(opt, dict):
-                        configured_options.append(opt.get("label", opt.get("id", "")))
-                    elif isinstance(opt, str):
+                        lbl = str(opt.get("label", opt.get("id", "")))
+                        if lbl:
+                            configured_options.append(lbl)
+                    elif isinstance(opt, str) and opt:
                         configured_options.append(opt)
 
             for opt_label in configured_options:
-                if opt_label:
-                    counts[opt_label] = 0
+                counts[opt_label] = 0
 
             for a in valid_answers:
                 val = a.value
@@ -388,11 +358,13 @@ def get_form_summary(
                     counts[label] = counts.get(label, 0) + 1
                 elif isinstance(val, list):
                     for item in val:
-                        s_item = str(item)
-                        counts[s_item] = counts.get(s_item, 0) + 1
+                        resolved_label = _resolve_option_label(q, item)
+                        if resolved_label:
+                            counts[resolved_label] = counts.get(resolved_label, 0) + 1
                 else:
-                    s_val = str(val)
-                    counts[s_val] = counts.get(s_val, 0) + 1
+                    resolved_label = _resolve_option_label(q, val)
+                    if resolved_label:
+                        counts[resolved_label] = counts.get(resolved_label, 0) + 1
 
             breakdown_list: list[OptionBreakdown] = []
             for opt_key, count in counts.items():

@@ -134,6 +134,7 @@ export interface Form {
   thank_you_message: string | null;
   created_at: string;
   updated_at: string;
+  response_count?: number;
   questions: Question[];
 }
 

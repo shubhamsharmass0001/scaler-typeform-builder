@@ -42,7 +42,7 @@ export function Sidebar({
   const [isPrivateOpen, setIsPrivateOpen] = useState(true);
   const [aiPrompt, setAiPrompt] = useState("");
 
-  const responseLimit = 10;
+  const responseLimit = 1000;
   const progressPercent = Math.min(
     Math.round((totalResponses / responseLimit) * 100),
     100
@@ -164,8 +164,8 @@ export function Sidebar({
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            <p className="text-[13px] text-[#4a4a4e] mb-3">
-              <span className="font-semibold text-[#191919] text-[14px]">{totalResponses}</span> / {responseLimit}
+            <p className="text-[13px] text-[#4a4a4e] dark:text-neutral-300 mb-3">
+              <span className="font-semibold text-[#191919] dark:text-white text-[14px]">{(totalResponses || 0).toLocaleString()}</span> / {responseLimit.toLocaleString()}
             </p>
             <button
               type="button"
