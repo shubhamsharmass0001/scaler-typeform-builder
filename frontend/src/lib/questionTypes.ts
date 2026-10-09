@@ -15,6 +15,7 @@ import {
   Star,
   Hash,
   ToggleLeft,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
 import { QuestionType, QuestionProperties } from "@/types";
@@ -38,8 +39,8 @@ export const QUESTION_TYPES: Record<QuestionType, QuestionTypeDefinition> = {
     defaultProperties: {
       placeholder: "Type your answer here...",
     },
-    color: "#2563EB", // Blue
-    badgeBg: "#EFF6FF",
+    color: "var(--badge-short-text-text, #0284c7)",
+    badgeBg: "var(--badge-short-text-bg, #d0f0fd)",
   },
   long_text: {
     type: "long_text",
@@ -49,8 +50,8 @@ export const QUESTION_TYPES: Record<QuestionType, QuestionTypeDefinition> = {
     defaultProperties: {
       placeholder: "Type your detailed thoughts here...",
     },
-    color: "#4F46E5", // Indigo
-    badgeBg: "#EEF2FF",
+    color: "var(--badge-long-text-text, #0284c7)",
+    badgeBg: "var(--badge-long-text-bg, #e0f2fe)",
   },
   email: {
     type: "email",
@@ -60,8 +61,8 @@ export const QUESTION_TYPES: Record<QuestionType, QuestionTypeDefinition> = {
     defaultProperties: {
       placeholder: "name@company.com",
     },
-    color: "#0891B2", // Cyan
-    badgeBg: "#ECFEFF",
+    color: "var(--badge-email-text, #db2777)",
+    badgeBg: "var(--badge-email-bg, #fce7f3)",
   },
   multiple_choice: {
     type: "multiple_choice",
@@ -77,8 +78,8 @@ export const QUESTION_TYPES: Record<QuestionType, QuestionTypeDefinition> = {
       allowOther: false,
       multiple: false,
     },
-    color: "#059669", // Emerald
-    badgeBg: "#ECFDF5",
+    color: "var(--badge-choice-text, #7c3aed)",
+    badgeBg: "var(--badge-choice-bg, #ede9fe)",
   },
   dropdown: {
     type: "dropdown",
@@ -92,8 +93,8 @@ export const QUESTION_TYPES: Record<QuestionType, QuestionTypeDefinition> = {
         { id: "opt_3", label: "Choice 3" },
       ],
     },
-    color: "#7C3AED", // Violet
-    badgeBg: "#F5F3FF",
+    color: "var(--badge-dropdown-text, #4f46e5)",
+    badgeBg: "var(--badge-dropdown-bg, #e0e7ff)",
   },
   rating: {
     type: "rating",
@@ -104,8 +105,8 @@ export const QUESTION_TYPES: Record<QuestionType, QuestionTypeDefinition> = {
       steps: 5,
       shape: "star",
     },
-    color: "#D97706", // Amber
-    badgeBg: "#FFFBEB",
+    color: "var(--badge-rating-text, #d97706)",
+    badgeBg: "var(--badge-rating-bg, #fef3c7)",
   },
   number: {
     type: "number",
@@ -116,8 +117,8 @@ export const QUESTION_TYPES: Record<QuestionType, QuestionTypeDefinition> = {
       min: 0,
       max: 100,
     },
-    color: "#DB2777", // Pink
-    badgeBg: "#FDF2F8",
+    color: "var(--badge-number-text, #ea580c)",
+    badgeBg: "var(--badge-number-bg, #ffedd5)",
   },
   yes_no: {
     type: "yes_no",
@@ -125,8 +126,20 @@ export const QUESTION_TYPES: Record<QuestionType, QuestionTypeDefinition> = {
     icon: ToggleLeft,
     description: "Binary decision buttons with instant keyboard shortcuts.",
     defaultProperties: {},
-    color: "#0D9488", // Teal
-    badgeBg: "#F0FDFA",
+    color: "var(--badge-yesno-text, #059669)",
+    badgeBg: "var(--badge-yesno-bg, #d1fae5)",
+  },
+  file_upload: {
+    type: "file_upload",
+    label: "File Upload",
+    icon: Upload,
+    description: "Allow respondents to attach files, documents, or images.",
+    defaultProperties: {
+      maxSizeMB: 5,
+      allowedTypes: ["image", "pdf", "doc"],
+    },
+    color: "var(--badge-upload-text, #0891b2)",
+    badgeBg: "var(--badge-upload-bg, #cffafe)",
   },
 };
 

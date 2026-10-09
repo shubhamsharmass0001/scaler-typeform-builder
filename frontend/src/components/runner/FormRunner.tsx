@@ -1,299 +1,818 @@
 "use client";
 
 /**
- * components/runner/FormRunner.tsx — Respondent flow runner
+ * components/runner/FormRunner.tsx — High-fidelity Respondent Flow
  *
- * TODO: Full respondent flow implementation will be built in the next prompt (7A / 7B).
- *
- * In "preview" mode, this component provides an authentic respondent preview
- * within Desktop/Mobile frames without persisting or writing anything to the database.
+ * Implements the respondent experience matching Typeform's design and UX:
+ * - Flow states: welcome -> question 1..N -> thank-you
+ * - Theme tokens applied via CSS variables & inline styles
+ * - Direction-driven slide transitions via framer-motion with exact spec:
+ *   - Exit: translateY(-40px) + opacity 0, 250ms
+ *   - Enter: from translateY(40px) + opacity 0, 350ms, easeOut
+ *   - Back reverses directions (-40px on exit, +40px on enter)
+ *   - Stagger: title first (0ms), description (+50ms), input (+100ms)
+ *   - Progress bar: 400ms ease
+ *   - Transition lock ref to prevent double-advance
+ * - Underline inputs with autofocus post-transition
+ * - Inline validation errors with slide/fade and input shake animation
+ * - Choice / Yes-No auto-advance after 400ms (single-select only)
+ * - Long text: Enter inserts regular newline, OK advances
+ * - Scroll lock on body to avoid scrollbar flicker
+ * - Clean browser back navigation
+ * - Live regions announcing validation errors and question changes
  */
 
-import React, { useState } from "react";
-import { CornerDownLeft, ChevronUp, ChevronDown, Check, Star } from "lucide-react";
-import { Form, Question } from "@/types";
+import React, { useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence, useReducedMotion, Variants } from "framer-motion";
+import {
+  ChevronUp,
+  ChevronDown,
+  Check,
+  AlertCircle,
+  Loader2,
+  Clock,
+  ThumbsUp,
+} from "lucide-react";
+import { Form, Question, PublicForm } from "@/types";
+import { getThemeStyles, ThemeFontLoader } from "@/lib/themes";
+import { useFormRunner } from "./useFormRunner";
+import { RUNNER_ANIMATION } from "./animationConstants";
+import { TextInput } from "./inputs/TextInput";
+import { LongTextInput } from "./inputs/LongTextInput";
+import { MultipleChoiceInput } from "./inputs/MultipleChoiceInput";
+import { YesNoInput } from "./inputs/YesNoInput";
+import { RatingInput } from "./inputs/RatingInput";
+import { DropdownInput } from "./inputs/DropdownInput";
+import { FileUploadInput } from "./inputs/FileUploadInput";
 
-interface FormRunnerProps {
+export interface FormRunnerProps {
   mode?: "preview" | "live";
-  form: Form | null;
+  form: Form | PublicForm | null;
   questions?: Question[];
+  onComplete?: (answers: Record<string | number, unknown>) => void;
 }
 
-export function FormRunner({ mode = "preview", form, questions = [] }: FormRunnerProps) {
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const theme = form?.theme || {};
+/**
+ * Line-art SVG matching Typeform Welcome screen reference (Screenshot 1)
+ */
+function WelcomeIllustration({ className = "w-36 h-28" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 200 140"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {/* Sun with geometric rays */}
+      <circle cx="100" cy="55" r="16" />
+      <path d="M100 32v-5M100 83v-5M77 55h-5M128 55h-5M84 39l-4-4M120 71l-4-4M84 71l-4 4M120 39l-4 4" />
 
-  // Steps array: [Welcome, ...Questions, Thank You]
-  const hasWelcome = !!(form?.welcome_title || form?.welcome_description);
-  const totalSteps = (hasWelcome ? 1 : 0) + questions.length + 1; // +1 for thank you
+      {/* Clouds */}
+      <path d="M50 48a12 12 0 0 1 22-4 10 10 0 0 1 14 9h-36z" strokeWidth="1.2" />
 
-  const isWelcomeStep = hasWelcome && currentStepIndex === 0;
-  const isThankYouStep = currentStepIndex === totalSteps - 1;
-  const questionIndex = hasWelcome ? currentStepIndex - 1 : currentStepIndex;
-  const currentQuestion = questions[questionIndex];
+      {/* Flying Birds */}
+      <path
+        d="M142 35c2-2 4-2 6 0 2-2 4-2 6 0M156 42c1.5-1.5 3-1.5 4.5 0 1.5-1.5 3-1.5 4.5 0"
+        strokeWidth="1.2"
+      />
 
-  const bgColor = theme.backgroundColor || "#FFFFFF";
-  const textColor = theme.textColor || "#191919";
-  const buttonColor = theme.buttonColor || "#262627";
-  const fontFamily = theme.fontFamily || "Inter";
+      {/* Rolling Hills & landscape */}
+      <path d="M20 120c30-18 60-15 90-4 30 11 60 12 80 4" />
+      <path d="M50 125c35-12 70-8 110 5" strokeWidth="1.2" strokeDasharray="3 3" />
 
-  const handleNext = () => {
-    if (currentStepIndex < totalSteps - 1) {
-      setCurrentStepIndex((prev) => prev + 1);
+      {/* Evergreen Trees */}
+      <path d="M52 112l-5 8h10zM52 106l-4 7h8zM52 120v4" strokeWidth="1.2" />
+      <path d="M62 114l-4 7h8zM62 121v3" strokeWidth="1.2" />
+    </svg>
+  );
+}
+
+export function FormRunner({
+  mode = "preview",
+  form,
+  questions: propQuestions,
+  onComplete,
+}: FormRunnerProps) {
+  // Use questions from props or form.questions
+  const questions = propQuestions || form?.questions || [];
+
+  const {
+    currentIndex,
+    direction,
+    answers,
+    errors,
+    status,
+    submitErrorMessage,
+    shakeQuestionId,
+    // Step calculations
+    isWelcome,
+    isThankYou,
+    questionIndex,
+    currentQuestion,
+    isLastQuestion,
+    answeredCount,
+    progressPercent,
+    // Actions
+    setAnswer,
+    goToNext,
+    goToPrev,
+    restart,
+  } = useFormRunner({
+    mode,
+    form,
+    questions,
+    onComplete,
+  });
+
+  const shouldReduceMotion = useReducedMotion();
+
+  // Ref to prevent double-advance during transitions
+  const isTransitioningRef = useRef(false);
+
+  // Scroll lock on body to avoid scrollbar flicker
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
+  // Safe navigation wrappers respecting transition lock
+  const handleSafeNext = useCallback(async () => {
+    if (isTransitioningRef.current || status === "submitting") return;
+    isTransitioningRef.current = true;
+    const moved = await goToNext();
+    if (!moved) {
+      isTransitioningRef.current = false;
+    }
+  }, [goToNext, status]);
+
+  const handleSafePrev = useCallback(() => {
+    if (isTransitioningRef.current || status === "submitting") return;
+    isTransitioningRef.current = true;
+    goToPrev();
+  }, [goToPrev, status]);
+
+  // Release transition lock when animation completes
+  const handleAnimationComplete = useCallback(() => {
+    isTransitioningRef.current = false;
+  }, []);
+
+  // Theme configuration via CSS variables
+  const themeStyles = getThemeStyles(form?.theme);
+
+  // Global keyboard navigation (ArrowDown/ArrowUp, Enter)
+  const handleGlobalKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isTextInput =
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable);
+
+      if (e.key === "Enter" && !isTextInput) {
+        e.preventDefault();
+        handleSafeNext();
+        return;
+      }
+
+      if (!isTextInput) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          handleSafeNext();
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          handleSafePrev();
+        }
+      }
+    },
+    [handleSafeNext, handleSafePrev]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [handleGlobalKeyDown]);
+
+  // Slide animation variants (40px displacement, 350ms enter, 250ms exit)
+  const slideVariants: Variants = {
+    enter: (dir: number) => ({
+      y: shouldReduceMotion
+        ? 0
+        : dir > 0
+        ? RUNNER_ANIMATION.displacementY
+        : -RUNNER_ANIMATION.displacementY,
+      opacity: 0,
+      transition: {
+        duration: shouldReduceMotion ? 0 : RUNNER_ANIMATION.enterDuration,
+        ease: RUNNER_ANIMATION.easeOut,
+      },
+    }),
+    center: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: shouldReduceMotion ? 0 : RUNNER_ANIMATION.enterDuration,
+        ease: RUNNER_ANIMATION.easeOut,
+      },
+    },
+    exit: (dir: number) => ({
+      y: shouldReduceMotion
+        ? 0
+        : dir > 0
+        ? -RUNNER_ANIMATION.displacementY
+        : RUNNER_ANIMATION.displacementY,
+      opacity: 0,
+      transition: {
+        duration: shouldReduceMotion ? 0 : RUNNER_ANIMATION.exitDuration,
+        ease: RUNNER_ANIMATION.easeIn,
+      },
+    }),
+  };
+
+  // Staggered child variants
+  const titleVariants: Variants = {
+    enter: { opacity: 0, y: shouldReduceMotion ? 0 : 8 },
+    center: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: shouldReduceMotion ? 0 : RUNNER_ANIMATION.staggerTitle,
+        duration: shouldReduceMotion ? 0 : 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: { opacity: 0 },
+  };
+
+  const descVariants: Variants = {
+    enter: { opacity: 0, y: shouldReduceMotion ? 0 : 8 },
+    center: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: shouldReduceMotion ? 0 : RUNNER_ANIMATION.staggerDescription,
+        duration: shouldReduceMotion ? 0 : 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: { opacity: 0 },
+  };
+
+  const inputVariants: Variants = {
+    enter: { opacity: 0, y: shouldReduceMotion ? 0 : 8 },
+    center: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: shouldReduceMotion ? 0 : RUNNER_ANIMATION.staggerInput,
+        duration: shouldReduceMotion ? 0 : 0.3,
+        ease: "easeOut",
+      },
+    },
+    exit: { opacity: 0 },
+  };
+
+  // Shake variant for validation failure feedback
+  const shakeVariants: Variants = {
+    idle: { x: 0 },
+    shake: {
+      x: [0, -10, 10, -8, 8, -4, 4, 0],
+      transition: { duration: 0.4 },
+    },
+  };
+
+  // Render question input component based on type
+  const renderQuestionInput = () => {
+    if (!currentQuestion) return null;
+
+    const currentVal = answers[currentQuestion.id];
+    const props = currentQuestion.properties || {};
+
+    switch (currentQuestion.type) {
+      case "short_text":
+        return (
+          <TextInput
+            type="text"
+            value={currentVal as string}
+            onChange={(val) => setAnswer(currentQuestion.id, val)}
+            onSubmit={handleSafeNext}
+            placeholder={props.placeholder || "Type your answer here..."}
+            accentColor="var(--theme-answer)"
+          />
+        );
+
+      case "long_text":
+        return (
+          <LongTextInput
+            value={currentVal as string}
+            onChange={(val) => setAnswer(currentQuestion.id, val)}
+            onSubmit={handleSafeNext}
+            placeholder={props.placeholder || "Type your answer here..."}
+            accentColor="var(--theme-answer)"
+          />
+        );
+
+      case "email":
+        return (
+          <TextInput
+            type="email"
+            value={currentVal as string}
+            onChange={(val) => setAnswer(currentQuestion.id, val)}
+            onSubmit={handleSafeNext}
+            placeholder={props.placeholder || "name@example.com"}
+            accentColor="var(--theme-answer)"
+          />
+        );
+
+      case "number":
+        return (
+          <TextInput
+            type="number"
+            value={currentVal as number}
+            onChange={(val) => setAnswer(currentQuestion.id, val)}
+            onSubmit={handleSafeNext}
+            placeholder={props.placeholder || "0"}
+            accentColor="var(--theme-answer)"
+          />
+        );
+
+      case "multiple_choice":
+        return (
+          <MultipleChoiceInput
+            options={props.options || []}
+            isMulti={Boolean(props.multiple)}
+            allowOther={Boolean(props.allowOther)}
+            value={currentVal}
+            onChange={(val) => setAnswer(currentQuestion.id, val)}
+            onSubmit={handleSafeNext}
+            accentColor="var(--theme-answer)"
+          />
+        );
+
+      case "yes_no":
+        return (
+          <YesNoInput
+            value={currentVal}
+            onChange={(val) => setAnswer(currentQuestion.id, val)}
+            onSubmit={handleSafeNext}
+            accentColor="var(--theme-answer)"
+          />
+        );
+
+      case "rating":
+        return (
+          <RatingInput
+            steps={props.steps || 5}
+            shape={props.shape || "star"}
+            value={currentVal}
+            onChange={(val) => setAnswer(currentQuestion.id, val)}
+            onSubmit={handleSafeNext}
+            accentColor="var(--theme-answer)"
+          />
+        );
+
+      case "dropdown":
+        return (
+          <DropdownInput
+            options={props.options || []}
+            value={currentVal}
+            onChange={(val) => setAnswer(currentQuestion.id, val)}
+            onSubmit={handleSafeNext}
+            placeholder="Choose from the list..."
+            accentColor="var(--theme-answer)"
+          />
+        );
+
+      case "file_upload":
+        return (
+          <FileUploadInput
+            slug={form?.slug || ""}
+            questionId={currentQuestion.id}
+            maxSizeMB={Number(props.maxSizeMB || 5)}
+            allowedTypes={(props.allowedTypes as string[]) || ["image", "pdf", "doc"]}
+            value={currentVal}
+            onChange={(val) => setAnswer(currentQuestion.id, val)}
+            onSubmit={handleSafeNext}
+          />
+        );
+
+      default:
+        return (
+          <TextInput
+            type="text"
+            value={currentVal as string}
+            onChange={(val) => setAnswer(currentQuestion.id, val)}
+            onSubmit={handleSafeNext}
+            accentColor="var(--theme-answer)"
+          />
+        );
     }
   };
 
-  const handlePrev = () => {
-    if (currentStepIndex > 0) {
-      setCurrentStepIndex((prev) => prev - 1);
+  const touchStartY = React.useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY.current === null) return;
+    const touchEndY = e.changedTouches[0].clientY;
+    const diffY = touchStartY.current - touchEndY;
+    touchStartY.current = null;
+
+    const target = e.target as HTMLElement;
+    if (
+      target &&
+      (target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable)
+    ) {
+      return;
+    }
+
+    // Swipe up (diffY > 60) -> Next; Swipe down (diffY < -60) -> Prev
+    if (diffY > 60) {
+      handleSafeNext();
+    } else if (diffY < -60) {
+      handleSafePrev();
     }
   };
+
+  const currentError = currentQuestion ? errors[currentQuestion.id] : null;
+
+  // Estimated completion time (calculate from question count: ~25 sec per question)
+  const estimatedMinutes = Math.max(1, Math.ceil(questions.length * 0.4));
 
   return (
     <div
-      className="w-full h-full flex flex-col justify-between p-6 sm:p-12 relative select-none overflow-y-auto"
+      data-theme-isolated="true"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className={`w-full ${
+        mode === "live" ? "h-[100dvh] min-h-[100dvh]" : "h-full"
+      } flex flex-col justify-between relative overflow-hidden select-none touch-manipulation`}
       style={{
-        backgroundColor: bgColor,
-        color: textColor,
-        fontFamily: fontFamily,
+        ...themeStyles,
+        backgroundColor: "var(--theme-bg)",
+        backgroundImage: "var(--theme-bg-image)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        fontFamily: "var(--theme-font)",
+        color: "var(--theme-question)",
       }}
     >
+      {/* Dynamic font loader for the single selected Google Font */}
+      <ThemeFontLoader fontFamily={form?.theme?.fontFamily} />
+
+      {/* Background Overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0"
+        style={{
+          backgroundColor: "var(--theme-bg-overlay)",
+        }}
+      />
+
+      {/* Screen Reader Live Announcements */}
+      <div aria-live="assertive" role="alert" className="sr-only">
+        {currentError || ""}
+      </div>
+      <div aria-live="polite" role="status" className="sr-only">
+        {isWelcome
+          ? form?.welcome_title || "Welcome to our form"
+          : isThankYou
+          ? form?.thank_you_title || "Thank you for completing this form"
+          : currentQuestion
+          ? `Question ${questionIndex + 1} of ${questions.length}: ${currentQuestion.title}`
+          : ""}
+      </div>
+
       {/* Mode Badge (Preview notice) */}
       {mode === "preview" && (
-        <div className="absolute top-3 left-4 z-10 flex items-center gap-2">
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/10 text-neutral-600 border border-black/10">
-            Preview Mode — Responses are not saved
+        <div className="absolute top-4 left-6 z-30 flex items-center gap-2">
+          <span className="px-2.5 py-1 rounded-full text-nano font-bold uppercase tracking-wider bg-black/10 backdrop-blur-xs text-current border border-current/15">
+            Preview only, nothing was saved
           </span>
         </div>
       )}
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex items-center justify-center py-8">
-        <div className="max-w-xl w-full space-y-6">
-          {/* 1. Welcome Screen */}
-          {isWelcomeStep && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <h1 className="text-2xl sm:text-4xl font-bold leading-tight">
-                {form?.welcome_title || "Welcome to our form"}
-              </h1>
-              {form?.welcome_description && (
-                <p className="text-sm sm:text-base opacity-80 leading-relaxed">
-                  {form.welcome_description}
-                </p>
-              )}
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  style={{ backgroundColor: buttonColor }}
-                  className="inline-flex items-center gap-2 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-xs hover:opacity-90 transition-opacity cursor-pointer"
-                >
-                  <span>{form?.welcome_button_text || "Start"}</span>
-                  <CornerDownLeft className="w-3.5 h-3.5 opacity-80" />
-                </button>
+      {/* 2. Main Content Center Stage — Vertically positioned slightly above center */}
+      <main className="flex-1 flex flex-col justify-center items-center px-6 sm:px-12 py-12 w-full max-w-2xl mx-auto relative z-10 -translate-y-2 sm:-translate-y-5">
+        <AnimatePresence mode="wait" custom={direction} initial={false}>
+          {/* Welcome Step — Faithful to Screenshot 1 */}
+          {isWelcome && (
+            <motion.div
+              key="welcome-step"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              onAnimationComplete={handleAnimationComplete}
+              className="w-full flex flex-col items-center text-center space-y-6"
+            >
+              {/* Illustration Art */}
+              <div className="text-current opacity-85 mb-2">
+                <WelcomeIllustration className="w-32 h-24 sm:w-40 sm:h-30" />
               </div>
-            </div>
-          )}
 
-          {/* 2. Question View */}
-          {!isWelcomeStep && !isThankYouStep && currentQuestion && (
-            <div className="space-y-5 animate-in fade-in duration-200">
-              {/* Question Header */}
-              <div>
-                <div className="flex items-center gap-2 text-xs font-semibold opacity-60 mb-2">
-                  <span>{questionIndex + 1}</span>
-                  <span>&rarr;</span>
-                  {currentQuestion.required && (
-                    <span className="text-red-500 font-bold">*</span>
-                  )}
-                </div>
-                <h2 className="text-xl sm:text-2xl font-bold leading-snug">
-                  {currentQuestion.title || "Untitled question"}
-                </h2>
-                {currentQuestion.description && (
-                  <p className="text-xs sm:text-sm opacity-70 mt-1">
-                    {currentQuestion.description}
+              {/* Title & Description */}
+              <div className="space-y-3 max-w-xl">
+                <h1
+                  style={{
+                    fontSize: "var(--theme-title-size)",
+                    color: "var(--theme-question)",
+                  }}
+                  className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight leading-tight"
+                >
+                  {form?.welcome_title || "Welcome aboard.\nLet's get you settled in."}
+                </h1>
+                {form?.welcome_description && (
+                  <p
+                    style={{ fontSize: "var(--theme-desc-size)" }}
+                    className="opacity-75 text-base sm:text-lg font-light leading-relaxed max-w-md mx-auto"
+                  >
+                    {form.welcome_description}
                   </p>
                 )}
               </div>
 
-              {/* Input Simulation based on type */}
-              <div className="py-2">
-                {currentQuestion.type === "short_text" && (
-                  <input
-                    type="text"
-                    disabled
-                    placeholder={currentQuestion.properties.placeholder || "Type your answer..."}
-                    className="w-full bg-transparent border-b-2 border-current/30 pb-2 text-base sm:text-lg focus:outline-none opacity-80"
-                  />
+              {/* Start Button & Time Estimate */}
+              <div className="pt-2 flex flex-col items-center gap-3">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    data-testid="runner-start-btn"
+                    onClick={handleSafeNext}
+                    style={{
+                      backgroundColor: "var(--theme-btn-bg)",
+                      color: "var(--theme-btn-text)",
+                      borderRadius: "var(--theme-btn-radius)",
+                    }}
+                    className="inline-flex items-center justify-center px-8 py-3.5 text-base sm:text-lg font-semibold shadow-md hover:opacity-95 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <span>{form?.welcome_button_text || "Get started"}</span>
+                  </button>
+                  <span className="text-xs opacity-50 font-medium hidden sm:inline">
+                    press <kbd className="font-semibold underline">Enter ↵</kbd>
+                  </span>
+                </div>
+
+                {/* Estimate */}
+                <div className="flex items-center gap-1.5 text-xs opacity-60 font-medium pt-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Takes {estimatedMinutes} min</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Question Step — Faithful to Screenshot 2 */}
+          {!isWelcome && !isThankYou && currentQuestion && (
+            <motion.div
+              key={`question-${currentQuestion.id}`}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              onAnimationComplete={handleAnimationComplete}
+              className="w-full text-left space-y-7"
+            >
+              <motion.div
+                variants={shakeVariants}
+                animate={shakeQuestionId === currentQuestion.id ? "shake" : "idle"}
+                className="space-y-6"
+              >
+                {/* Question Header: Number + Arrow + Title */}
+                <motion.div variants={titleVariants} className="space-y-2">
+                  <div className="flex items-baseline gap-2.5">
+                    <span
+                      className="text-base sm:text-lg font-semibold shrink-0 flex items-center gap-1"
+                      style={{ color: "var(--theme-answer)" }}
+                    >
+                      <span>{questionIndex + 1}</span>
+                      <span className="text-lg leading-none">&rarr;</span>
+                    </span>
+
+                    <h2
+                      style={{
+                        fontSize: "var(--theme-title-size)",
+                        color: "var(--theme-question)",
+                      }}
+                      className="text-2xl sm:text-3xl md:text-4xl font-normal sm:font-medium leading-snug tracking-tight"
+                    >
+                      {currentQuestion.title || "Untitled Question"}
+                      {currentQuestion.required && (
+                        <span className="text-rose-500 font-bold ml-1">*</span>
+                      )}
+                    </h2>
+                  </div>
+                </motion.div>
+
+                {/* Question Description */}
+                {currentQuestion.description && (
+                  <motion.div variants={descVariants}>
+                    <p
+                      style={{ fontSize: "var(--theme-desc-size)" }}
+                      className="opacity-70 font-light text-sm sm:text-base leading-relaxed pl-7 sm:pl-8 -mt-3"
+                    >
+                      {currentQuestion.description}
+                    </p>
+                  </motion.div>
                 )}
 
-                {currentQuestion.type === "long_text" && (
-                  <textarea
-                    rows={3}
-                    disabled
-                    placeholder={currentQuestion.properties.placeholder || "Type your detailed thoughts..."}
-                    className="w-full bg-transparent border-b-2 border-current/30 pb-2 text-sm sm:text-base focus:outline-none opacity-80 resize-none"
-                  />
-                )}
+                {/* Question Input */}
+                <motion.div variants={inputVariants} className="pt-2 pl-0 sm:pl-8 space-y-4">
+                  {renderQuestionInput()}
 
-                {currentQuestion.type === "email" && (
-                  <input
-                    type="email"
-                    disabled
-                    placeholder="name@example.com"
-                    className="w-full bg-transparent border-b-2 border-current/30 pb-2 text-base sm:text-lg focus:outline-none opacity-80"
-                  />
-                )}
+                  {/* Validation Error Message */}
+                  {currentError && (
+                    <motion.div
+                      data-testid="runner-validation-error"
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center gap-2 text-rose-500 text-sm font-medium pt-1"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{currentError}</span>
+                    </motion.div>
+                  )}
 
-                {currentQuestion.type === "number" && (
-                  <input
-                    type="text"
-                    disabled
-                    placeholder="0"
-                    className="w-full bg-transparent border-b-2 border-current/30 pb-2 text-base sm:text-lg focus:outline-none opacity-80"
-                  />
-                )}
+                  {/* Submission Error Banner */}
+                  {submitErrorMessage && isLastQuestion && (
+                    <div className="p-3 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-xs font-medium">
+                      {submitErrorMessage}
+                    </div>
+                  )}
 
-                {currentQuestion.type === "yes_no" && (
-                  <div className="flex gap-3">
+                  {/* Advance Button: "OK ✓" or "Submit" */}
+                  <div className="pt-3 flex items-center gap-3">
                     <button
                       type="button"
-                      onClick={handleNext}
-                      className="flex-1 py-3 px-4 rounded-xl border border-current/20 bg-current/5 hover:bg-current/10 font-semibold text-sm flex items-center justify-between"
+                      data-testid="runner-next-btn"
+                      onClick={handleSafeNext}
+                      disabled={status === "submitting"}
+                      style={{
+                        backgroundColor: "var(--theme-btn-bg)",
+                        color: "var(--theme-btn-text)",
+                        borderRadius: "var(--theme-btn-radius)",
+                      }}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 text-sm sm:text-base font-semibold shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
                     >
-                      <span>Yes</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded border border-current/30 font-mono">
-                        Y
-                      </span>
+                      {status === "submitting" ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{isLastQuestion ? "Submit" : "OK"}</span>
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        </>
+                      )}
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleNext}
-                      className="flex-1 py-3 px-4 rounded-xl border border-current/20 bg-current/5 hover:bg-current/10 font-semibold text-sm flex items-center justify-between"
-                    >
-                      <span>No</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded border border-current/30 font-mono">
-                        N
-                      </span>
-                    </button>
-                  </div>
-                )}
 
-                {currentQuestion.type === "multiple_choice" && (
-                  <div className="space-y-2">
-                    {(currentQuestion.properties.options || []).map((opt, i) => (
-                      <div
-                        key={opt.id}
-                        onClick={handleNext}
-                        className="flex items-center gap-3 p-3 rounded-xl border border-current/20 bg-current/5 hover:bg-current/10 text-sm font-medium cursor-pointer transition-colors"
-                      >
-                        <span className="w-5 h-5 rounded-md border border-current/30 text-xs flex items-center justify-center font-mono font-bold shrink-0">
-                          {String.fromCharCode(65 + i)}
-                        </span>
-                        <span>{opt.label}</span>
-                      </div>
-                    ))}
-                    {currentQuestion.properties.allowOther && (
-                      <div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-current/30 text-sm font-medium opacity-70">
-                        <span className="w-5 h-5 rounded-md border border-current/30 text-xs flex items-center justify-center font-mono font-bold shrink-0">
-                          {String.fromCharCode(65 + (currentQuestion.properties.options?.length || 0))}
-                        </span>
-                        <span className="italic">Other...</span>
-                      </div>
-                    )}
+                    <span className="text-xs opacity-50 font-medium hidden sm:inline">
+                      press <kbd className="font-semibold underline">Enter ↵</kbd>
+                    </span>
                   </div>
-                )}
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          )}
 
-                {currentQuestion.type === "dropdown" && (
-                  <div className="p-3.5 rounded-xl border border-current/30 bg-current/5 text-sm flex items-center justify-between">
-                    <span>Select an option...</span>
-                    <span>&darr;</span>
-                  </div>
-                )}
-
-                {currentQuestion.type === "rating" && (
-                  <div className="flex items-center gap-2">
-                    {Array.from({ length: currentQuestion.properties.steps || 5 }).map((_, idx) => (
-                      <div
-                        key={idx}
-                        onClick={handleNext}
-                        className="w-10 h-10 rounded-xl border border-current/20 bg-current/5 hover:bg-current/15 flex items-center justify-center cursor-pointer"
-                      >
-                        <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-                      </div>
-                    ))}
-                  </div>
-                )}
+          {/* Thank You Step — Faithful to Screenshot 3 & Official Guide */}
+          {isThankYou && (
+            <motion.div
+              key="thank-you-step"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              onAnimationComplete={handleAnimationComplete}
+              className="w-full flex flex-col items-center text-center space-y-6"
+            >
+              {/* Dark thumbs up badge */}
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#333742] rounded-md flex items-center justify-center text-white shadow-md mx-auto mb-2">
+                <ThumbsUp className="w-10 h-10 sm:w-12 sm:h-12 fill-current" />
               </div>
 
-              {/* Action Button */}
-              <div className="pt-2">
+              {/* Title & Subtitle */}
+              <div className="space-y-3 max-w-xl">
+                <h1
+                  style={{
+                    fontSize: "var(--theme-title-size)",
+                    color: "var(--theme-question)",
+                  }}
+                  className="text-2xl sm:text-3xl md:text-4xl font-normal sm:font-medium tracking-tight"
+                >
+                  {form?.thank_you_title || "Thanks for completing this typeform"}
+                </h1>
+                <p
+                  style={{ fontSize: "var(--theme-desc-size)" }}
+                  className="opacity-80 font-light leading-relaxed text-base sm:text-lg max-w-lg mx-auto"
+                >
+                  {form?.thank_you_message || (
+                    <>
+                      Now <strong className="font-semibold opacity-100">create your own</strong> — it&apos;s free, easy, &amp; beautiful
+                    </>
+                  )}
+                </p>
+              </div>
+
+              {/* CTA Button */}
+              <div className="pt-2 flex items-center gap-3">
+                <Link
+                  href="/"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-[#262627] text-white rounded-md text-sm sm:text-base font-semibold shadow-sm hover:bg-black active:scale-[0.98] transition-all cursor-pointer"
+                >
+                  Create a typeform
+                </Link>
+                <span className="text-xs opacity-50 font-medium hidden sm:inline">
+                  press <kbd className="font-semibold underline">Enter ↵</kbd>
+                </span>
+              </div>
+
+              {/* Secondary restart link */}
+              <div className="pt-4 flex items-center justify-center gap-4 text-xs">
                 <button
                   type="button"
-                  onClick={handleNext}
-                  style={{ backgroundColor: buttonColor }}
-                  className="inline-flex items-center gap-2 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-xs hover:opacity-90 transition-opacity cursor-pointer"
+                  onClick={restart}
+                  className="font-medium underline opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
                 >
-                  <span>{questionIndex === questions.length - 1 ? "Submit" : "OK"}</span>
-                  <CornerDownLeft className="w-3.5 h-3.5 opacity-80" />
+                  {mode === "preview" ? "Restart preview" : "Fill out again"}
                 </button>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
+      {/* 3. Bottom Bar: Progress bar + Footer controls */}
+      <div className="w-full relative z-20">
+        {/* Animated Progress Bar */}
+        <div className="w-full h-1 bg-current/10 relative">
+          <motion.div
+            className="h-full"
+            style={{ backgroundColor: "var(--theme-btn-bg)" }}
+            animate={{ width: `${progressPercent}%` }}
+            transition={{
+              duration: shouldReduceMotion ? 0 : RUNNER_ANIMATION.progressBarDuration,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
+
+        {/* Footer controls */}
+        <footer className="w-full px-6 py-3.5 flex items-center justify-between">
+          {/* Bottom-left: "Powered by FormCraft" */}
+          <div className="flex items-center gap-1.5 text-xs opacity-50 select-none">
+            <span>Powered by</span>
+            <span className="font-semibold text-current opacity-90">FormCraft</span>
+          </div>
+
+          {/* Center: "X of N answered" */}
+          {questions.length > 0 && !isWelcome && !isThankYou && (
+            <div className="text-xs font-medium opacity-60">
+              {answeredCount} of {questions.length} answered
             </div>
           )}
 
-          {/* 3. Thank You Screen */}
-          {isThankYouStep && (
-            <div className="space-y-4 text-center sm:text-left animate-in fade-in duration-200">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center">
-                <Check className="w-6 h-6 stroke-[2.5]" />
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold">
-                {form?.thank_you_title || "Thank you for your response!"}
-              </h1>
-              <p className="text-sm opacity-80 leading-relaxed">
-                {form?.thank_you_message || "Your answers have been recorded."}
-              </p>
-              <div className="pt-4">
-                <button
-                  type="button"
-                  onClick={() => setCurrentStepIndex(0)}
-                  className="text-xs font-semibold underline opacity-70 hover:opacity-100 cursor-pointer"
-                >
-                  Restart preview
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Navigation Controls: Arrows at bottom right */}
-      <div className="flex items-center justify-between pt-4 border-t border-current/10 text-xs">
-        <span className="opacity-60 text-[11px]">
-          Step {currentStepIndex + 1} of {totalSteps}
-        </span>
-
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={handlePrev}
-            disabled={currentStepIndex === 0}
-            className="p-1.5 rounded-lg border border-current/20 hover:bg-current/10 disabled:opacity-20 disabled:pointer-events-none cursor-pointer transition-colors"
-            title="Previous step"
-          >
-            <ChevronUp className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={currentStepIndex === totalSteps - 1}
-            className="p-1.5 rounded-lg border border-current/20 hover:bg-current/10 disabled:opacity-20 disabled:pointer-events-none cursor-pointer transition-colors"
-            title="Next step"
-          >
-            <ChevronDown className="w-4 h-4" />
-          </button>
-        </div>
+          {/* Bottom-right: Chevron up/down group */}
+          <div className="flex items-center gap-1 bg-current/5 p-1 rounded-lg border border-current/15 backdrop-blur-xs">
+            <button
+              type="button"
+              onClick={handleSafePrev}
+              disabled={currentIndex === 0 || status === "submitting"}
+              aria-label="Previous question"
+              title="Previous question (Arrow Up)"
+              className="p-1.5 rounded-md hover:bg-current/10 disabled:opacity-20 disabled:pointer-events-none cursor-pointer transition-colors"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handleSafeNext}
+              disabled={isThankYou || status === "submitting"}
+              aria-label="Next question"
+              title="Next question (Arrow Down)"
+              className="p-1.5 rounded-md hover:bg-current/10 disabled:opacity-20 disabled:pointer-events-none cursor-pointer transition-colors"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
+          </div>
+        </footer>
       </div>
     </div>
   );

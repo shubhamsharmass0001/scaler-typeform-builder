@@ -17,10 +17,16 @@ import {
   ResponseDetail,
   FormSummary,
   ApiErrorResponse,
+  PublicForm,
+  PublicSubmitPayload,
+  PublicSubmitResult,
+  StartResponseResult,
+  ProgressResult,
 } from "@/types";
 
-const BASE_URL =
+export const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
+
 
 export class ApiError extends Error {
   status: number;
@@ -199,10 +205,12 @@ export async function bulkSaveQuestions(
 export async function getResponses(
   formId: number,
   page = 1,
-  pageSize = 20
+  pageSize = 20,
+  status?: string
 ): Promise<PaginatedResponses> {
+  const statusParam = status ? `&status=${encodeURIComponent(status)}` : "";
   return api.get<PaginatedResponses>(
-    `/api/forms/${formId}/responses?page=${page}&page_size=${pageSize}`
+    `/api/forms/${formId}/responses?page=${page}&page_size=${pageSize}${statusParam}`
   );
 }
 
@@ -226,6 +234,83 @@ export async function getSummary(formId: number): Promise<FormSummary> {
   return api.get<FormSummary>(`/api/forms/${formId}/summary`);
 }
 
-export function getExportCsvUrl(formId: number): string {
-  return `${BASE_URL}/api/forms/${formId}/export.csv`;
+export function getExportCsvUrl(formId: number, status?: string): string {
+  const base = `${BASE_URL}/api/forms/${formId}/export.csv`;
+  return status ? `${base}?status=${encodeURIComponent(status)}` : base;
 }
+
+/**
+ * Programmatically downloads the CSV export as a file.
+ * Returns the suggested filename from Content-Disposition (or a fallback).
+ * Throws ApiError on non-2xx responses.
+ */
+export async function downloadCsv(formId: number, status?: string): Promise<string> {
+  const url = getExportCsvUrl(formId, status);
+  const res = await fetch(url, { method: "GET" });
+
+  if (!res.ok) {
+    let message = `Export failed (${res.status})`;
+    try {
+      const errText = await res.text();
+      if (errText) {
+        try {
+          const jsonErr = JSON.parse(errText);
+          message = jsonErr.detail || jsonErr.message || errText;
+        } catch {
+          message = errText;
+        }
+      }
+    } catch {
+      /* noop */
+    }
+    throw new ApiError(res.status, message);
+  }
+
+  const blob = await res.blob();
+
+  // Extract filename from Content-Disposition header
+  let filename = `form-${formId}-responses.csv`;
+  const cd = res.headers.get("content-disposition") || "";
+  const match = cd.match(/filename\*?=(?:UTF-8'')?["']?([^"';\r\n]+)["']?/i);
+  if (match?.[1]) {
+    filename = decodeURIComponent(match[1].trim());
+  }
+
+  // Trigger browser download
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 5000);
+  return filename;
+}
+
+// -----------------------------------------------------------------------------
+// Typed public respondent endpoints
+// -----------------------------------------------------------------------------
+
+export async function getPublicForm(slug: string): Promise<PublicForm> {
+  return api.get<PublicForm>(`/api/public/forms/${slug}`);
+}
+
+export async function startPublicSession(slug: string): Promise<StartResponseResult> {
+  return api.post<StartResponseResult>(`/api/public/forms/${slug}/start`);
+}
+
+export async function submitPublicAnswers(
+  slug: string,
+  payload: PublicSubmitPayload
+): Promise<PublicSubmitResult> {
+  return api.post<PublicSubmitResult>(`/api/public/forms/${slug}/submit`, payload);
+}
+
+export async function recordPublicProgress(
+  slug: string,
+  payload: { response_id: number; last_question_id: number }
+): Promise<ProgressResult> {
+  return api.patch<ProgressResult>(`/api/public/forms/${slug}/progress`, payload);
+}
+
