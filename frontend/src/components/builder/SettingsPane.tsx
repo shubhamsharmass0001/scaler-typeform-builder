@@ -80,14 +80,14 @@ function ToggleSwitch({
           {info && (
             <span
               title={info}
-              className="text-muted hover:text-primary transition-colors cursor-help inline-flex"
+              className="text-secondary hover:text-primary transition-colors cursor-help inline-flex"
             >
               <Info className="w-3 h-3" />
             </span>
           )}
         </div>
         {description && (
-          <p className="text-micro text-muted mt-0.5">{description}</p>
+          <p className="text-micro text-secondary font-medium mt-0.5">{description}</p>
         )}
       </div>
       <button
@@ -205,7 +205,7 @@ export function SettingsPane({ isOpenMobile = false, onCloseMobile }: SettingsPa
               placeholder="Start"
               className="w-full text-xs bg-input text-primary placeholder:text-muted px-3 py-2 rounded-lg border border-default focus:outline-none focus:border-focus"
             />
-            <div className="text-right text-nano text-muted mt-1 font-mono">
+            <div className="text-right text-nano text-secondary font-medium mt-1 font-mono">
               {welcomeBtnText.length}/24
             </div>
           </div>
@@ -345,7 +345,7 @@ export function SettingsPane({ isOpenMobile = false, onCloseMobile }: SettingsPa
                       defaultValue={endBtnText}
                       className="w-full text-xs bg-input text-primary px-3 py-2 rounded-lg border border-default focus:outline-none focus:border-focus"
                     />
-                    <div className="text-right text-nano text-muted mt-1 font-mono">
+                    <div className="text-right text-nano text-secondary font-medium mt-1 font-mono">
                       {endBtnText.length}/24
                     </div>
                   </div>

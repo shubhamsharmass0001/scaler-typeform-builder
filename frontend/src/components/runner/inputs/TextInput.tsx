@@ -63,7 +63,7 @@ export function TextInput({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onKeyDown={handleKeyDown}
-        className="w-full bg-transparent border-0 border-b border-current/25 pb-2 text-2xl sm:text-3xl md:text-4xl font-light focus:outline-none placeholder:opacity-35 placeholder:font-light transition-all duration-200 focus:border-b-2"
+        className="w-full bg-transparent border-0 border-b border-current/25 pb-2 text-2xl sm:text-3xl md:text-4xl font-light focus:outline-none placeholder:opacity-85 placeholder:text-placeholder transition-all duration-200 focus:border-b-2"
         style={{
           borderBottomColor: isFocused ? (accentColor || "var(--theme-answer, currentColor)") : undefined,
         }}

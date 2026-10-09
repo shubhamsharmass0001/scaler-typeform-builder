@@ -131,13 +131,13 @@ export function DropdownInput({
       >
         <span
           className={`text-base sm:text-lg ${
-            selectedOption ? "font-medium" : "opacity-40 font-light"
+            selectedOption ? "font-medium" : "opacity-80 font-normal"
           }`}
         >
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
-          className={`w-5 h-5 opacity-60 transition-transform duration-200 group-hover:opacity-100 ${
+          className={`w-5 h-5 opacity-80 transition-transform duration-200 group-hover:opacity-100 ${
             isOpen ? "rotate-180" : ""
           }`}
         />

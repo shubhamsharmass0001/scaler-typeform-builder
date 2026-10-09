@@ -212,8 +212,8 @@ export function SummaryTab({
       {/* Top action header with Export CSV button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-default shadow-card">
         <div>
-          <h2 className="text-sm sm:text-base font-bold text-primary">Overview</h2>
-          <p className="text-xs text-secondary mt-0.5">Live overview of form performance, completion rates, and drop-off</p>
+          <h2 className="text-sm sm:text-base font-bold text-primary">Executive Summary</h2>
+          <p className="text-xs text-secondary font-medium mt-0.5">Live overview of form performance, completion rates, and drop-off</p>
         </div>
         <Button
           variant="outline"
@@ -596,7 +596,7 @@ export function SummaryTab({
                               key={aIdx}
                               className="p-3.5 bg-surface/80 hover:bg-surface rounded-xl border border-default text-xs sm:text-sm text-primary leading-relaxed flex items-start gap-2.5 transition-colors"
                             >
-                              <MessageSquare className="w-4 h-4 text-secondary/60 shrink-0 mt-0.5" />
+                              <MessageSquare className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
                               <span className="flex-1 break-words line-clamp-3">{ans}</span>
                             </div>
                           ))}

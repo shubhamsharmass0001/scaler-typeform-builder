@@ -573,7 +573,7 @@ export function FormRunner({
                 {form?.welcome_description && (
                   <p
                     style={{ fontSize: "var(--theme-desc-size)" }}
-                    className="opacity-75 text-base sm:text-lg font-light leading-relaxed max-w-md mx-auto"
+                    className="opacity-85 text-base sm:text-lg font-normal leading-relaxed max-w-md mx-auto"
                   >
                     {form.welcome_description}
                   </p>
@@ -596,13 +596,13 @@ export function FormRunner({
                   >
                     <span>{form?.welcome_button_text || "Get started"}</span>
                   </button>
-                  <span className="text-xs opacity-50 font-medium hidden sm:inline">
+                  <span className="text-xs opacity-80 font-medium hidden sm:inline">
                     press <kbd className="font-semibold underline">Enter ↵</kbd>
                   </span>
                 </div>
 
                 {/* Estimate */}
-                <div className="flex items-center gap-1.5 text-xs opacity-60 font-medium pt-1">
+                <div className="flex items-center gap-1.5 text-xs opacity-80 font-medium pt-1">
                   <Clock className="w-3.5 h-3.5" />
                   <span>Takes {estimatedMinutes} min</span>
                 </div>
@@ -658,7 +658,7 @@ export function FormRunner({
                   <motion.div variants={descVariants}>
                     <p
                       style={{ fontSize: isMobilePreview ? "0.8125rem" : "var(--theme-desc-size)" }}
-                      className={`opacity-70 font-light ${isMobilePreview ? "text-xs pl-0 -mt-1" : "text-sm sm:text-base pl-7 sm:pl-8 -mt-3"} leading-relaxed`}
+                      className={`opacity-85 font-normal ${isMobilePreview ? "text-xs pl-0 -mt-1" : "text-sm sm:text-base pl-7 sm:pl-8 -mt-3"} leading-relaxed`}
                     >
                       {currentQuestion.description}
                     </p>
@@ -717,7 +717,7 @@ export function FormRunner({
                       )}
                     </button>
 
-                    <span className={`text-xs opacity-50 font-medium runner-desktop-hint ${isMobilePreview ? "hidden" : "hidden sm:inline"}`}>
+                    <span className={`text-xs opacity-80 font-medium runner-desktop-hint ${isMobilePreview ? "hidden" : "hidden sm:inline"}`}>
                       press <kbd className="font-semibold underline">Enter ↵</kbd>
                     </span>
                   </div>

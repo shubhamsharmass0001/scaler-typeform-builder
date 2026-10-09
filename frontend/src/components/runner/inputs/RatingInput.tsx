@@ -131,7 +131,7 @@ export function RatingInput({
                 renderIcon(isHighlighted)
               )}
 
-              <span className="text-nano sm:text-xs font-semibold opacity-60 mt-1">
+              <span className="text-nano sm:text-xs font-semibold opacity-85 mt-1">
                 {ratingNum}
               </span>
             </button>
@@ -139,7 +139,7 @@ export function RatingInput({
         })}
       </div>
 
-      <p className="text-xs opacity-50 font-medium hidden sm:block">
+      <p className="text-xs opacity-80 font-medium hidden sm:block">
         Press 1 to {steps} on your keyboard to select
       </p>
     </div>

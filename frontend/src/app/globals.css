@@ -217,6 +217,15 @@ body {
 .text-secondary {
   color: var(--text-secondary) !important;
 }
+.text-placeholder {
+  color: var(--text-placeholder) !important;
+}
+::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-placeholder) !important;
+  opacity: 1 !important;
+}
 .border-default {
   border-color: var(--border-default) !important;
 }

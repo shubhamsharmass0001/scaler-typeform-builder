@@ -29,7 +29,7 @@ export function TopTabs() {
   ];
 
   return (
-    <div className="bg-white border-b border-[#ecebf0] px-4 sm:px-6 h-12 flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide text-[13px]">
+    <div className="bg-surface border-b border-default px-4 sm:px-6 h-12 flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-hide text-[13px]">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         return (
@@ -39,8 +39,8 @@ export function TopTabs() {
             className={clsx(
               "relative flex items-center gap-2 py-1.5 px-3 rounded-lg font-medium text-[13px] whitespace-nowrap transition-colors cursor-pointer select-none",
               tab.active
-                ? "bg-[#ecebf0] text-[#191919]"
-                : "text-[#59595d] hover:text-[#191919] hover:bg-[#f4f3f6]"
+                ? "bg-muted text-primary"
+                : "text-secondary hover:text-primary hover:bg-surface-hover"
             )}
           >
             <Icon className="w-4 h-4 shrink-0 text-current" />

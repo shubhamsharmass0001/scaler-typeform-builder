@@ -55,12 +55,12 @@ export function LongTextInput({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onKeyDown={handleKeyDown}
-        className="w-full bg-transparent border-0 border-b border-current/25 pb-2 text-xl sm:text-2xl md:text-3xl font-light focus:outline-none placeholder:opacity-35 placeholder:font-light transition-all duration-200 focus:border-b-2 resize-none leading-relaxed"
+        className="w-full bg-transparent border-0 border-b border-current/25 pb-2 text-xl sm:text-2xl md:text-3xl font-light focus:outline-none placeholder:opacity-85 placeholder:text-placeholder transition-all duration-200 focus:border-b-2 resize-none leading-relaxed"
         style={{
           borderBottomColor: isFocused ? (accentColor || "var(--theme-answer, currentColor)") : undefined,
         }}
       />
-      <p className="text-xs opacity-50 font-medium hidden sm:block">
+      <p className="text-xs opacity-80 font-medium hidden sm:block">
         Shift ⇧ + Enter ↵ to make a line break
       </p>
     </div>

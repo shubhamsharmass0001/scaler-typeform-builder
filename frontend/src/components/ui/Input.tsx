@@ -54,7 +54,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             disabled={disabled}
             className={clsx(
-              "w-full bg-input text-primary placeholder:text-muted text-sm rounded-lg border border-default px-3.5 py-2.5 transition-all duration-150 focus:outline-none focus:border-focus focus:ring-1 focus:ring-focus",
+              "w-full bg-input text-primary placeholder:text-placeholder text-sm rounded-lg border border-default px-3.5 py-2.5 transition-all duration-150 focus:outline-none focus:border-focus focus:ring-1 focus:ring-focus",
               leftIcon && "pl-10",
               rightIcon && "pr-10",
               error && "border-red-500 focus:border-red-500 focus:ring-red-500",
@@ -72,7 +72,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {error ? (
           <p className="mt-1.5 text-xs text-red-500 font-medium">{error}</p>
         ) : helperText ? (
-          <p className="mt-1.5 text-xs text-muted">{helperText}</p>
+          <p className="mt-1.5 text-xs text-secondary font-medium">{helperText}</p>
         ) : null}
       </div>
     );

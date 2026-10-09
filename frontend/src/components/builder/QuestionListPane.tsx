@@ -425,7 +425,7 @@ export function QuestionListPane({
             type="button"
             onClick={onOpenAddModal}
             data-testid="add-content-btn"
-            className="w-full flex items-center justify-center gap-2 py-3 px-3 text-xs font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white border-2 border-dashed border-neutral-300 hover:border-neutral-400 dark:border-neutral-700 dark:hover:border-neutral-600 rounded-2xl transition-all cursor-pointer bg-neutral-50/40 hover:bg-neutral-100/50 dark:bg-neutral-900/20"
+            className="w-full flex items-center justify-center gap-2 py-3 px-3 text-xs font-semibold text-secondary hover:text-primary border-2 border-dashed border-neutral-300 hover:border-neutral-400 dark:border-neutral-700 dark:hover:border-neutral-600 rounded-2xl transition-all cursor-pointer bg-surface/50 hover:bg-surface"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
             <span>Add content</span>

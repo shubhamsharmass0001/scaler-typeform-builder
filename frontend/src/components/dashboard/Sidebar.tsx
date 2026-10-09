@@ -60,19 +60,19 @@ export function Sidebar({
 
       <aside
         className={clsx(
-          "fixed md:sticky top-[6.5rem] left-0 z-20 h-[calc(100vh-6.5rem)] w-60 lg:w-64 bg-[#fbfbfc] border-r border-[#ecebf0] flex flex-col justify-between p-4 transition-transform duration-200 ease-in-out shrink-0 overflow-y-auto select-none",
+          "fixed md:sticky top-[6.5rem] left-0 z-20 h-[calc(100vh-6.5rem)] w-60 lg:w-64 bg-surface border-r border-default flex flex-col justify-between p-4 transition-transform duration-200 ease-in-out shrink-0 overflow-y-auto select-none",
           isOpenMobile ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
         <div className="space-y-4">
           {/* Mobile Header */}
-          <div className="flex items-center justify-between pb-2 md:hidden border-b border-[#ecebf0]">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted">
+          <div className="flex items-center justify-between pb-2 md:hidden border-b border-default">
+            <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
               Workspaces
             </span>
             <button
               onClick={onCloseMobile}
-              className="p-1 rounded-md text-muted hover:text-primary"
+              className="p-1 rounded-md text-secondary hover:text-primary cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -90,15 +90,15 @@ export function Sidebar({
           </button>
 
           {/* Search box with subtle bottom divider line matching Screenshot 4 */}
-          <div className="pt-0.5 pb-3 border-b border-[#ecebf0]">
+          <div className="pt-0.5 pb-3 border-b border-default">
             <div className="relative">
-              <Search className="w-4 h-4 text-[#71717a] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-4 h-4 text-secondary absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange?.(e.target.value)}
                 placeholder="Search"
-                className="w-full bg-transparent hover:bg-white/60 focus:bg-white text-[13px] text-[#191919] placeholder:text-[#71717a] pl-8 pr-3 py-1.5 rounded-lg border border-transparent focus:border-[#ecebf0] focus:outline-none transition-colors"
+                className="w-full bg-transparent hover:bg-surface-hover focus:bg-card text-[13px] text-primary placeholder:text-placeholder pl-8 pr-3 py-1.5 rounded-lg border border-transparent focus:border-default focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -106,15 +106,15 @@ export function Sidebar({
           {/* Workspaces Section (Screenshot 4: 4-square icon, Workspaces label, white bordered + box) */}
           <div className="pt-0.5 space-y-2.5">
             <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2 text-[#2d2b33]">
-                <LayoutGrid className="w-4 h-4 text-[#4a4a4e] shrink-0" />
+              <div className="flex items-center gap-2 text-primary">
+                <LayoutGrid className="w-4 h-4 text-secondary shrink-0" />
                 <span className="text-[13px] font-medium tracking-tight">
                   Workspaces
                 </span>
               </div>
               <button
                 type="button"
-                className="w-7 h-7 rounded-lg bg-white border border-[#e4e2e7] flex items-center justify-center text-[#4a4a4e] hover:bg-[#f4f3f6] shadow-2xs transition-colors cursor-pointer"
+                className="w-7 h-7 rounded-lg bg-card border border-default flex items-center justify-center text-secondary hover:text-primary hover:bg-surface-hover shadow-2xs transition-colors cursor-pointer"
                 title="Create new workspace"
                 onClick={() => alert("Multi-workspace support is in development")}
               >
@@ -127,10 +127,10 @@ export function Sidebar({
               <button
                 type="button"
                 onClick={() => setIsPrivateOpen(!isPrivateOpen)}
-                className="w-full flex items-center justify-between px-1 py-1 text-[13px] font-medium text-[#4a4a4e] hover:text-[#191919] transition-colors cursor-pointer"
+                className="w-full flex items-center justify-between px-1 py-1 text-[13px] font-medium text-secondary hover:text-primary transition-colors cursor-pointer"
               >
                 <span>Private</span>
-                <span className="text-[9px] text-[#4a4a4e]">{isPrivateOpen ? "▲" : "▼"}</span>
+                <span className="text-[9px] text-secondary">{isPrivateOpen ? "▲" : "▼"}</span>
               </button>
 
               {isPrivateOpen && (
@@ -138,10 +138,10 @@ export function Sidebar({
                   {/* Active "My workspace" Item with count badge */}
                   <button
                     type="button"
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-[#ecebf0] text-[#191919] font-normal text-[13px] transition-colors text-left cursor-pointer"
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-muted text-primary font-normal text-[13px] transition-colors text-left cursor-pointer"
                   >
                     <span className="truncate">My workspace</span>
-                    <span className="text-[13px] text-[#4a4a4e] ml-2 shrink-0">
+                    <span className="text-[13px] text-secondary ml-2 shrink-0 font-medium">
                       {totalForms || 3}
                     </span>
                   </button>
@@ -152,41 +152,41 @@ export function Sidebar({
         </div>
 
         {/* Bottom Sidebar: Responses meter & Ask AI Box */}
-        <div className="pt-4 border-t border-[#ecebf0] space-y-4">
+        <div className="pt-4 border-t border-default space-y-4">
           {/* Responses Collected Meter (Screenshot 4: label -> bar -> count -> button) */}
           <div className="px-1">
-            <p className="text-[13px] font-medium text-[#2d2b33] mb-1.5">
+            <p className="text-[13px] font-medium text-primary mb-1.5">
               Responses collected
             </p>
-            <div className="w-full h-1 rounded-full bg-[#e4e2e7] overflow-hidden mb-2">
+            <div className="w-full h-1 rounded-full bg-muted overflow-hidden mb-2">
               <div
-                className="h-full bg-[#191919] rounded-full transition-all duration-300"
+                className="h-full bg-primary rounded-full transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            <p className="text-[13px] text-[#4a4a4e] dark:text-neutral-300 mb-3">
-              <span className="font-semibold text-[#191919] dark:text-white text-[14px]">{(totalResponses || 0).toLocaleString()}</span> / {responseLimit.toLocaleString()}
+            <p className="text-[13px] text-secondary mb-3">
+              <span className="font-semibold text-primary text-[14px]">{(totalResponses || 0).toLocaleString()}</span> / {responseLimit.toLocaleString()}
             </p>
             <button
               type="button"
               onClick={() => alert("Response upgrade tiers coming soon")}
-              className="text-[12px] font-normal text-[#2d2b33] bg-white border border-[#e4e2e7] hover:bg-[#f4f3f6] px-2.5 py-1 rounded-md transition-colors shadow-2xs cursor-pointer inline-block"
+              className="text-[12px] font-normal text-primary bg-card border border-default hover:bg-surface-hover px-2.5 py-1 rounded-md transition-colors shadow-2xs cursor-pointer inline-block"
             >
               Increase response limit
             </button>
           </div>
 
           {/* Ask Typeform AI input pill with purple double ring & vertical divider */}
-          <div className="relative rounded-2xl border border-[#d6cdf5] ring-2 ring-[#efeafc] bg-white p-2 shadow-2xs hover:border-[#c4b5fd] transition-colors">
+          <div className="relative rounded-2xl border border-[#d6cdf5] dark:border-purple-800/60 ring-2 ring-[#efeafc] dark:ring-purple-950/40 bg-card p-2 shadow-2xs hover:border-[#c4b5fd] transition-colors">
             <div className="flex items-center px-0.5">
               <button
                 type="button"
-                className="text-[#4a4a4e] hover:text-purple-600 p-0.5 rounded cursor-pointer shrink-0"
+                className="text-secondary hover:text-purple-600 p-0.5 rounded cursor-pointer shrink-0"
                 title="Voice input"
               >
                 <Mic className="w-4 h-4" />
               </button>
-              <div className="w-[1px] h-4 bg-[#e4e2e7] mx-2 shrink-0" />
+              <div className="w-[1px] h-4 bg-default mx-2 shrink-0" />
               <input
                 type="text"
                 value={aiPrompt}
@@ -198,7 +198,7 @@ export function Sidebar({
                   }
                 }}
                 placeholder="Ask Typeform AI"
-                className="w-full text-[13px] text-[#2d2b33] placeholder:text-[#4a4a4e] bg-transparent focus:outline-none"
+                className="w-full text-[13px] text-primary placeholder:text-placeholder bg-transparent focus:outline-none"
               />
               <button
                 type="button"
@@ -208,7 +208,7 @@ export function Sidebar({
                     setAiPrompt("");
                   }
                 }}
-                className="w-6 h-6 rounded-md border border-[#e4e2e7] text-[#9ca3af] hover:text-[#4a4a4e] flex items-center justify-center shrink-0 cursor-pointer"
+                className="w-6 h-6 rounded-md border border-default text-secondary hover:text-primary flex items-center justify-center shrink-0 cursor-pointer"
                 title="Submit prompt"
               >
                 <Send className="w-3 h-3" />

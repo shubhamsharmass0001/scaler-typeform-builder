@@ -64,7 +64,7 @@
   --text-primary: #191919;        /* Signature Typeform near-black text (Screenshot 1, 3, 4) */
   --text-secondary: #4b4654;      /* Descriptions, subheaders, inactive tabs (high contrast 7.8:1) */
   --text-muted: #6B6575;          /* Helper text, meta info, secondary labels (contrast 5.3:1, WCAG AA) */
-  --text-placeholder: #7c7686;    /* Input placeholders (contrast 4.1:1) */
+  --text-placeholder: #6B6575;    /* Input placeholders (contrast 5.3:1, WCAG AA) */
   --text-inverse: #ffffff;        /* White text on dark buttons & badges */
 
   /* ==========================================================================
@@ -273,7 +273,7 @@
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
-  --text-placeholder: #64748b;
+  --text-placeholder: #94a3b8;
   --text-inverse: #0f1117;
 
   --status-success: #10b981;

@@ -84,7 +84,7 @@ export function CanvasPane() {
                 fontSize: "var(--theme-title-size, 1.75rem)",
                 color: "var(--theme-question, var(--text-primary))",
               }}
-              className="w-full text-center font-bold placeholder:opacity-40 bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1.5 transition-colors"
+              className="w-full text-center font-bold placeholder:text-placeholder bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1.5 transition-colors"
             />
 
             <textarea
@@ -96,7 +96,7 @@ export function CanvasPane() {
               style={{
                 fontSize: "var(--theme-desc-size, 1rem)",
               }}
-              className="w-full text-center opacity-80 placeholder:opacity-40 bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1 resize-none leading-relaxed transition-colors max-w-lg mx-auto"
+              className="w-full text-center text-secondary font-medium placeholder:text-placeholder bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1 resize-none leading-relaxed transition-colors max-w-lg mx-auto"
             />
 
             <div className="pt-2 flex flex-col items-center justify-center gap-3">
@@ -147,7 +147,7 @@ export function CanvasPane() {
                 fontSize: "var(--theme-title-size, 1.75rem)",
                 color: "var(--theme-question, var(--text-primary))",
               }}
-              className="w-full text-center font-bold placeholder:opacity-40 bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1.5 transition-colors"
+              className="w-full text-center font-bold placeholder:text-placeholder bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1.5 transition-colors"
             />
 
             <textarea
@@ -159,7 +159,7 @@ export function CanvasPane() {
               style={{
                 fontSize: "var(--theme-desc-size, 1rem)",
               }}
-              className="w-full text-center opacity-80 placeholder:opacity-40 bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1 resize-none leading-relaxed transition-colors max-w-lg mx-auto"
+              className="w-full text-center text-secondary font-medium placeholder:text-placeholder bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1 resize-none leading-relaxed transition-colors max-w-lg mx-auto"
             />
 
             {/* Social Share Icons (Screenshots 3 & 4) */}
@@ -198,7 +198,7 @@ export function CanvasPane() {
     // ---------------------------------------------------------------------------
     if (!selectedQuestion) {
       return (
-        <div className="text-sm opacity-60 text-center py-12">
+        <div className="text-sm text-secondary font-medium text-center py-12">
           Select or add a question from the left sidebar
         </div>
       );
@@ -269,7 +269,7 @@ export function CanvasPane() {
                 fontSize: "var(--theme-title-size)",
                 color: "var(--theme-question)",
               }}
-              className="w-full font-bold placeholder:opacity-40 bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1 resize-none leading-snug transition-colors"
+              className="w-full font-bold placeholder:text-placeholder bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1 resize-none leading-snug transition-colors"
             />
 
             {/* Inline-editable Description (controlled by showDescription toggle) */}
@@ -289,7 +289,7 @@ export function CanvasPane() {
                 style={{
                   fontSize: "var(--theme-desc-size)",
                 }}
-                className="w-full opacity-70 placeholder:opacity-40 bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1 mt-1 resize-none leading-relaxed transition-colors"
+                className="w-full text-secondary font-medium placeholder:text-placeholder bg-transparent border-b border-transparent hover:border-current/20 focus:border-[var(--theme-answer)] focus:outline-none py-1 mt-1 resize-none leading-relaxed transition-colors"
               />
             )}
           </div>
@@ -302,7 +302,7 @@ export function CanvasPane() {
                 onUpdate={(patch) => updateQuestion(selectedQuestion.id, patch)}
               />
             ) : (
-              <div className="text-xs text-neutral-400">Preview not available</div>
+              <div className="text-xs text-secondary font-medium">Preview not available</div>
             )}
           </div>
 
@@ -318,9 +318,9 @@ export function CanvasPane() {
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold shadow-xs hover:opacity-90 transition-all cursor-default"
             >
               <span>OK</span>
-              <CornerDownLeft className="w-3.5 h-3.5 opacity-60" />
+              <CornerDownLeft className="w-3.5 h-3.5 opacity-80" />
             </button>
-            <span className="text-micro opacity-60 italic">
+            <span className="text-micro text-secondary font-medium italic">
               Shift ⇧ + Enter ↵ to make a line break
             </span>
           </div>

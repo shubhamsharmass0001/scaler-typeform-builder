@@ -263,9 +263,9 @@ export default function WorkspaceDashboard() {
               <button
                 type="button"
                 onClick={() => alert("Workspace collaboration invite modal")}
-                className="flex items-center gap-1.5 text-[13px] font-medium text-[#2d2b33] hover:bg-[#f4f3f6] px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ml-0.5"
+                className="flex items-center gap-1.5 text-[13px] font-medium text-primary hover:bg-surface-hover px-2.5 py-1.5 rounded-md transition-colors cursor-pointer ml-0.5"
               >
-                <UserPlus className="w-3.5 h-3.5 text-[#65636d]" />
+                <UserPlus className="w-3.5 h-3.5 text-secondary" />
                 <span>Invite</span>
               </button>
 
@@ -285,15 +285,15 @@ export default function WorkspaceDashboard() {
                 <button
                   type="button"
                   onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                  className="flex items-center gap-2 text-[13px] font-medium text-[#2d2b33] bg-white border border-[#ecebf0] px-3 py-1.5 rounded-lg hover:bg-[#f4f3f6] transition-colors cursor-pointer shadow-2xs"
+                  className="flex items-center gap-2 text-[13px] font-medium text-primary bg-card border border-default px-3 py-1.5 rounded-lg hover:bg-surface-hover transition-colors cursor-pointer shadow-2xs"
                 >
-                  <Calendar className="w-3.5 h-3.5 text-[#71717a]" />
+                  <Calendar className="w-3.5 h-3.5 text-secondary" />
                   <span>{sortLabels[sortBy]}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#71717a]" />
+                  <ChevronDown className="w-3.5 h-3.5 text-secondary" />
                 </button>
 
                 {isSortDropdownOpen && (
-                  <div className="absolute right-0 mt-1 w-40 rounded-2xl bg-white shadow-dropdown border border-[#ecebf0] p-1 text-xs z-30 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="absolute right-0 mt-1 w-40 rounded-2xl bg-card shadow-dropdown border border-default p-1 text-xs z-30 animate-in fade-in zoom-in-95 duration-100">
                     {[
                       { key: "created", label: "Date created", icon: Calendar },
                       { key: "updated", label: "Last updated", icon: Edit3 },
@@ -310,11 +310,11 @@ export default function WorkspaceDashboard() {
                           }}
                           className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors cursor-pointer text-[13px] ${
                             sortBy === opt.key
-                              ? "bg-[#ecebf0] font-medium text-[#191919]"
-                              : "text-[#65636d] hover:bg-[#f4f3f6] hover:text-[#191919]"
+                              ? "bg-muted font-medium text-primary"
+                              : "text-secondary hover:bg-surface-hover hover:text-primary"
                           }`}
                         >
-                          <Icon className="w-3.5 h-3.5 text-[#71717a] shrink-0" />
+                          <Icon className="w-3.5 h-3.5 text-secondary shrink-0" />
                           <span className="truncate">{opt.label}</span>
                         </button>
                       );
@@ -324,14 +324,14 @@ export default function WorkspaceDashboard() {
               </div>
 
               {/* Segmented Toggle: List / Grid */}
-              <div className="flex items-center bg-white border border-[#ecebf0] p-0.5 rounded-lg shadow-2xs">
+              <div className="flex items-center bg-card border border-default p-0.5 rounded-lg shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
                   className={`flex items-center gap-1.5 px-2.5 py-1 text-[13px] font-medium rounded-md transition-colors cursor-pointer ${
                     viewMode === "list"
-                      ? "bg-[#ecebf0] text-[#191919]"
-                      : "text-[#65636d] hover:text-[#191919]"
+                      ? "bg-muted text-primary"
+                      : "text-secondary hover:text-primary"
                   }`}
                 >
                   <ListIcon className="w-3.5 h-3.5" />
@@ -343,8 +343,8 @@ export default function WorkspaceDashboard() {
                   onClick={() => setViewMode("grid")}
                   className={`flex items-center gap-1.5 px-2.5 py-1 text-[13px] font-medium rounded-md transition-colors cursor-pointer ${
                     viewMode === "grid"
-                      ? "bg-[#ecebf0] text-[#191919]"
-                      : "text-[#65636d] hover:text-[#191919]"
+                      ? "bg-muted text-primary"
+                      : "text-secondary hover:text-primary"
                   }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
@@ -356,7 +356,7 @@ export default function WorkspaceDashboard() {
 
           {/* List View Column Headers */}
           {viewMode === "list" && !isLoading && !isError && processedForms.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-2 text-[12px] font-normal text-[#65636d] mb-1">
+            <div className="flex items-center justify-between px-4 py-2 text-[12px] font-medium text-secondary mb-1">
               <div className="flex-1">
                 {/* Title spacer */}
               </div>
