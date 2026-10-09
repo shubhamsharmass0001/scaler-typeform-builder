@@ -15,6 +15,8 @@ import {
   Download,
   Upload,
   MessageSquare,
+  Copy,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -40,6 +42,22 @@ export function SummaryTab({
   avgDurationFormatted,
 }: SummaryTabProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = () => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const formUrl = form.slug ? `${origin}/f/${form.slug}` : `${origin}/f/${form.id}`;
+    navigator.clipboard
+      .writeText(formUrl)
+      .then(() => {
+        setCopiedLink(true);
+        toast.success("Form link copied to clipboard", { duration: 3000 });
+        setTimeout(() => setCopiedLink(false), 2000);
+      })
+      .catch(() => {
+        toast.error("Failed to copy link");
+      });
+  };
 
   const handleExportCsv = async () => {
     if (isExporting) return;
@@ -118,9 +136,17 @@ export function SummaryTab({
           </p>
         </div>
         <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleCopyLink}
+            leftIcon={copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+          >
+            {copiedLink ? "Link copied!" : "Copy form link"}
+          </Button>
           <Link href={`/forms/${form.id}/share`}>
-            <Button variant="primary" size="sm" leftIcon={<Share2 className="w-3.5 h-3.5" />}>
-              Share your form
+            <Button variant="outline" size="sm" leftIcon={<Share2 className="w-3.5 h-3.5 text-secondary" />}>
+              Share options
             </Button>
           </Link>
           <Button
@@ -129,7 +155,7 @@ export function SummaryTab({
             onClick={handleExportCsv}
             disabled={isExporting}
             isLoading={isExporting}
-            leftIcon={!isExporting ? <Download className="w-3.5 h-3.5 text-muted" /> : undefined}
+            leftIcon={!isExporting ? <Download className="w-3.5 h-3.5 text-secondary" /> : undefined}
           >
             {isExporting ? "Exporting..." : "Export CSV"}
           </Button>
@@ -141,7 +167,7 @@ export function SummaryTab({
               className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-primary hover:bg-surface-hover rounded-xl border border-default transition-colors"
             >
               <span>View live form</span>
-              <ExternalLink className="w-3.5 h-3.5 text-muted" />
+              <ExternalLink className="w-3.5 h-3.5 text-secondary" />
             </a>
           )}
         </div>
@@ -186,8 +212,8 @@ export function SummaryTab({
       {/* Top action header with Export CSV button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-default shadow-card">
         <div>
-          <h2 className="text-sm sm:text-base font-bold text-primary">Executive Summary</h2>
-          <p className="text-xs text-muted">Live overview of form performance, completion rates, and drop-off</p>
+          <h2 className="text-sm sm:text-base font-bold text-primary">Overview</h2>
+          <p className="text-xs text-secondary mt-0.5">Live overview of form performance, completion rates, and drop-off</p>
         </div>
         <Button
           variant="outline"
@@ -195,8 +221,8 @@ export function SummaryTab({
           onClick={handleExportCsv}
           disabled={isExporting}
           isLoading={isExporting}
-          leftIcon={!isExporting ? <Download className="w-3.5 h-3.5 text-muted" /> : undefined}
-          className="text-xs font-semibold self-start sm:self-auto"
+          leftIcon={!isExporting ? <Download className="w-3.5 h-3.5 text-secondary" /> : undefined}
+          className="text-xs font-semibold self-start sm:self-auto cursor-pointer"
         >
           {isExporting ? "Exporting..." : "Export CSV"}
         </Button>
@@ -211,10 +237,10 @@ export function SummaryTab({
             <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-primary">
-            {startedCount}
+            {startedCount.toLocaleString()}
           </div>
           <p className="text-xs text-secondary">
-            {partialCount} in-progress / abandoned
+            {partialCount.toLocaleString()} in-progress / abandoned
           </p>
         </div>
 
@@ -225,7 +251,7 @@ export function SummaryTab({
             <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="text-2xl sm:text-3xl font-bold text-primary">
-            {completedCount}
+            {completedCount.toLocaleString()}
           </div>
           <p className="text-xs text-secondary">
             Submissions finalized
@@ -278,11 +304,11 @@ export function SummaryTab({
           </div>
           <div className="flex items-center gap-4 text-xs text-secondary shrink-0">
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-primary dark:bg-blue-500" />
+              <span className="w-2.5 h-2.5 rounded-xs bg-[#4b4654] dark:bg-[#94a3b8]" />
               <span>Reached question</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-sm bg-rose-500" />
+              <span className="w-2.5 h-2.5 rounded-xs bg-rose-500" />
               <span>Highest drop-off</span>
             </div>
           </div>
@@ -314,26 +340,26 @@ export function SummaryTab({
                       <div className="flex items-center justify-between gap-4">
                         <span>Reached:</span>
                         <span className="font-medium text-primary">
-                          {item.reached_count} respondents (
+                          {item.reached_count.toLocaleString()} respondents (
                           {startedCount > 0 ? Math.round((item.reached_count / startedCount) * 100) : 0}%)
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-4">
                         <span>Dropped here:</span>
                         <span className={`font-semibold ${item.dropped_here_count > 0 ? "text-rose-500" : "text-muted"}`}>
-                          {item.dropped_here_count} ({item.dropoff_percent.toFixed(1)}%)
+                          {item.dropped_here_count.toLocaleString()} ({item.dropoff_percent.toFixed(1)}%)
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-4">
                         <span>Completed past here:</span>
                         <span className="font-medium text-emerald-500">
-                          {Math.max(0, item.reached_count - item.dropped_here_count)}
+                          {Math.max(0, item.reached_count - item.dropped_here_count).toLocaleString()}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Header row: question title and dropped label */}
+                  {/* Header row: question title and aligned reached/dropped stats */}
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-xs font-semibold text-secondary w-5 shrink-0">
@@ -350,19 +376,23 @@ export function SummaryTab({
                       )}
                     </div>
 
-                    {/* Right label: "N dropped (X%)" */}
-                    <div className="shrink-0 text-right">
+                    {/* Aligned Right: reached count + dropped count on the same row */}
+                    <div className="shrink-0 flex items-center gap-2 text-right text-xs">
+                      <span className="font-medium text-secondary">
+                        {item.reached_count.toLocaleString()} reached
+                      </span>
+                      <span className="text-muted">·</span>
                       {item.dropped_here_count > 0 ? (
                         <span
-                          className={`text-xs font-semibold ${
+                          className={`font-semibold ${
                             isHighestDrop ? "text-rose-500 font-bold" : "text-secondary"
                           }`}
                         >
                           {item.dropped_here_count} dropped ({item.dropoff_percent.toFixed(1)}%)
                         </span>
                       ) : (
-                        <span className="text-xs font-normal text-muted">
-                          0 dropped (0.0%)
+                        <span className="font-normal text-muted">
+                          No drop-off
                         </span>
                       )}
                     </div>
@@ -370,10 +400,10 @@ export function SummaryTab({
 
                   {/* Horizontal Bar */}
                   <div className="flex items-center gap-3">
-                    <div className="w-full h-3 bg-muted rounded-full overflow-hidden relative">
+                    <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden relative">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
-                          isHighestDrop ? "bg-rose-500" : "bg-primary dark:bg-blue-500"
+                          isHighestDrop ? "bg-rose-500" : "bg-[#4b4654] dark:bg-[#94a3b8]"
                         }`}
                         style={{
                           width: `${Math.max(reachedPercent, item.reached_count > 0 ? 3 : 0)}%`,
@@ -381,7 +411,7 @@ export function SummaryTab({
                       />
                     </div>
                     <span className="text-xs text-secondary font-mono shrink-0 w-8 text-right">
-                      {item.reached_count}
+                      {item.reached_count.toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -422,7 +452,7 @@ export function SummaryTab({
                 </div>
 
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-surface text-secondary border border-default shrink-0">
-                  {qSummary.total_answered} answered
+                  {qSummary.total_answered.toLocaleString()} answered
                 </span>
               </div>
 
@@ -443,7 +473,7 @@ export function SummaryTab({
                                 {getOptionLabel(qSummary.question_id, item.option)}
                               </span>
                               <span className="text-secondary text-xs shrink-0">
-                                {item.count} ({item.percentage.toFixed(1)}%)
+                                {item.count.toLocaleString()} ({item.percentage.toFixed(1)}%)
                               </span>
                             </div>
                             <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
@@ -503,8 +533,8 @@ export function SummaryTab({
                                   style={{ width: `${pct}%` }}
                                 />
                               </div>
-                              <span className="w-12 text-secondary text-right">
-                                {count} ({pct}%)
+                              <span className="w-14 text-secondary text-right font-mono">
+                                {count.toLocaleString()} ({pct}%)
                               </span>
                             </div>
                           );
@@ -534,7 +564,7 @@ export function SummaryTab({
                       <div className="text-lg sm:text-xl font-bold text-primary">
                         {qSummary.numeric_stats?.min !== null &&
                         qSummary.numeric_stats?.min !== undefined
-                          ? qSummary.numeric_stats.min
+                          ? qSummary.numeric_stats.min.toLocaleString()
                           : "—"}
                       </div>
                     </div>
@@ -545,7 +575,7 @@ export function SummaryTab({
                       <div className="text-lg sm:text-xl font-bold text-primary">
                         {qSummary.numeric_stats?.max !== null &&
                         qSummary.numeric_stats?.max !== undefined
-                          ? qSummary.numeric_stats.max
+                          ? qSummary.numeric_stats.max.toLocaleString()
                           : "—"}
                       </div>
                     </div>
@@ -578,7 +608,7 @@ export function SummaryTab({
                             onClick={onSwitchToResponses}
                             className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline transition-colors cursor-pointer"
                           >
-                            <span>View all {qSummary.total_answered} responses</span>
+                            <span>View all {qSummary.total_answered.toLocaleString()} responses</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -597,7 +627,7 @@ export function SummaryTab({
                         </div>
                         <div>
                           <div className="text-xl sm:text-2xl font-bold text-primary">
-                            {qSummary.total_answered} {qSummary.total_answered === 1 ? "file" : "files"}
+                            {qSummary.total_answered.toLocaleString()} {qSummary.total_answered === 1 ? "file" : "files"}
                           </div>
                           <p className="text-xs text-secondary">
                             uploaded by respondents

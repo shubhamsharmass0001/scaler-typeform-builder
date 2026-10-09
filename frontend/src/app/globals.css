@@ -43,6 +43,7 @@
   --color-avatar-text: var(--text-avatar);
 
   /* Borders */
+  --color-default: var(--border-default);
   --color-border-subtle: var(--border-subtle);
   --color-border-default: var(--border-default);
   --color-border-strong: var(--border-strong);
@@ -50,6 +51,7 @@
   --color-border-dashed: var(--border-dashed);
 
   /* Text */
+  --color-secondary: var(--text-secondary);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
@@ -119,7 +121,29 @@
   --duration-slow: var(--duration-slow);
   --duration-slide: var(--duration-slide);
   --ease-default: var(--ease-default);
-  --ease-spring: var(--ease-spring);
+}
+
+/* Explicit contrast utilities matching design tokens */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+@utility text-muted {
+  color: var(--text-muted);
+}
+@utility text-secondary {
+  color: var(--text-secondary);
+}
+@utility text-placeholder {
+  color: var(--text-placeholder);
+}
+@utility border-default {
+  border-color: var(--border-default);
+}
+@utility border-subtle {
+  border-color: var(--border-subtle);
+}
+@utility border-strong {
+  border-color: var(--border-strong);
 }
 
 /* --------------------------------------------------------------------------
@@ -182,4 +206,20 @@ body {
 
 .runner-mobile-mode .runner-preview-badge {
   display: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Global Contrast & Text Readability Overrides (WCAG AA compliance)
+   ───────────────────────────────────────────────────────────────────────────── */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+.text-secondary {
+  color: var(--text-secondary) !important;
+}
+.border-default {
+  border-color: var(--border-default) !important;
+}
+.border-subtle {
+  border-color: var(--border-subtle) !important;
 }

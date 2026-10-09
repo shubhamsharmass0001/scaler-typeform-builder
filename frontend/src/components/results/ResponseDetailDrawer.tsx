@@ -107,9 +107,20 @@ export function ResponseDetailDrawer({
     }
   };
 
+  const resolveOptionLabel = (item: unknown, q?: Question): string => {
+    if (item === null || item === undefined) return "";
+    if (typeof item === "object" && item !== null && "label" in item) {
+      return String((item as { label: unknown }).label);
+    }
+    const strVal = String(item);
+    const options = (q?.properties?.options || []) as Array<{ id: string; label: string }>;
+    const match = options.find((o) => o.id === strVal || o.label === strVal);
+    return match?.label || strVal;
+  };
+
   const formatValue = (val: unknown, q?: Question): React.ReactNode => {
-    if (val === null || val === undefined || val === "") {
-      return <span className="text-secondary italic">No answer provided</span>;
+    if (val === null || val === undefined || val === "" || (Array.isArray(val) && val.length === 0)) {
+      return <span className="text-muted italic">Not answered</span>;
     }
 
     if (q?.type === "file_upload" || (typeof val === "object" && val !== null && "filename" in val)) {
@@ -141,22 +152,29 @@ export function ResponseDetailDrawer({
       );
     }
 
-    if (typeof val === "boolean") {
-      return val ? "Yes" : "No";
+    if (q?.type === "yes_no" || typeof val === "boolean") {
+      if (typeof val === "boolean") return val ? "Yes" : "No";
+      const s = String(val).toLowerCase();
+      if (s === "true" || s === "yes" || s === "1") return "Yes";
+      if (s === "false" || s === "no" || s === "0") return "No";
+      return String(val);
     }
+
     if (Array.isArray(val)) {
-      if (val.length === 0) {
-        return <span className="text-secondary italic">No answer provided</span>;
-      }
       return val
-        .map((v) =>
-          typeof v === "object" && v !== null && "label" in v ? String(v.label) : String(v)
-        )
+        .map((v) => resolveOptionLabel(v, q))
+        .filter(Boolean)
         .join(", ");
     }
-    if (typeof val === "object") {
+
+    if (["multiple_choice", "dropdown"].includes(q?.type || "")) {
+      return resolveOptionLabel(val, q);
+    }
+
+    if (typeof val === "object" && val !== null) {
       return JSON.stringify(val);
     }
+
     return String(val);
   };
 

@@ -10,12 +10,13 @@ import {
   Inbox,
   Share2,
   ExternalLink,
-  Loader2,
   SlidersHorizontal,
+  Copy,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Form, PaginatedResponses, ResponseRecord } from "@/types";
+import { Form, Question, PaginatedResponses, ResponseRecord } from "@/types";
 import { QUESTION_TYPES } from "@/lib/questionTypes";
 import { Button } from "@/components/ui/Button";
 import { downloadCsv, BASE_URL } from "@/lib/api";
@@ -55,6 +56,22 @@ export function ResponsesTab({
   };
 
   const [isExporting, setIsExporting] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = () => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const formUrl = form.slug ? `${origin}/f/${form.slug}` : `${origin}/f/${form.id}`;
+    navigator.clipboard
+      .writeText(formUrl)
+      .then(() => {
+        setCopiedLink(true);
+        toast.success("Form link copied to clipboard", { duration: 3000 });
+        setTimeout(() => setCopiedLink(false), 2000);
+      })
+      .catch(() => {
+        toast.error("Failed to copy link");
+      });
+  };
 
   // Column visibility state
   const questions = form.questions || [];
@@ -139,18 +156,35 @@ export function ResponsesTab({
     }
   };
 
-  const formatCellValue = (val: unknown): string => {
+  const resolveOptionLabel = (item: unknown, q?: Question): string => {
+    if (item === null || item === undefined) return "";
+    if (typeof item === "object" && item !== null && "label" in item) {
+      return String((item as { label: unknown }).label);
+    }
+    const strVal = String(item);
+    const options = (q?.properties?.options || []) as Array<{ id: string; label: string }>;
+    const match = options.find((o) => o.id === strVal || o.label === strVal);
+    return match?.label || strVal;
+  };
+
+  const formatCellValue = (val: unknown, q?: Question): string => {
     if (val === null || val === undefined || val === "") return "—";
     if (typeof val === "boolean") return val ? "Yes" : "No";
+    if (q?.type === "yes_no") {
+      const s = String(val).toLowerCase();
+      if (s === "true" || s === "yes" || s === "1") return "Yes";
+      if (s === "false" || s === "no" || s === "0") return "No";
+      return String(val);
+    }
     if (Array.isArray(val)) {
       if (val.length === 0) return "—";
       return val
-        .map((v) =>
-          typeof v === "object" && v !== null && "label" in v
-            ? String(v.label)
-            : String(v)
-        )
+        .map((v) => resolveOptionLabel(v, q))
+        .filter(Boolean)
         .join(", ");
+    }
+    if (["multiple_choice", "dropdown"].includes(q?.type || "")) {
+      return resolveOptionLabel(val, q);
     }
     if (typeof val === "object" && val !== null) {
       if ("filename" in val) {
@@ -163,9 +197,13 @@ export function ResponsesTab({
 
   if (isLoading) {
     return (
-      <div className="bg-surface rounded-2xl border border-default p-12 text-center animate-pulse space-y-4">
-        <Loader2 className="w-7 h-7 text-primary animate-spin mx-auto opacity-40" />
-        <p className="text-xs text-secondary">Loading responses...</p>
+      <div className="bg-card rounded-2xl border border-default p-6 shadow-card space-y-4 animate-pulse">
+        <div className="h-10 w-full bg-skeleton rounded-xl" />
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-12 w-full bg-skeleton/60 rounded-xl" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -173,8 +211,8 @@ export function ResponsesTab({
   // Friendly Empty State when there are no responses at all
   if (total === 0 && statusFilter === "") {
     return (
-      <div className="bg-surface rounded-3xl border border-default p-8 sm:p-14 text-center max-w-xl mx-auto space-y-5 shadow-2xs">
-        <div className="w-16 h-16 rounded-2xl bg-muted border border-subtle text-secondary flex items-center justify-center mx-auto">
+      <div className="bg-card rounded-3xl border border-default p-8 sm:p-14 text-center max-w-xl mx-auto space-y-5 shadow-card">
+        <div className="w-16 h-16 rounded-2xl bg-surface border border-default text-secondary flex items-center justify-center mx-auto">
           <Inbox className="w-8 h-8 stroke-[1.75]" />
         </div>
         <div className="space-y-2">
@@ -186,9 +224,17 @@ export function ResponsesTab({
           </p>
         </div>
         <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleCopyLink}
+            leftIcon={copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+          >
+            {copiedLink ? "Link copied!" : "Copy form link"}
+          </Button>
           <Link href={`/forms/${form.id}/share`}>
-            <Button variant="primary" size="sm" leftIcon={<Share2 className="w-3.5 h-3.5" />}>
-              Share form link
+            <Button variant="outline" size="sm" leftIcon={<Share2 className="w-3.5 h-3.5 text-secondary" />}>
+              Share options
             </Button>
           </Link>
           <Button
@@ -535,7 +581,7 @@ export function ResponsesTab({
                           );
                         }
 
-                        const formatted = formatCellValue(val);
+                        const formatted = formatCellValue(val, q);
 
                         return (
                           <td
