@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Check } from "lucide-react";
 import { RUNNER_ANIMATION } from "../animationConstants";
 
@@ -20,10 +20,15 @@ export function YesNoInput({
   const isYes = value === true || value === "true" || value === "yes" || value === "y" || value === 1;
   const isNo = value === false || value === "false" || value === "no" || value === "n" || value === 0;
 
+  const onSubmitRef = useRef(onSubmit);
+  useEffect(() => {
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
+
   const handleSelect = (val: boolean) => {
     onChange(val);
     setTimeout(() => {
-      onSubmit();
+      onSubmitRef.current();
     }, RUNNER_ANIMATION.singleSelectAutoAdvanceDelay);
   };
 

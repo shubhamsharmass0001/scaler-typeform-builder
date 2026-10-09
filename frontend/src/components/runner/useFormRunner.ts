@@ -66,6 +66,10 @@ export function useFormRunner({
   const [onWelcome, setOnWelcome] = useState<boolean>(hasWelcome);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [answers, setAnswers] = useState<Record<string | number, unknown>>({});
+  const answersRef = useRef<Record<string | number, unknown>>({});
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
   const [errors, setErrors] = useState<Record<string | number, string>>({});
   const [status, setStatus] = useState<RunnerStatus>("idle");
   const [submitErrorMessage, setSubmitErrorMessage] = useState<string | null>(null);
@@ -227,6 +231,11 @@ export function useFormRunner({
   const setAnswer = useCallback(
     (questionId: string | number, value: unknown) => {
       const qIdStr = String(questionId);
+      answersRef.current = {
+        ...answersRef.current,
+        [qIdStr]: value,
+        [Number(questionId)]: value,
+      };
 
       setAnswers((prev) => {
         const updated = { ...prev, [qIdStr]: value, [Number(questionId)]: value };
@@ -240,6 +249,7 @@ export function useFormRunner({
         if (prunedPath.length !== path.length) {
           setPath(prunedPath);
         }
+        answersRef.current = prunedAnswers;
         return prunedAnswers;
       });
 
@@ -294,7 +304,12 @@ export function useFormRunner({
 
     // 2. Question step
     if (currentQuestion) {
-      const qVal = answers[currentQuestion.id] ?? answers[String(currentQuestion.id)];
+      const currentAns = answersRef.current;
+      const qVal =
+        currentAns[currentQuestion.id] ??
+        currentAns[String(currentQuestion.id)] ??
+        answers[currentQuestion.id] ??
+        answers[String(currentQuestion.id)];
       const validation = validateQuestionAnswer(currentQuestion, qVal);
 
       if (!validation.isValid) {
@@ -317,7 +332,7 @@ export function useFormRunner({
       });
 
       // Evaluate conditional logic jump
-      const nextTarget = getNextQuestion(currentQuestion, answers, questions);
+      const nextTarget = getNextQuestion(currentQuestion, answersRef.current, questions);
       const isJumpToEnd = String(nextTarget).toLowerCase() === "end";
 
       // If jumping to end or at last question with end target: Submit immediately
@@ -328,7 +343,7 @@ export function useFormRunner({
         if (mode === "preview") {
           setStatus("submitted");
           setDirection(1);
-          onComplete?.(answers);
+          onComplete?.(answersRef.current);
           return true;
         }
 
@@ -336,7 +351,7 @@ export function useFormRunner({
         if (!form?.slug) {
           setStatus("submitted");
           setDirection(1);
-          onComplete?.(answers);
+          onComplete?.(answersRef.current);
           return true;
         }
 
@@ -351,10 +366,11 @@ export function useFormRunner({
           }
 
           // Build answers payload exclusively from questions on the visited path
+          const curAnswers = answersRef.current;
           const submitPayload = {
             response_id: activeSessionId,
             answers: path.map((qId) => {
-              const rawVal = answers[qId] ?? answers[Number(qId)] ?? null;
+              const rawVal = curAnswers[qId] ?? curAnswers[Number(qId)] ?? answers[qId] ?? answers[Number(qId)] ?? null;
               const val =
                 rawVal && typeof rawVal === "object" && "upload_id" in rawVal
                   ? (rawVal as { upload_id: unknown }).upload_id

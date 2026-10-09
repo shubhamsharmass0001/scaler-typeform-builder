@@ -147,8 +147,16 @@ export function FormRunner({
   const handleSafeNext = useCallback(async () => {
     if (isTransitioningRef.current || status === "submitting") return;
     isTransitioningRef.current = true;
+    (document.activeElement as HTMLElement)?.blur?.();
+
+    // Safety timeout ensures lock is never permanently orphaned if animation frame dropped
+    const safetyTimer = setTimeout(() => {
+      isTransitioningRef.current = false;
+    }, 450);
+
     const moved = await goToNext();
     if (!moved) {
+      clearTimeout(safetyTimer);
       isTransitioningRef.current = false;
     }
   }, [goToNext, status]);
@@ -156,7 +164,17 @@ export function FormRunner({
   const handleSafePrev = useCallback(() => {
     if (isTransitioningRef.current || status === "submitting") return;
     isTransitioningRef.current = true;
+    (document.activeElement as HTMLElement)?.blur?.();
+
+    const safetyTimer = setTimeout(() => {
+      isTransitioningRef.current = false;
+    }, 450);
+
     goToPrev();
+    setTimeout(() => {
+      clearTimeout(safetyTimer);
+      isTransitioningRef.current = false;
+    }, 400);
   }, [goToPrev, status]);
 
   // Release transition lock when animation completes
@@ -170,7 +188,18 @@ export function FormRunner({
   // Global keyboard navigation (ArrowDown/ArrowUp, Enter)
   const handleGlobalKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return;
+
       const target = e.target as HTMLElement;
+      // Do not intercept if focus is inside a dropdown trigger or menu
+      if (
+        target?.closest?.('[data-testid="runner-dropdown-trigger"]') ||
+        target?.closest?.('[data-testid^="runner-dropdown-opt"]') ||
+        target?.closest?.('[role="listbox"]')
+      ) {
+        return;
+      }
+
       const isTextInput =
         target &&
         (target.tagName === "INPUT" ||
@@ -695,6 +724,7 @@ export function FormRunner({
           {isThankYou && (
             <motion.div
               key="thank-you-step"
+              data-testid="runner-thank-you"
               custom={direction}
               variants={slideVariants}
               initial="enter"

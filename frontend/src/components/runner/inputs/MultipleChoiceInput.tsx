@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Check } from "lucide-react";
 import { QuestionOption } from "@/types";
 import { RUNNER_ANIMATION } from "../animationConstants";
@@ -26,6 +26,10 @@ export function MultipleChoiceInput({
 }: MultipleChoiceInputProps) {
   const [otherText, setOtherText] = useState("");
   const [showOtherInput, setShowOtherInput] = useState(false);
+  const onSubmitRef = useRef(onSubmit);
+  useEffect(() => {
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
 
   // Parse current value
   const selectedList: string[] = Array.isArray(value)
@@ -47,7 +51,7 @@ export function MultipleChoiceInput({
       // Single select: highlight immediately, then auto-advance after ~400ms
       onChange(optionId);
       setTimeout(() => {
-        onSubmit();
+        onSubmitRef.current();
       }, RUNNER_ANIMATION.singleSelectAutoAdvanceDelay);
     }
   };
@@ -97,12 +101,19 @@ export function MultipleChoiceInput({
           e.preventDefault();
           handleSelectOther();
         }
+      } else {
+        const num = parseInt(e.key, 10);
+        if (!isNaN(num) && num >= 1 && num <= options.length) {
+          e.preventDefault();
+          const targetOpt = options[num - 1];
+          handleSelect(targetOpt.id || targetOpt.label);
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [options, allowOther, selectedList, isMulti]);
+  }, [options, allowOther, selectedList, isMulti, handleSelect, handleSelectOther]);
 
   return (
     <div className="w-full space-y-2.5 max-w-lg">

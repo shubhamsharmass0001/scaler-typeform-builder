@@ -28,6 +28,7 @@ export function DropdownInput({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const selectedOption = options.find(
     (opt) => (opt.id || opt.label) === value || opt.label === value
@@ -37,13 +38,26 @@ export function DropdownInput({
     opt.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const onSubmitRef = useRef(onSubmit);
+  useEffect(() => {
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
+
   const handleSelect = (optionKey: string) => {
     onChange(optionKey);
     setIsOpen(false);
     setTimeout(() => {
-      onSubmit();
+      onSubmitRef.current();
     }, RUNNER_ANIMATION.singleSelectAutoAdvanceDelay);
   };
+
+  // Auto-focus trigger button on transition into question
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      triggerRef.current?.focus();
+    }, 360);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Close when clicking outside
   useEffect(() => {
@@ -75,12 +89,8 @@ export function DropdownInput({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) {
         if (e.key === "Enter" || e.key === "ArrowDown" || e.key === " ") {
-          // Open dropdown if focused
-          const active = document.activeElement;
-          if (containerRef.current?.contains(active)) {
-            e.preventDefault();
-            setIsOpen(true);
-          }
+          e.preventDefault();
+          setIsOpen(true);
         }
         return;
       }
@@ -113,6 +123,7 @@ export function DropdownInput({
     <div ref={containerRef} className="w-full max-w-md relative select-none">
       {/* Trigger Button */}
       <button
+        ref={triggerRef}
         type="button"
         data-testid="runner-dropdown-trigger"
         onClick={() => setIsOpen(!isOpen)}

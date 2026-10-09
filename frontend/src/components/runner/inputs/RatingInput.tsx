@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Star, Heart, ThumbsUp } from "lucide-react";
 import { RUNNER_ANIMATION } from "../animationConstants";
 
@@ -24,10 +24,15 @@ export function RatingInput({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const selectedRating = typeof value === "number" ? value : Number(value) || 0;
 
+  const onSubmitRef = useRef(onSubmit);
+  useEffect(() => {
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
+
   const handleSelect = (idx: number) => {
     onChange(idx);
     setTimeout(() => {
-      onSubmit();
+      onSubmitRef.current();
     }, RUNNER_ANIMATION.singleSelectAutoAdvanceDelay);
   };
 
