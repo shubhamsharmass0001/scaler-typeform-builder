@@ -5,7 +5,8 @@ Handles loading published forms, starting response sessions,
 submitting answers with server-side validation, and tracking drop-offs.
 """
 
-from fastapi import APIRouter, Depends, status
+from typing import Optional
+from fastapi import APIRouter, Depends, status, Request, File, Form, UploadFile
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -17,7 +18,8 @@ from app.schemas.public import (
     ProgressPayload,
     ProgressOut,
 )
-from app.services import public_service
+from app.schemas.upload import UploadOut
+from app.services import public_service, upload_service
 
 router = APIRouter()
 
@@ -89,3 +91,27 @@ def record_progress(
         response_id=response_id,
         last_question_id=last_qid,
     )
+
+
+@router.post("/forms/{slug}/upload", response_model=UploadOut, summary="Upload file for question")
+async def upload_file(
+    slug: str,
+    request: Request,
+    file: UploadFile = File(...),
+    question_id: Optional[int] = Form(None),
+    db: Session = Depends(get_db),
+):
+    """
+    Public file upload for a published form.
+    Validates size limit, MIME types and extensions, prevents path-traversal and spoofing,
+    and enforces rate limiting.
+    """
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    return upload_service.save_upload(
+        db=db,
+        slug=slug,
+        file=file,
+        client_ip=client_ip,
+        question_id=question_id,
+    )
+

@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.enums import FormStatus
 from app.schemas.question import QuestionOut
+from app.schemas.theme import ThemeSchema
 
 
 class FormBase(BaseModel):
@@ -16,7 +17,7 @@ class FormBase(BaseModel):
     description: Optional[str] = Field(None, description="Optional form description")
     theme: Optional[dict[str, Any]] = Field(
         None,
-        description="JSON theme token overrides (backgroundColor, textColor, buttonColor, fontFamily)",
+        description="JSON theme token overrides",
     )
     welcome_title: Optional[str] = Field(None, max_length=255)
     welcome_description: Optional[str] = Field(None)
@@ -29,7 +30,7 @@ class FormCreate(BaseModel):
     """Payload for creating a new form."""
     title: Optional[str] = Field("Untitled form", max_length=255)
     description: Optional[str] = None
-    theme: Optional[dict[str, Any]] = None
+    theme: Optional[ThemeSchema] = None
     welcome_title: Optional[str] = None
     welcome_description: Optional[str] = None
     welcome_button_text: Optional[str] = "Start"
@@ -43,7 +44,7 @@ class FormUpdate(BaseModel):
     description: Optional[str] = None
     status: Optional[FormStatus] = None
     slug: Optional[str] = Field(None, max_length=255)
-    theme: Optional[dict[str, Any]] = None
+    theme: Optional[ThemeSchema] = None
     welcome_title: Optional[str] = None
     welcome_description: Optional[str] = None
     welcome_button_text: Optional[str] = None

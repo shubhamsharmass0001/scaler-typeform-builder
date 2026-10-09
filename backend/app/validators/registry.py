@@ -253,6 +253,26 @@ def validate_rating(question: Any, raw_value: Any) -> Any:
     return val
 
 
+def validate_file_upload(question: Any, raw_value: Any) -> Any:
+    """Validate file upload answer (expects positive integer upload_id or dict containing upload_id)."""
+    if _is_empty(raw_value):
+        if question.required:
+            raise ValidationError("This field is required")
+        return None
+
+    if isinstance(raw_value, dict) and "upload_id" in raw_value:
+        raw_value = raw_value["upload_id"]
+
+    try:
+        upload_id = int(raw_value)
+        if upload_id <= 0:
+            raise ValueError()
+    except (ValueError, TypeError):
+        raise ValidationError("Invalid file upload ID")
+
+    return upload_id
+
+
 # Registry mapping QuestionType enum values to validator functions
 VALIDATORS: dict[QuestionType, Callable[[Any, Any], Any]] = {
     QuestionType.SHORT_TEXT: validate_short_text,
@@ -263,6 +283,7 @@ VALIDATORS: dict[QuestionType, Callable[[Any, Any], Any]] = {
     QuestionType.MULTIPLE_CHOICE: validate_multiple_choice,
     QuestionType.DROPDOWN: validate_dropdown,
     QuestionType.RATING: validate_rating,
+    QuestionType.FILE_UPLOAD: validate_file_upload,
 }
 
 

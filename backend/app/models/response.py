@@ -15,6 +15,7 @@ from app.database import Base
 if TYPE_CHECKING:
     from app.models.form import Form
     from app.models.answer import Answer
+    from app.models.upload import Upload
 
 
 class Response(Base):
@@ -44,6 +45,13 @@ class Response(Base):
     # If a response is deleted, all its individual answers are deleted
     answers: Mapped[list["Answer"]] = relationship(
         "Answer",
+        back_populates="response",
+        cascade="all, delete-orphan",
+    )
+
+    # Uploads attached to this response; cascades on delete
+    uploads: Mapped[list["Upload"]] = relationship(
+        "Upload",
         back_populates="response",
         cascade="all, delete-orphan",
     )

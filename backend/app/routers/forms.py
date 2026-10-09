@@ -7,6 +7,7 @@ Every query is strictly scoped to the active creator user.
 
 from typing import Optional
 from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -29,7 +30,7 @@ from app.schemas.response import (
     ResponseDetailOut,
 )
 from app.schemas.summary import FormSummaryOut
-from app.services import form_service, question_service, response_service
+from app.services import form_service, question_service, response_service, upload_service
 
 router = APIRouter()
 
@@ -172,11 +173,17 @@ def get_responses(
     id: int,
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    status: Optional[str] = Query(
+        default=None,
+        description="Filter responses: 'completed' or 'partial'. Omit for all.",
+        pattern="^(completed|partial)$",
+    ),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """
     List submissions for a form, newest first, with embedded answers.
+    Supports optional status filtering ('completed' or 'partial').
     """
     return response_service.get_form_responses(
         db,
@@ -184,6 +191,7 @@ def get_responses(
         user_id=current_user.id,
         page=page,
         page_size=page_size,
+        status_filter=status,
     )
 
 
@@ -247,21 +255,57 @@ def get_summary(
 @router.get("/{id}/export.csv", summary="Export responses as CSV")
 def export_csv(
     id: int,
+    status: Optional[str] = Query(
+        default=None,
+        description="Filter responses: 'completed' or 'partial'. Omit for all.",
+        pattern="^(completed|partial)$",
+    ),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """
-    Download all form responses as a CSV file.
-    Columns: Response ID, Started At, Submitted At, Completed, [Question titles...]
+    Download form responses as a streaming CSV file with UTF-8 BOM.
+
+    Features:
+      - Slugified filename: <form-title>-responses-<YYYY-MM-DD>.csv
+      - Columns: Response ID, Status, Started At (UTC), Submitted At (UTC), [question titles]
+      - Option labels resolved (not raw IDs); multi-select joined with '; '
+      - Formula-injection guard for text cells
+      - Optional ?status=completed|partial filter
+      - Streaming response with text/csv; charset=utf-8
     """
-    csv_content = response_service.export_responses_csv(
+    stream, filename = response_service.stream_responses_csv(
         db,
         form_id=id,
         user_id=current_user.id,
+        status_filter=status,
     )
-    filename = f"form_{id}_responses.csv"
-    return Response(
-        content=csv_content,
-        media_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    safe_filename = filename.replace('"', '\\"')
+    return StreamingResponse(
+        content=stream,
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{safe_filename}"',
+            "Content-Type": "text/csv; charset=utf-8",
+        },
     )
+
+
+@router.get("/{id}/uploads/{upload_id}", summary="Download uploaded file (creator only)")
+def download_upload_file(
+    id: int,
+    upload_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Stream uploaded file to authenticated creator.
+    Public users cannot access this endpoint.
+    """
+    return upload_service.stream_upload_file(
+        db=db,
+        form_id=id,
+        upload_id=upload_id,
+        user_id=current_user.id,
+    )
+

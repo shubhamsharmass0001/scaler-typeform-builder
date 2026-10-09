@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.models.form import Form
 from app.models.question import Question
 from app.schemas.question import BulkQuestionItem
+from app.services.logic import validate_logic
 
 
 def bulk_save_questions(
@@ -21,11 +22,12 @@ def bulk_save_questions(
     """
     Atomically sync the questions for a form:
       1. Verifies form ownership.
-      2. Maps existing questions by id.
-      3. For questions with an id: updates attributes and assigns position = array index.
-      4. For questions without an id: inserts new Question with position = array index.
-      5. Deletes existing questions that are missing from the incoming payload.
-      6. Commits in a single transaction and returns the ordered list with real ids.
+      2. Validates conditional logic jumps (targets, operators, self-jumps, cycles).
+      3. Maps existing questions by id.
+      4. For questions with an id: updates attributes and assigns position = array index.
+      5. For questions without an id: inserts new Question with position = array index.
+      6. Deletes existing questions that are missing from the incoming payload.
+      7. Commits in a single transaction and returns the ordered list with real ids.
     """
     form = db.query(Form).filter(Form.id == form_id, Form.user_id == user_id).first()
     if not form:
@@ -33,6 +35,17 @@ def bulk_save_questions(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Form with id {form_id} not found",
         )
+
+    # Check for duplicate question IDs in incoming payload
+    incoming_ids = [item.id for item in questions_in if item.id is not None]
+    if len(incoming_ids) != len(set(incoming_ids)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Duplicate question ID in payload",
+        )
+
+    # Validate conditional logic jumps before updating the database
+    validate_logic(form, questions_in)
 
     # Existing questions indexed by id
     existing_questions = {q.id: q for q in form.questions}

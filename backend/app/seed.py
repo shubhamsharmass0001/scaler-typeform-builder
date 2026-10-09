@@ -629,10 +629,12 @@ def seed_database(force: bool = False):
             if is_complete:
                 submitted_time = started_time + timedelta(minutes=random.randint(1, 4), seconds=random.randint(10, 50))
                 drop_off_qid = None
+                drop_index = len(f1_questions)
             else:
                 submitted_time = None
-                # Drop off at question index 2, 3, or 4
-                drop_index = 2 + (i % 3)
+                # Realistic drop-offs spread across questions 1, 2, 4, 6
+                partial_indices = [1, 2, 4, 6]
+                drop_index = partial_indices[(i - 16) % len(partial_indices)]
                 drop_off_qid = f1_questions[drop_index].id
 
             resp = Response(
@@ -645,23 +647,22 @@ def seed_database(force: bool = False):
             db.add(resp)
             db.flush()
 
-            # Answers
-            answers_to_add = [
-                Answer(response_id=resp.id, question_id=f1_questions[0].id, value=data["name"]),
-                Answer(response_id=resp.id, question_id=f1_questions[1].id, value=data["email"]),
+            # Answers answered up to the drop-off question
+            possible_f1_answers = [
+                (f1_questions[0].id, data["name"]),
+                (f1_questions[1].id, data["email"]),
+                (f1_questions[2].id, data["plan"]),
+                (f1_questions[3].id, data["use_case"]),
+                (f1_questions[4].id, data["rating"]),
+                (f1_questions[5].id, data["team_size"]),
+                (f1_questions[6].id, data["recommend"]),
+                (f1_questions[7].id, data["feedback"]),
             ]
-            if is_complete or drop_index > 2:
-                answers_to_add.append(Answer(response_id=resp.id, question_id=f1_questions[2].id, value=data["plan"]))
-            if is_complete or drop_index > 3:
-                answers_to_add.append(Answer(response_id=resp.id, question_id=f1_questions[3].id, value=data["use_case"]))
-            if is_complete:
-                answers_to_add.extend([
-                    Answer(response_id=resp.id, question_id=f1_questions[4].id, value=data["rating"]),
-                    Answer(response_id=resp.id, question_id=f1_questions[5].id, value=data["team_size"]),
-                    Answer(response_id=resp.id, question_id=f1_questions[6].id, value=data["recommend"]),
-                    Answer(response_id=resp.id, question_id=f1_questions[7].id, value=data["feedback"]),
-                ])
-
+            answers_to_add = [
+                Answer(response_id=resp.id, question_id=qid, value=val)
+                for idx, (qid, val) in enumerate(possible_f1_answers)
+                if idx < drop_index
+            ]
             db.add_all(answers_to_add)
 
         print(f"✓ Form 1: Seeded 20 responses (16 complete, 4 partial)")
@@ -681,9 +682,12 @@ def seed_database(force: bool = False):
             if is_complete:
                 submitted_time = started_time + timedelta(minutes=random.randint(1, 3), seconds=random.randint(15, 45))
                 drop_off_qid = None
+                drop_index = len(f2_questions)
             else:
                 submitted_time = None
-                drop_index = 1 + (i % 3)
+                # Realistic drop-offs spread across questions 1, 2, 3, 5
+                partial_indices = [1, 2, 3, 5]
+                drop_index = partial_indices[(i - 14) % len(partial_indices)]
                 drop_off_qid = f2_questions[drop_index].id
 
             resp = Response(
@@ -696,20 +700,19 @@ def seed_database(force: bool = False):
             db.add(resp)
             db.flush()
 
-            answers_to_add = [
-                Answer(response_id=resp.id, question_id=f2_questions[0].id, value=data["name"]),
-                Answer(response_id=resp.id, question_id=f2_questions[1].id, value=data["email"]),
+            possible_f2_answers = [
+                (f2_questions[0].id, data["name"]),
+                (f2_questions[1].id, data["email"]),
+                (f2_questions[2].id, data["ticket"]),
+                (f2_questions[3].id, data["tracks"]),
+                (f2_questions[4].id, data["accommodations"]),
+                (f2_questions[5].id, data["event_goals"]),
             ]
-            if is_complete or drop_index > 2:
-                answers_to_add.append(Answer(response_id=resp.id, question_id=f2_questions[2].id, value=data["ticket"]))
-            if is_complete or drop_index > 3:
-                answers_to_add.append(Answer(response_id=resp.id, question_id=f2_questions[3].id, value=data["tracks"]))
-            if is_complete:
-                answers_to_add.extend([
-                    Answer(response_id=resp.id, question_id=f2_questions[4].id, value=data["accommodations"]),
-                    Answer(response_id=resp.id, question_id=f2_questions[5].id, value=data["event_goals"]),
-                ])
-
+            answers_to_add = [
+                Answer(response_id=resp.id, question_id=qid, value=val)
+                for idx, (qid, val) in enumerate(possible_f2_answers)
+                if idx < drop_index
+            ]
             db.add_all(answers_to_add)
 
         print(f"✓ Form 2: Seeded 18 responses (14 complete, 4 partial)")

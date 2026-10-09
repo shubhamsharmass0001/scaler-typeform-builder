@@ -89,13 +89,14 @@ def create_form(db: Session, user_id: int, payload: FormCreate) -> Form:
     one initial short_text question.
     """
     title = payload.title.strip() if payload.title and payload.title.strip() else "Untitled form"
+    theme = payload.theme.model_dump() if hasattr(payload.theme, "model_dump") else (payload.theme or default_theme())
 
     form = Form(
         user_id=user_id,
         title=title,
         description=payload.description,
         status=FormStatus.DRAFT,
-        theme=payload.theme or default_theme(),
+        theme=theme,
         welcome_title=payload.welcome_title,
         welcome_description=payload.welcome_description,
         welcome_button_text=payload.welcome_button_text or "Start",

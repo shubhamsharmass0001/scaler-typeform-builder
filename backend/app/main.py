@@ -64,11 +64,14 @@ seed_db_if_empty()
 # Read the allowed frontend origin from the environment.
 # Default to localhost:3000 for local development.
 FRONTEND_ORIGIN: str = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
+ALLOWED_ORIGINS: list[str] = [
+   o.strip().rstrip("/") for o in FRONTEND_ORIGIN.split(",") if o.strip()
+]
 
 app.add_middleware(
     CORSMiddleware,
     # allow_origins lists the exact URLs that browsers are permitted to call from.
-    allow_origins=[FRONTEND_ORIGIN],
+    allow_origins=ALLOWED_ORIGINS,
     # Allow cookies / Authorization headers to be forwarded.
     allow_credentials=True,
     # Which HTTP methods are allowed (GET, POST, PUT, DELETE, OPTIONS, PATCH)

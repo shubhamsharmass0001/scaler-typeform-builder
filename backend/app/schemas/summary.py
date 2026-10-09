@@ -46,14 +46,38 @@ class QuestionSummary(BaseModel):
     text_stats: Optional[TextStats] = None
 
 
+class OverallStats(BaseModel):
+    """Overall response progress metrics for the form."""
+    started: int
+    completed: int
+    partial: int
+    completion_rate: float  # completed / started ratio (0.0 - 1.0)
+    average_completion_seconds: Optional[float] = None
+
+
+class DropoffQuestion(BaseModel):
+    """Drop-off funnel metrics for a single question."""
+    question_id: int
+    title: str
+    position: int
+    reached_count: int
+    dropped_here_count: int
+    dropoff_percent: float  # e.g. 20.0%
+
+
 class FormSummaryOut(BaseModel):
     """Complete summary report for a form's responses."""
     form_id: int
     total_responses: int
     completed_responses: int
-    completion_rate: float  # 0.0 - 100.0 percentage
+    completion_rate: float  # 0.0 - 100.0 percentage for backwards compatibility
     drop_off_stats: dict[str, int] = Field(
         default_factory=dict,
         description="Mapping of question_id to abandon count at that step",
+    )
+    overall: OverallStats
+    dropoff: list[DropoffQuestion] = Field(
+        default_factory=list,
+        description="Ordered list of drop-off funnel metrics per question",
     )
     questions: list[QuestionSummary]

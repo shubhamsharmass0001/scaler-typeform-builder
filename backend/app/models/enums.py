@@ -33,3 +33,4 @@ class QuestionType(str, Enum):
     NUMBER = "number"
     YES_NO = "yes_no"
     RATING = "rating"
+    FILE_UPLOAD = "file_upload"

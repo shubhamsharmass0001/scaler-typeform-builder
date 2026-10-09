@@ -17,15 +17,23 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.question import Question
     from app.models.response import Response
+    from app.models.upload import Upload
 
 
-def default_theme() -> dict[str, str]:
+def default_theme() -> dict[str, Any]:
     """Default Typeform-inspired visual theme tokens."""
     return {
+        "preset": "classic",
         "backgroundColor": "#FFFFFF",
-        "textColor": "#191919",
+        "backgroundImageUrl": None,
+        "backgroundOverlay": 0.0,
+        "questionColor": "#191919",
+        "answerColor": "#0445AF",
         "buttonColor": "#0445AF",
+        "buttonTextColor": "#FFFFFF",
         "fontFamily": "Inter",
+        "fontScale": "medium",
+        "buttonRadius": "rounded",
     }
 
 
@@ -95,6 +103,13 @@ class Form(Base):
     # Respondent submissions; deleting a form cascades down to all its responses
     responses: Mapped[list["Response"]] = relationship(
         "Response",
+        back_populates="form",
+        cascade="all, delete-orphan",
+    )
+
+    # Form uploads; deleting a form cascades down to all its uploads
+    uploads: Mapped[list["Upload"]] = relationship(
+        "Upload",
         back_populates="form",
         cascade="all, delete-orphan",
     )
