@@ -12,20 +12,69 @@ export type QuestionType =
   | "email"
   | "number"
   | "yes_no"
-  | "rating";
+  | "rating"
+  | "file_upload";
 
 export type FormStatus = "draft" | "published";
 
+export type ThemePresetName = "classic" | "midnight" | "sunset" | "forest" | "custom";
+export type FontFamilyName =
+  | "Inter"
+  | "Roboto"
+  | "Outfit"
+  | "Playfair Display"
+  | "Poppins"
+  | "Space Grotesk";
+export type FontScale = "small" | "medium" | "large";
+export type ButtonRadius = "square" | "rounded" | "pill";
+
 export interface FormTheme {
-  backgroundColor?: string;
+  preset: ThemePresetName;
+  backgroundColor: string;
+  backgroundImageUrl: string | null;
+  backgroundOverlay: number;
+  questionColor: string;
+  answerColor: string;
+  buttonColor: string;
+  buttonTextColor: string;
+  fontFamily: FontFamilyName;
+  fontScale: FontScale;
+  buttonRadius: ButtonRadius;
+  // Legacy / fallback compatibility
   textColor?: string;
-  buttonColor?: string;
-  fontFamily?: string;
 }
 
 export interface QuestionOption {
   id: string;
   label: string;
+}
+
+export type LogicOperator =
+  | "equals"
+  | "not_equals"
+  | "contains"
+  | "not contains"
+  | "not_contains"
+  | "greater_than"
+  | "less_than"
+  | "is_answered"
+  | "is_empty";
+
+export interface LogicCondition {
+  operator: LogicOperator;
+  value?: string | number | boolean | null;
+}
+
+export interface LogicAction {
+  type: "jump";
+  target_question_id: number | string; // target question ID or "end"
+}
+
+export interface LogicRule {
+  id: string;
+  conditions: LogicCondition[];
+  match: "all" | "any";
+  action: LogicAction;
 }
 
 export interface QuestionProperties {
@@ -41,6 +90,10 @@ export interface QuestionProperties {
   steps?: number;
   shape?: "star" | "number" | "heart" | "thumbs" | "thumb";
   showDescription?: boolean;
+  maxSizeMB?: number;
+  allowedTypes?: string[];
+  logic?: LogicRule[];
+  logicDefault?: number | string | null;
   [key: string]: unknown;
 }
 
@@ -201,12 +254,31 @@ export interface QuestionSummary {
   text_stats: TextStats | null;
 }
 
+export interface OverallStats {
+  started: number;
+  completed: number;
+  partial: number;
+  completion_rate: number;
+  average_completion_seconds: number | null;
+}
+
+export interface DropoffQuestion {
+  question_id: number;
+  title: string;
+  position: number;
+  reached_count: number;
+  dropped_here_count: number;
+  dropoff_percent: number;
+}
+
 export interface FormSummary {
   form_id: number;
   total_responses: number;
   completed_responses: number;
   completion_rate: number;
   drop_off_stats: Record<string, number>;
+  overall?: OverallStats;
+  dropoff?: DropoffQuestion[];
   questions: QuestionSummary[];
 }
 
@@ -214,3 +286,44 @@ export interface ApiErrorResponse {
   detail?: string | Array<{ loc: (string | number)[]; msg: string; type: string }>;
   errors?: Record<string, string>;
 }
+
+export interface PublicForm {
+  id: number;
+  title: string;
+  description: string | null;
+  slug: string;
+  theme: FormTheme | null;
+  welcome_title: string | null;
+  welcome_description: string | null;
+  welcome_button_text: string | null;
+  thank_you_title: string | null;
+  thank_you_message: string | null;
+  questions: Question[];
+}
+
+export interface PublicAnswerItem {
+  question_id: number;
+  value: unknown;
+}
+
+export interface PublicSubmitPayload {
+  response_id?: number | null;
+  answers: PublicAnswerItem[];
+}
+
+export interface PublicSubmitResult {
+  status: string;
+  response_id: number;
+  submitted_at: string;
+}
+
+export interface StartResponseResult {
+  response_id: number;
+}
+
+export interface ProgressResult {
+  status: string;
+  response_id: number;
+  last_question_id: number;
+}
+

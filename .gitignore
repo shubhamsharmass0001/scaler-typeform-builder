@@ -41,3 +41,11 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Uploads
+uploads/
+backend/uploads/
+
+*.db.bak
+test-results/
+playwright-report/
