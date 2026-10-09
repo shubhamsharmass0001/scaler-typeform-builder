@@ -105,8 +105,8 @@ def test_public_and_seed():
     good_payload = {
         "response_id": resp_id,
         "answers": [
-            {"question_id": pub_form["questions"][0]["id"], "value": "Alex Morgan"},
-            {"question_id": pub_form["questions"][1]["id"], "value": "alex.morgan@test.com"},
+            {"question_id": pub_form["questions"][0]["id"], "value": "Aarav Patel"},
+            {"question_id": pub_form["questions"][1]["id"], "value": "aarav.patel@novasolutions.in"},
             {"question_id": pub_form["questions"][2]["id"], "value": "opt_2"},
             {"question_id": pub_form["questions"][3]["id"], "value": "opt_1"},
             {"question_id": pub_form["questions"][4]["id"], "value": 5},
@@ -127,6 +127,9 @@ def test_public_and_seed():
     print(f"Status Code: {code}, Detail: {double_res}")
     assert code == 400
     print("✓ Successfully rejected duplicate submission of completed response!")
+
+    # Clean up test response so database remains in pristine seeded state
+    make_request("DELETE", f"/forms/{pub_form['id']}/responses/{resp_id}")
 
     print("\n" + "=" * 60)
     print("✓ ALL TESTS PASSED SUCCESSFULLY!")
