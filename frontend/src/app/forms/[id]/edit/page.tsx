@@ -52,7 +52,7 @@ function BuilderWorkspace() {
 
   React.useEffect(() => {
     if (state.form?.title) {
-      document.title = `${state.form.title} | FormCraft Builder`;
+      document.title = `${state.form.title} | Typeform Builder`;
     }
   }, [state.form?.title]);
 

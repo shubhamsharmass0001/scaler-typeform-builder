@@ -368,7 +368,7 @@ export function BuilderTopBar({
           {/* View Plans CTA (Teal Button matching Screenshot 1 & 2) */}
           <button
             type="button"
-            onClick={() => toast.info("FormCraft Pro Plan")}
+            onClick={() => toast.info("Typeform Pro Plan")}
             className="hidden md:flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-brand-plan hover:bg-brand-plan-hover rounded-lg transition-all active:scale-[0.98] shadow-xs cursor-pointer"
           >
             View plans

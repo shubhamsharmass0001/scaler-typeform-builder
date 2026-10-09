@@ -1,5 +1,5 @@
 /**
- * themes.ts — Universal Theme System for FormCraft
+ * themes.ts — Universal Theme System for Typeform
  *
  * Implements:
  *   - 5 Presets: classic, midnight, sunset, forest, custom

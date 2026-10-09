@@ -68,7 +68,7 @@ function ResultsPageContent() {
 
   React.useEffect(() => {
     if (form?.title) {
-      document.title = `${form.title} | Results | FormCraft`;
+      document.title = `${form.title} | Results | Typeform`;
     }
   }, [form?.title]);
 

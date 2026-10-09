@@ -35,8 +35,8 @@ export async function generateMetadata({ params }: PublicPageProps): Promise<Met
     };
   }
   return {
-    title: `${form.title} | FormCraft`,
-    description: form.description || "Fill out this form on FormCraft",
+    title: `${form.title} | Typeform`,
+    description: form.description || "Fill out this form on Typeform",
   };
 }
 

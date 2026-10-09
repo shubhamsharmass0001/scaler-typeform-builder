@@ -1,6 +1,6 @@
 # Typeform Design Tokens Reference
 
-This document catalogs every design token used across FormCraft, mapped directly from real Typeform UI screenshots and DevTools measurements.
+This document catalogs every design token used across Typeform, mapped directly from real Typeform UI screenshots and DevTools measurements.
 
 ---
 

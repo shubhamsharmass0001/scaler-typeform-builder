@@ -72,7 +72,7 @@ export default function WorkspaceDashboard() {
   const [formToDelete, setFormToDelete] = useState<FormListItem | null>(null);
 
   React.useEffect(() => {
-    document.title = "My workspace | FormCraft";
+    document.title = "My workspace | Typeform";
   }, []);
 
   // ---------------------------------------------------------------------------

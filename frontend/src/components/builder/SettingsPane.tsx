@@ -215,7 +215,7 @@ export function SettingsPane({ isOpenMobile = false, onCloseMobile }: SettingsPa
             <span className="text-xs font-medium text-primary">Image or video</span>
             <button
               type="button"
-              onClick={() => toast.info("Media library available in FormCraft Pro")}
+              onClick={() => toast.info("Media library available in Typeform Pro")}
               className="p-1 rounded-md text-secondary hover:text-primary hover:bg-surface-hover border border-default cursor-pointer transition-colors"
               title="Add media"
             >
@@ -235,7 +235,7 @@ export function SettingsPane({ isOpenMobile = false, onCloseMobile }: SettingsPa
           </div>
 
           <div
-            onClick={() => toast.info("Team collaboration available in FormCraft Pro")}
+            onClick={() => toast.info("Team collaboration available in Typeform Pro")}
             className="p-2.5 rounded-lg border border-default bg-card hover:bg-surface-hover flex items-center justify-between cursor-pointer transition-colors"
           >
             <span className="text-xs font-semibold text-primary">Comments</span>
@@ -389,7 +389,7 @@ export function SettingsPane({ isOpenMobile = false, onCloseMobile }: SettingsPa
             <span className="text-xs font-medium text-primary">Image or video</span>
             <button
               type="button"
-              onClick={() => toast.info("Media library available in FormCraft Pro")}
+              onClick={() => toast.info("Media library available in Typeform Pro")}
               className="p-1 rounded-md text-secondary hover:text-primary hover:bg-surface-hover border border-default cursor-pointer transition-colors"
               title="Add media"
             >
@@ -409,7 +409,7 @@ export function SettingsPane({ isOpenMobile = false, onCloseMobile }: SettingsPa
           </div>
 
           <div
-            onClick={() => toast.info("Team collaboration available in FormCraft Pro")}
+            onClick={() => toast.info("Team collaboration available in Typeform Pro")}
             className="p-2.5 rounded-lg border border-default bg-card hover:bg-surface-hover flex items-center justify-between cursor-pointer transition-colors"
           >
             <span className="text-xs font-semibold text-primary">Comments</span>
@@ -993,7 +993,7 @@ export function SettingsPane({ isOpenMobile = false, onCloseMobile }: SettingsPa
         </div>
 
         <div
-          onClick={() => toast.info("Team collaboration available in FormCraft Pro")}
+          onClick={() => toast.info("Team collaboration available in Typeform Pro")}
           className="p-2.5 rounded-lg border border-default bg-card hover:bg-surface-hover flex items-center justify-between cursor-pointer transition-colors"
         >
           <span className="text-xs font-semibold text-primary">Comments</span>

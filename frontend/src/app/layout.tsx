@@ -22,8 +22,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | FormCraft",
-    default: "FormCraft — Build beautiful forms",
+    template: "%s | Typeform",
+    default: "Typeform — Build beautiful forms",
   },
   description:
     "A Typeform-inspired form builder. Create, share, and analyze forms with a clean, conversational UI.",

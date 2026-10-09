@@ -776,10 +776,10 @@ export function FormRunner({
 
         {/* Footer controls */}
         <footer className="w-full px-6 py-3.5 flex items-center justify-between">
-          {/* Bottom-left: "Powered by FormCraft" */}
+          {/* Bottom-left: "Powered by Typeform" */}
           <div className="flex items-center gap-1.5 text-xs opacity-50 select-none">
             <span>Powered by</span>
-            <span className="font-semibold text-current opacity-90">FormCraft</span>
+            <span className="font-semibold text-current opacity-90">Typeform</span>
           </div>
 
           {/* Center: "X of N answered" */}

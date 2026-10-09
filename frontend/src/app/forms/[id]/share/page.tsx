@@ -57,7 +57,7 @@ function SharePageContent() {
 
   React.useEffect(() => {
     if (form?.title) {
-      document.title = `${form.title} | Share | FormCraft`;
+      document.title = `${form.title} | Share | Typeform`;
     }
   }, [form?.title]);
 
