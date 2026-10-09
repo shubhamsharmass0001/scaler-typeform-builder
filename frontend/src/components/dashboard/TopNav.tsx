@@ -23,14 +23,18 @@ import { BASE_URL } from "@/lib/api";
 interface TopNavProps {
   onToggleMobileSidebar?: () => void;
   username?: string;
+  userEmail?: string;
 }
 
 export function TopNav({
   onToggleMobileSidebar,
-  username = "shubhamsharmass0001",
+  username = "Shubham",
+  userEmail = "sshubham3_be23@thapar.edu",
 }: TopNavProps) {
   const [isOrgMenuOpen, setIsOrgMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const orgMenuRef = useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -40,14 +44,18 @@ export function TopNav({
       ) {
         setIsOrgMenuOpen(false);
       }
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
     }
-    if (isOrgMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOrgMenuOpen]);
+  }, []);
 
   return (
     <header className="sticky top-0 z-30 h-14 bg-surface border-b border-default px-4 sm:px-6 flex items-center justify-between transition-colors">
@@ -77,7 +85,7 @@ export function TopNav({
           >
             {/* Orange/brown squircle avatar with 'S' */}
             <div className="w-6 h-6 rounded-md bg-gradient-to-br from-amber-600 to-amber-800 text-white font-semibold text-xs flex items-center justify-center shadow-2xs">
-              {username.charAt(0).toUpperCase()}
+              S
             </div>
             <span className="font-medium text-xs sm:text-sm text-primary tracking-tight">
               {username}
@@ -200,11 +208,56 @@ export function TopNav({
           <HelpCircle className="w-4 h-4" />
         </button>
 
-        {/* Profile Circle Avatar with 'SS' */}
-        <div className="ml-1 flex items-center justify-center">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-avatar text-avatar font-semibold text-xs flex items-center justify-center border border-default shadow-2xs select-none">
-            SS
-          </div>
+        {/* Profile Circle Avatar with 'S' and dropdown card */}
+        <div ref={profileMenuRef} className="relative ml-1">
+          <button
+            type="button"
+            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-avatar text-avatar font-semibold text-xs flex items-center justify-center border border-default shadow-2xs select-none hover:opacity-90 transition-opacity cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            title={`Signed in as ${username} (${userEmail})`}
+            aria-label="User account menu"
+          >
+            S
+          </button>
+
+          {isProfileMenuOpen && (
+            <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-white shadow-xl border border-[#ecebf0] p-3 text-xs z-50 animate-in fade-in zoom-in-95 duration-100">
+              {/* Profile Card Header matching screenshot */}
+              <div className="flex items-center gap-3 pb-3 border-b border-[#ecebf0]">
+                <div className="w-9 h-9 rounded-full bg-avatar text-avatar font-bold text-xs flex items-center justify-center border border-default shrink-0 select-none">
+                  S
+                </div>
+                <div className="min-w-0 flex-1 text-left">
+                  <div className="font-semibold text-[13px] text-[#2d2b33] truncate">
+                    Shubham
+                  </div>
+                  <div className="text-[11px] text-[#71717a] truncate font-normal">
+                    sshubham3_be23@thapar.edu
+                  </div>
+                </div>
+              </div>
+
+              {/* Menu items */}
+              <div className="pt-2 space-y-0.5">
+                <button
+                  type="button"
+                  onClick={() => setIsProfileMenuOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#2d2b33] hover:bg-[#f4f3f6] transition-colors text-left text-[13px] font-normal cursor-pointer"
+                >
+                  <Settings className="w-4 h-4 text-[#71717a]" />
+                  <span>Account settings</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsProfileMenuOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#2d2b33] hover:bg-[#f4f3f6] transition-colors text-left text-[13px] font-normal cursor-pointer"
+                >
+                  <CreditCard className="w-4 h-4 text-[#71717a]" />
+                  <span>Billing & plans</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

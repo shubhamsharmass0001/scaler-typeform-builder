@@ -89,10 +89,11 @@ function SortableQuestionItem({
   } = useSortable({ id: String(question.id) });
 
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.35 : 1,
     zIndex: isDragging ? 20 : 1,
+    touchAction: "none",
   };
 
   const typeDef = QUESTION_TYPES[question.type];
@@ -108,11 +109,13 @@ function SortableQuestionItem({
     <div
       ref={setNodeRef}
       style={style}
+      {...attributes}
+      {...listeners}
       data-testid={`question-item-${index}`}
       data-question-id={String(question.id)}
       onClick={onSelect}
       className={clsx(
-        "group relative flex flex-col gap-0.5 px-2 py-2 rounded-lg text-xs font-medium transition-all duration-100 cursor-pointer select-none",
+        "group relative flex flex-col gap-0.5 px-2 py-2 rounded-lg text-xs font-medium transition-all duration-100 select-none cursor-grab active:cursor-grabbing",
         isSelected
           ? "bg-muted text-primary shadow-xs font-semibold border border-default"
           : "hover:bg-surface-hover text-secondary hover:text-primary",
@@ -122,23 +125,19 @@ function SortableQuestionItem({
       <div className="flex items-center justify-between gap-1.5 w-full">
         {/* Left: Drag Handle + Type Badge with Letter/Number + Title */}
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
-          {/* Grip Handle - revealed on hover */}
-          <button
-            type="button"
-            {...attributes}
-            {...listeners}
-            onClick={(e) => e.stopPropagation()}
-            className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-muted hover:text-primary cursor-grab active:cursor-grabbing transition-opacity shrink-0"
+          {/* Grip Handle - visible on hover or low-contrast hint */}
+          <div
+            className="opacity-40 group-hover:opacity-100 p-0.5 rounded text-muted hover:text-primary transition-opacity shrink-0"
             title="Drag to reorder"
             aria-label="Drag to reorder"
             data-testid={`drag-handle-${index}`}
           >
             <GripVertical className="w-3 h-3" />
-          </button>
+          </div>
 
           {/* Colored Icon Badge + Number (Typeform style badge) */}
           <div
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded shrink-0 text-micro font-bold"
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded shrink-0 text-micro font-bold pointer-events-none"
             style={{
               backgroundColor: typeDef?.badgeBg || "var(--bg-muted)",
               color: typeDef?.color || "var(--text-primary)",
@@ -149,7 +148,7 @@ function SortableQuestionItem({
           </div>
 
           {/* Truncated Question Title */}
-          <span className="truncate flex-1 text-caption leading-tight text-primary">
+          <span className="truncate flex-1 text-caption leading-tight text-primary pointer-events-none">
             {question.title || "Your question here"}
           </span>
 
@@ -158,7 +157,7 @@ function SortableQuestionItem({
             <span
               title="Has conditional logic jumps"
               data-testid={`logic-badge-${index}`}
-              className="text-secondary shrink-0 p-0.5 rounded"
+              className="text-secondary shrink-0 p-0.5 rounded pointer-events-none"
             >
               <GitFork className="w-3 h-3 text-secondary" />
             </span>
@@ -171,7 +170,11 @@ function SortableQuestionItem({
           <div className="hidden group-hover:flex items-center gap-0.5 transition-opacity">
             <button
               type="button"
-              onClick={onDuplicate}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate(e);
+              }}
               aria-label="Duplicate question"
               className="p-1 rounded text-secondary hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer"
               title="Duplicate question"
@@ -181,7 +184,11 @@ function SortableQuestionItem({
 
             <button
               type="button"
-              onClick={onDelete}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(e);
+              }}
               aria-label="Delete question"
               className="p-1 rounded text-secondary hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
               title="Delete question"
@@ -194,12 +201,13 @@ function SortableQuestionItem({
           {isSelected && (
             <button
               type="button"
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 onDuplicate(e);
               }}
               aria-label="Question options"
-              className="group-hover:hidden p-0.5 rounded text-secondary hover:text-primary"
+              className="group-hover:hidden p-0.5 rounded text-secondary hover:text-primary cursor-pointer"
             >
               <MoreHorizontal className="w-3.5 h-3.5" />
             </button>

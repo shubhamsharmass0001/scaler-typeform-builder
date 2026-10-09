@@ -158,3 +158,28 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-strong);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Mobile Preview Mockup Styles (.runner-mobile-mode)
+   Ensures text inputs, headings, and padding scale perfectly inside phone frame
+   ───────────────────────────────────────────────────────────────────────────── */
+.runner-mobile-mode input[type="text"],
+.runner-mobile-mode input[type="email"],
+.runner-mobile-mode input[type="number"] {
+  font-size: 1.125rem !important;
+  line-height: 1.5rem !important;
+  padding-bottom: 0.375rem !important;
+}
+
+.runner-mobile-mode textarea {
+  font-size: 1rem !important;
+  line-height: 1.4rem !important;
+}
+
+.runner-mobile-mode .runner-desktop-hint {
+  display: none !important;
+}
+
+.runner-mobile-mode .runner-preview-badge {
+  display: none !important;
+}

@@ -22,7 +22,7 @@ def get_current_user(db: Session = Depends(get_db)) -> User:
     user = db.query(User).filter(User.id == 1).first()
     if not user:
         # If seed hasn't run yet, auto-create the default creator
-        user = User(id=1, name="Default Creator", email="creator@example.com")
+        user = User(id=1, name="Shubham", email="sshubham3_be23@thapar.edu")
         db.add(user)
         db.commit()
         db.refresh(user)

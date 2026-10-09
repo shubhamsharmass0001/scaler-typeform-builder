@@ -335,14 +335,14 @@ def seed_database(force: bool = False):
         # -------------------------------------------------------------------
         creator = User(
             id=1,
-            name="Demo Creator",
-            email="creator@example.com",
+            name="Shubham",
+            email="sshubham3_be23@thapar.edu",
             created_at=datetime.utcnow() - timedelta(days=30),
         )
         db.add(creator)
         db.commit()
         db.refresh(creator)
-        print("✓ Created Demo Creator (id=1, name='Demo Creator', email='creator@example.com')")
+        print("✓ Created Creator (id=1, name='Shubham', email='sshubham3_be23@thapar.edu')")
 
         # -------------------------------------------------------------------
         # 2. Form 1: Customer Satisfaction Survey (Published, all 8 types)

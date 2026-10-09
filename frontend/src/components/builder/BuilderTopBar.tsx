@@ -8,9 +8,7 @@
  *   - Center: Content | Workflow | Connect tabs (Content is active by default)
  *   - Right: Share button + View plans CTA button + Avatar
  *   - Second row: Universal mode dropdown | + Add content | Design | preview icons | toolbar icons
- */
-
-import React, { useState, useEffect } from "react";
+ */import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Check,
@@ -45,7 +43,7 @@ interface BuilderTopBarProps {
   onOpenPreview?: () => void;
   onOpenDesign?: () => void;
   onOpenConnect?: () => void;
-  onOpenAddModal?: () => void;
+  onOpenAddModal: () => void;
   onToggleLeftPane?: () => void;
   onToggleRightPane?: () => void;
   isLeftPaneOpen?: boolean;
@@ -74,7 +72,24 @@ export function BuilderTopBar({
   const [showLiveModal, setShowLiveModal] = useState(false);
   const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
   const [publishedSlug, setPublishedSlug] = useState<string>(form?.slug || "");
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const isPublished = form?.status === "published";
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   if (form && form.id !== prevFormId) {
     setPrevFormId(form.id);
@@ -384,12 +399,58 @@ export function BuilderTopBar({
             ?
           </button>
 
-          {/* Avatar (Tan background with dark SS matching screenshot) */}
-          <div
-            className="w-7 h-7 rounded-full bg-avatar text-avatar text-micro font-bold flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-all select-none border border-default shadow-2xs"
-            title="Signed in as Shubham Sharma"
-          >
-            SS
+          {/* Avatar (Tan background with dark S matching screenshot) */}
+          <div ref={profileMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className="w-7 h-7 rounded-full bg-avatar text-avatar text-micro font-bold flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-all select-none border border-default shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              title="Signed in as Shubham (sshubham3_be23@thapar.edu)"
+              aria-label="User profile"
+            >
+              S
+            </button>
+
+            {isProfileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-white shadow-xl border border-[#ecebf0] p-3 text-xs z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="flex items-center gap-3 pb-3 border-b border-[#ecebf0]">
+                  <div className="w-9 h-9 rounded-full bg-avatar text-avatar font-bold text-xs flex items-center justify-center border border-default shrink-0 select-none">
+                    S
+                  </div>
+                  <div className="min-w-0 flex-1 text-left">
+                    <div className="font-semibold text-[13px] text-[#2d2b33] truncate">
+                      Shubham
+                    </div>
+                    <div className="text-[11px] text-[#71717a] truncate font-normal">
+                      sshubham3_be23@thapar.edu
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 space-y-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      toast.info("Account settings");
+                    }}
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#2d2b33] hover:bg-[#f4f3f6] transition-colors text-left text-[13px] font-normal cursor-pointer"
+                  >
+                    <span>Account settings</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      toast.info("Plan: Typeform Pro");
+                    }}
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#2d2b33] hover:bg-[#f4f3f6] transition-colors text-left text-[13px] font-normal cursor-pointer"
+                  >
+                    <span>Billing & plans</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile Right Settings Toggle */}

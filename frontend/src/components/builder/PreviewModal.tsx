@@ -106,29 +106,40 @@ export function PreviewModal({ isOpen, onClose, form, questions }: PreviewModalP
       </header>
 
       {/* Main Viewport Container */}
-      <div className="flex-1 overflow-auto flex items-center justify-center p-4 sm:p-8">
+      <div className="flex-1 overflow-hidden flex items-center justify-center p-3 sm:p-5">
         {device === "mobile" ? (
-          /* Mobile iPhone Frame Mockup */
-          <div className="w-[375px] h-[720px] rounded-[48px] border-[10px] border-primary bg-white shadow-2xl relative overflow-hidden flex flex-col shrink-0">
+          /* Mobile iPhone Frame Mockup with Responsive Height */
+          <div className="w-[360px] sm:w-[375px] max-w-[92vw] h-[min(680px,calc(100vh-100px))] rounded-[44px] border-[10px] border-[#18181b] bg-white shadow-2xl relative overflow-hidden flex flex-col shrink-0">
             {/* Dynamic Island / Speaker Notch */}
-            <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-4 rounded-full bg-primary z-30 flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-secondary mr-2" />
+            <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-24 h-4 rounded-full bg-[#18181b] z-30 flex items-center justify-center pointer-events-none">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#27272a] mr-2" />
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-950/80" />
             </div>
 
-            {/* Embedded FormRunner */}
-            <div className="flex-1 w-full h-full overflow-hidden pt-5">
-              <FormRunner mode="preview" form={form} questions={questions} />
+            {/* Embedded FormRunner with safe-area spacing */}
+            <div className="flex-1 w-full h-full overflow-hidden pt-7 pb-1">
+              <FormRunner
+                mode="preview"
+                form={form}
+                questions={questions}
+                isMobilePreview={true}
+              />
             </div>
 
             {/* Bottom Home Indicator Bar */}
-            <div className="h-4 bg-transparent flex items-center justify-center shrink-0">
-              <div className="w-32 h-1 rounded-full bg-neutral-300" />
+            <div className="h-4 bg-transparent flex items-center justify-center shrink-0 pointer-events-none">
+              <div className="w-28 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
             </div>
           </div>
         ) : (
           /* Desktop Browser Frame View */
           <div className="max-w-4xl w-full h-[82vh] rounded-2xl bg-white shadow-2xl border border-neutral-200 overflow-hidden flex flex-col">
-            <FormRunner mode="preview" form={form} questions={questions} />
+            <FormRunner
+              mode="preview"
+              form={form}
+              questions={questions}
+              isMobilePreview={false}
+            />
           </div>
         )}
       </div>

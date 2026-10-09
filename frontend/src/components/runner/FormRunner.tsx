@@ -51,6 +51,7 @@ export interface FormRunnerProps {
   form: Form | PublicForm | null;
   questions?: Question[];
   onComplete?: (answers: Record<string | number, unknown>) => void;
+  isMobilePreview?: boolean;
 }
 
 /**
@@ -97,6 +98,7 @@ export function FormRunner({
   form,
   questions: propQuestions,
   onComplete,
+  isMobilePreview = false,
 }: FormRunnerProps) {
   // Use questions from props or form.questions
   const questions = propQuestions || form?.questions || [];
@@ -488,7 +490,9 @@ export function FormRunner({
       onTouchEnd={handleTouchEnd}
       className={`w-full ${
         mode === "live" ? "h-[100dvh] min-h-[100dvh]" : "h-full"
-      } flex flex-col justify-between relative overflow-hidden select-none touch-manipulation`}
+      } flex flex-col justify-between relative overflow-hidden select-none touch-manipulation ${
+        isMobilePreview ? "runner-mobile-mode" : ""
+      }`}
       style={{
         ...themeStyles,
         backgroundColor: "var(--theme-bg)",
@@ -524,9 +528,9 @@ export function FormRunner({
           : ""}
       </div>
 
-      {/* Mode Badge (Preview notice) */}
-      {mode === "preview" && (
-        <div className="absolute top-4 left-6 z-30 flex items-center gap-2">
+      {/* Mode Badge (Preview notice) - hidden on mobile preview to not overlap notch */}
+      {mode === "preview" && !isMobilePreview && (
+        <div className="absolute top-4 left-6 z-30 flex items-center gap-2 runner-preview-badge">
           <span className="px-2.5 py-1 rounded-full text-nano font-bold uppercase tracking-wider bg-black/10 backdrop-blur-xs text-current border border-current/15">
             Preview only, nothing was saved
           </span>
@@ -534,7 +538,9 @@ export function FormRunner({
       )}
 
       {/* 2. Main Content Center Stage — Vertically positioned slightly above center */}
-      <main className="flex-1 flex flex-col justify-center items-center px-6 sm:px-12 py-12 w-full max-w-2xl mx-auto relative z-10 -translate-y-2 sm:-translate-y-5">
+      <main className={`flex-1 flex flex-col justify-center items-center ${
+        isMobilePreview ? "px-4 py-3 max-w-full" : "px-6 sm:px-12 py-12 max-w-2xl -translate-y-2 sm:-translate-y-5"
+      } w-full mx-auto relative z-10`}>
         <AnimatePresence mode="wait" custom={direction} initial={false}>
           {/* Welcome Step — Faithful to Screenshot 1 */}
           {isWelcome && (
@@ -622,22 +628,22 @@ export function FormRunner({
                 className="space-y-6"
               >
                 {/* Question Header: Number + Arrow + Title */}
-                <motion.div variants={titleVariants} className="space-y-2">
-                  <div className="flex items-baseline gap-2.5">
+                <motion.div variants={titleVariants} className="space-y-1.5">
+                  <div className="flex items-baseline gap-2">
                     <span
-                      className="text-base sm:text-lg font-semibold shrink-0 flex items-center gap-1"
+                      className={`${isMobilePreview ? "text-sm" : "text-base sm:text-lg"} font-semibold shrink-0 flex items-center gap-1`}
                       style={{ color: "var(--theme-answer)" }}
                     >
                       <span>{questionIndex + 1}</span>
-                      <span className="text-lg leading-none">&rarr;</span>
+                      <span className="text-base leading-none">&rarr;</span>
                     </span>
 
                     <h2
                       style={{
-                        fontSize: "var(--theme-title-size)",
+                        fontSize: isMobilePreview ? "1.25rem" : "var(--theme-title-size)",
                         color: "var(--theme-question)",
                       }}
-                      className="text-2xl sm:text-3xl md:text-4xl font-normal sm:font-medium leading-snug tracking-tight"
+                      className={isMobilePreview ? "text-lg sm:text-xl font-medium leading-snug tracking-tight" : "text-2xl sm:text-3xl md:text-4xl font-normal sm:font-medium leading-snug tracking-tight"}
                     >
                       {currentQuestion.title || "Untitled Question"}
                       {currentQuestion.required && (
@@ -651,8 +657,8 @@ export function FormRunner({
                 {currentQuestion.description && (
                   <motion.div variants={descVariants}>
                     <p
-                      style={{ fontSize: "var(--theme-desc-size)" }}
-                      className="opacity-70 font-light text-sm sm:text-base leading-relaxed pl-7 sm:pl-8 -mt-3"
+                      style={{ fontSize: isMobilePreview ? "0.8125rem" : "var(--theme-desc-size)" }}
+                      className={`opacity-70 font-light ${isMobilePreview ? "text-xs pl-0 -mt-1" : "text-sm sm:text-base pl-7 sm:pl-8 -mt-3"} leading-relaxed`}
                     >
                       {currentQuestion.description}
                     </p>
@@ -660,7 +666,7 @@ export function FormRunner({
                 )}
 
                 {/* Question Input */}
-                <motion.div variants={inputVariants} className="pt-2 pl-0 sm:pl-8 space-y-4">
+                <motion.div variants={inputVariants} className={`pt-2 ${isMobilePreview ? "pl-0 space-y-3" : "pl-0 sm:pl-8 space-y-4"}`}>
                   {renderQuestionInput()}
 
                   {/* Validation Error Message */}
@@ -685,7 +691,7 @@ export function FormRunner({
                   )}
 
                   {/* Advance Button: "OK ✓" or "Submit" */}
-                  <div className="pt-3 flex items-center gap-3">
+                  <div className="pt-2 flex items-center gap-3">
                     <button
                       type="button"
                       data-testid="runner-next-btn"
@@ -696,7 +702,7 @@ export function FormRunner({
                         color: "var(--theme-btn-text)",
                         borderRadius: "var(--theme-btn-radius)",
                       }}
-                      className="inline-flex items-center gap-2 px-6 py-2.5 text-sm sm:text-base font-semibold shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
+                      className={`inline-flex items-center gap-2 ${isMobilePreview ? "px-5 py-2 text-sm" : "px-6 py-2.5 text-sm sm:text-base"} font-semibold shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50`}
                     >
                       {status === "submitting" ? (
                         <>
@@ -711,7 +717,7 @@ export function FormRunner({
                       )}
                     </button>
 
-                    <span className="text-xs opacity-50 font-medium hidden sm:inline">
+                    <span className={`text-xs opacity-50 font-medium runner-desktop-hint ${isMobilePreview ? "hidden" : "hidden sm:inline"}`}>
                       press <kbd className="font-semibold underline">Enter ↵</kbd>
                     </span>
                   </div>
@@ -805,7 +811,7 @@ export function FormRunner({
         </div>
 
         {/* Footer controls */}
-        <footer className="w-full px-6 py-3.5 flex items-center justify-between">
+        <footer className={`w-full ${isMobilePreview ? "px-4 py-2" : "px-6 py-3.5"} flex items-center justify-between`}>
           {/* Bottom-left: "Powered by Typeform" */}
           <div className="flex items-center gap-1.5 text-xs opacity-50 select-none">
             <span>Powered by</span>
