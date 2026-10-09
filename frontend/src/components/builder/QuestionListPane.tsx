@@ -56,9 +56,7 @@ interface QuestionListPaneProps {
   onOpenAddModal: () => void;
   isOpenMobile?: boolean;
   onCloseMobile?: () => void;
-}
-
-// Single Sortable Question Item Component
+}// Single Sortable Question Item Component matching Reference Image 2
 function SortableQuestionItem({
   question,
   index,
@@ -91,19 +89,27 @@ function SortableQuestionItem({
   const style: React.CSSProperties = {
     transform: CSS.Translate.toString(transform),
     transition,
-    opacity: isDragging ? 0.35 : 1,
-    zIndex: isDragging ? 20 : 1,
+    zIndex: isDragging ? 30 : 1,
     touchAction: "none",
   };
 
   const typeDef = QUESTION_TYPES[question.type];
   const Icon = typeDef?.icon || Sparkles;
 
-  // Question badge label: number or letter (e.g. A, B, C for multiple choices or 1, 2, 3)
   const itemBadgeLabel = String(index + 1);
-
   const hasLogic = hasQuestionLogic(question);
   const jumpTargets = showLogicOverview ? getQuestionJumpTargets(question, questions) : [];
+
+  // When dragging, display the clean dashed drop target placeholder matching Image 2
+  if (isDragging) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-2xl min-h-[58px] w-full bg-neutral-100/50 dark:bg-neutral-800/20 transition-all my-0.5"
+      />
+    );
+  }
 
   return (
     <div
@@ -115,40 +121,30 @@ function SortableQuestionItem({
       data-question-id={String(question.id)}
       onClick={onSelect}
       className={clsx(
-        "group relative flex flex-col gap-0.5 px-2 py-2 rounded-lg text-xs font-medium transition-all duration-100 select-none cursor-grab active:cursor-grabbing",
+        "group relative flex flex-col gap-1.5 p-3 rounded-2xl bg-white dark:bg-card border transition-all duration-150 select-none cursor-grab active:cursor-grabbing",
         isSelected
-          ? "bg-muted text-primary shadow-xs font-semibold border border-default"
-          : "hover:bg-surface-hover text-secondary hover:text-primary",
-        isOver && !isDragging && "border-t-2 border-primary"
+          ? "border-neutral-900 dark:border-white shadow-xs ring-1 ring-neutral-900/10 dark:ring-white/20"
+          : "border-neutral-200/90 dark:border-neutral-800/90 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-2xs hover:shadow-xs",
+        isOver && "ring-2 ring-blue-500 ring-offset-2"
       )}
     >
-      <div className="flex items-center justify-between gap-1.5 w-full">
-        {/* Left: Drag Handle + Type Badge with Letter/Number + Title */}
-        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-          {/* Grip Handle - visible on hover or low-contrast hint */}
+      <div className="flex items-center justify-between gap-2.5 w-full">
+        {/* Left: Pastel Badge + Title */}
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          {/* Pastel badge matching Image 2 */}
           <div
-            className="opacity-40 group-hover:opacity-100 p-0.5 rounded text-muted hover:text-primary transition-opacity shrink-0"
-            title="Drag to reorder"
-            aria-label="Drag to reorder"
-            data-testid={`drag-handle-${index}`}
-          >
-            <GripVertical className="w-3 h-3" />
-          </div>
-
-          {/* Colored Icon Badge + Number (Typeform style badge) */}
-          <div
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded shrink-0 text-micro font-bold pointer-events-none"
+            className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl shrink-0 font-medium text-xs pointer-events-none shadow-2xs"
             style={{
-              backgroundColor: typeDef?.badgeBg || "var(--bg-muted)",
-              color: typeDef?.color || "var(--text-primary)",
+              backgroundColor: typeDef?.badgeBg || "#d0f0fd",
+              color: typeDef?.color || "#0284c7",
             }}
           >
-            <Icon className="w-3 h-3 stroke-[2.2]" aria-hidden="true" />
-            <span>{itemBadgeLabel}</span>
+            <Icon className="w-3.5 h-3.5 stroke-[2.2]" aria-hidden="true" />
+            <span className="font-semibold text-xs">{itemBadgeLabel}</span>
           </div>
 
-          {/* Truncated Question Title */}
-          <span className="truncate flex-1 text-caption leading-tight text-primary pointer-events-none">
+          {/* Question Title matching Image 2 */}
+          <span className="flex-1 text-[13px] leading-snug font-normal text-neutral-700 dark:text-neutral-200 line-clamp-2 pointer-events-none">
             {question.title || "Your question here"}
           </span>
 
@@ -164,72 +160,53 @@ function SortableQuestionItem({
           )}
         </div>
 
-        {/* Right: More menu or action buttons */}
-        <div className="flex items-center gap-0.5 shrink-0">
-          {/* Actions revealed on hover */}
-          <div className="hidden group-hover:flex items-center gap-0.5 transition-opacity">
-            <button
-              type="button"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDuplicate(e);
-              }}
-              aria-label="Duplicate question"
-              className="p-1 rounded text-secondary hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer"
-              title="Duplicate question"
-            >
-              <Copy className="w-3 h-3" />
-            </button>
+        {/* Right: Actions revealed on hover */}
+        <div className="hidden group-hover:flex items-center gap-0.5 shrink-0 transition-opacity">
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDuplicate(e);
+            }}
+            aria-label="Duplicate question"
+            className="p-1 rounded-md text-secondary hover:text-primary hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            title="Duplicate question"
+          >
+            <Copy className="w-3.5 h-3.5" />
+          </button>
 
-            <button
-              type="button"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(e);
-              }}
-              aria-label="Delete question"
-              className="p-1 rounded text-secondary hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-              title="Delete question"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
-          </div>
-
-          {/* Selected 3 dots button (matching screenshot) */}
-          {isSelected && (
-            <button
-              type="button"
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDuplicate(e);
-              }}
-              aria-label="Question options"
-              className="group-hover:hidden p-0.5 rounded text-secondary hover:text-primary cursor-pointer"
-            >
-              <MoreHorizontal className="w-3.5 h-3.5" />
-            </button>
-          )}
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(e);
+            }}
+            aria-label="Delete question"
+            className="p-1 rounded-md text-secondary hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+            title="Delete question"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
       {/* Logic overview jump arrows */}
       {showLogicOverview && (
-        <div className="flex flex-wrap items-center gap-1 pl-6 pt-0.5 text-nano">
+        <div className="flex flex-wrap items-center gap-1 pl-1 pt-1 text-nano border-t border-dashed border-neutral-200 dark:border-neutral-800">
           <span className="text-muted font-mono">↳</span>
           {hasLogic ? (
             jumpTargets.map((target, tIdx) => (
               <span
                 key={tIdx}
                 className={clsx(
-                  "inline-flex items-center gap-0.5 px-1 py-0.2 rounded font-medium",
+                  "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded font-medium",
                   target.isInvalid
                     ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                     : target.isEnd
                     ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                    : "bg-surface text-secondary border border-default"
+                    : "bg-neutral-100 dark:bg-neutral-800 text-secondary"
                 )}
               >
                 {target.isInvalid && <AlertTriangle className="w-2.5 h-2.5 shrink-0" />}
@@ -245,7 +222,7 @@ function SortableQuestionItem({
   );
 }
 
-// Drag Overlay Item for smooth visual feedback
+// Drag Overlay Item for smooth visual feedback matching Image 2
 function DraggingItemOverlay({ question, index }: { question: Question; index: number }) {
   const typeDef = QUESTION_TYPES[question.type];
   const Icon = typeDef?.icon || Sparkles;
@@ -253,24 +230,21 @@ function DraggingItemOverlay({ question, index }: { question: Question; index: n
   return (
     <div
       style={{
-        backgroundColor: "var(--drag-overlay-bg)",
-        borderColor: "var(--drag-overlay-border)",
-        boxShadow: "var(--drag-overlay-shadow)",
+        boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
       }}
-      className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-semibold text-primary border opacity-95 select-none"
+      className="flex items-center gap-2.5 p-3 rounded-2xl bg-white dark:bg-card border border-blue-500/40 shadow-2xl scale-[1.03] rotate-1 select-none cursor-grabbing w-[230px]"
     >
-      <GripVertical className="w-3 h-3 text-muted shrink-0" />
       <div
-        className="flex items-center gap-1 px-1.5 py-0.5 rounded shrink-0 text-micro font-bold"
+        className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-xl shrink-0 text-xs font-semibold shadow-2xs"
         style={{
-          backgroundColor: typeDef?.badgeBg || "var(--bg-muted)",
-          color: typeDef?.color || "var(--text-primary)",
+          backgroundColor: typeDef?.badgeBg || "#d0f0fd",
+          color: typeDef?.color || "#0284c7",
         }}
       >
-        <Icon className="w-3 h-3 stroke-[2.2]" />
+        <Icon className="w-3.5 h-3.5 stroke-[2.2]" />
         <span>{index + 1}</span>
       </div>
-      <span className="truncate max-w-[140px]">
+      <span className="text-[13px] leading-snug font-normal text-neutral-800 dark:text-neutral-200 line-clamp-2 flex-1">
         {question.title || "Untitled question"}
       </span>
     </div>
@@ -334,7 +308,7 @@ export function QuestionListPane({
   const activeQuestion = activeQuestionIndex !== -1 ? questions[activeQuestionIndex] : null;
 
   const content = (
-    <aside className="w-60 md:w-56 lg:w-60 bg-surface-subtle border-r border-default flex flex-col shrink-0 h-full overflow-hidden select-none transition-colors">
+    <aside className="w-64 md:w-60 lg:w-64 bg-surface-subtle border-r border-default flex flex-col shrink-0 h-full overflow-hidden select-none transition-colors">
       {/* Mobile Close Bar (when drawer is open on mobile) */}
       <div className="md:hidden flex items-center justify-between p-3 border-b border-default bg-surface">
         <span className="text-xs font-bold text-primary">Pages & Structure</span>
@@ -349,21 +323,21 @@ export function QuestionListPane({
       </div>
 
       {/* Scrollable navigation area */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide p-3 space-y-3">
+      <div className="flex-1 overflow-y-auto scrollbar-hide p-3 space-y-3.5">
         {/* ── 1. PAGES SECTION ─────────────────────────────────────────── */}
-        <div>
+        <div className="space-y-2">
           {/* Header */}
-          <div className="px-1 pb-1.5 flex items-center justify-between">
-            <span className="text-xs font-semibold text-secondary">Pages</span>
+          <div className="px-1 flex items-center justify-between">
+            <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Pages</span>
             {/* Logic Overview Toggle */}
             <button
               type="button"
               onClick={() => setShowLogicOverview(!showLogicOverview)}
               className={clsx(
-                "flex items-center gap-1 px-1.5 py-0.5 rounded text-micro font-medium transition-colors cursor-pointer",
+                "flex items-center gap-1 px-2 py-0.5 rounded-lg text-micro font-medium transition-colors cursor-pointer",
                 showLogicOverview
                   ? "bg-primary text-primary-foreground font-semibold shadow-2xs"
-                  : "text-muted hover:text-primary hover:bg-surface-hover"
+                  : "text-muted hover:text-primary hover:bg-neutral-200/50 dark:hover:bg-neutral-800"
               )}
               title="Toggle logic jumps overview"
               data-testid="toggle-logic-overview-btn"
@@ -373,145 +347,141 @@ export function QuestionListPane({
             </button>
           </div>
 
-          {/* Card Container */}
-          <div className="bg-surface rounded-xl border border-default p-1.5 shadow-card space-y-1">
-            {/* 1. Welcome Screen Row at top of Pages (Screenshot 1) */}
-            <div
-              onClick={() => {
-                selectQuestion("welcome");
-                onCloseMobile?.();
-              }}
-              data-testid="step-welcome"
-              className={clsx(
-                "group flex items-center justify-between gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all duration-100 cursor-pointer select-none",
-                selectedId === "welcome"
-                  ? "bg-muted text-primary shadow-xs font-semibold border border-default"
-                  : "hover:bg-surface-hover text-secondary hover:text-primary"
-              )}
-            >
-              <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                <div className="flex items-center justify-center w-5 h-5 rounded bg-neutral-200/70 dark:bg-neutral-800 text-secondary shrink-0">
-                  <MonitorSmartphone className="w-3 h-3" />
-                </div>
-                <span className="truncate flex-1 text-caption leading-tight text-primary">
-                  {form?.welcome_title || "Welcome Screen"}
-                </span>
-              </div>
+          {/* 1. Welcome Screen Card */}
+          <div
+            onClick={() => {
+              selectQuestion("welcome");
+              onCloseMobile?.();
+            }}
+            data-testid="step-welcome"
+            className={clsx(
+              "group flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-card border transition-all duration-150 cursor-pointer select-none",
+              selectedId === "welcome"
+                ? "border-neutral-900 dark:border-white shadow-xs ring-1 ring-neutral-900/10 dark:ring-white/20"
+                : "border-neutral-200/90 dark:border-neutral-800/90 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-2xs hover:shadow-xs"
+            )}
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 shrink-0">
+              <MonitorSmartphone className="w-4 h-4" />
             </div>
-
-            {/* 2. Sortable Questions */}
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              onDragCancel={handleDragCancel}
-            >
-              <SortableContext
-                items={questions.map((q) => String(q.id))}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-0.5">
-                  {questions.map((question, index) => (
-                    <SortableQuestionItem
-                      key={question.id}
-                      question={question}
-                      index={index}
-                      questions={questions}
-                      showLogicOverview={showLogicOverview}
-                      isSelected={String(selectedId) === String(question.id)}
-                      onSelect={() => {
-                        selectQuestion(question.id);
-                        onCloseMobile?.();
-                      }}
-                      onDuplicate={(e) => {
-                        e.stopPropagation();
-                        duplicateQuestion(question.id);
-                      }}
-                      onDelete={(e) => {
-                        e.stopPropagation();
-                        deleteQuestion(question.id);
-                      }}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-
-              {/* Drag Overlay */}
-              <DragOverlay>
-                {activeQuestion ? (
-                  <DraggingItemOverlay question={activeQuestion} index={activeQuestionIndex} />
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-
-            {/* + Add content button inside the card at bottom (Screenshot 2) */}
-            <button
-              type="button"
-              onClick={onOpenAddModal}
-              data-testid="add-content-btn"
-              className="w-full flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-medium text-secondary hover:text-primary hover:bg-surface-hover rounded-lg transition-colors border-t border-default mt-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none"
-            >
-              <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Add content</span>
-            </button>
+            <span className="text-[13px] leading-snug font-normal text-neutral-700 dark:text-neutral-200 line-clamp-2 flex-1">
+              {form?.welcome_title || "Welcome Screen"}
+            </span>
           </div>
+
+          {/* 2. Sortable Questions List */}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+          >
+            <SortableContext
+              items={questions.map((q) => String(q.id))}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-2">
+                {questions.map((question, index) => (
+                  <SortableQuestionItem
+                    key={question.id}
+                    question={question}
+                    index={index}
+                    questions={questions}
+                    showLogicOverview={showLogicOverview}
+                    isSelected={String(selectedId) === String(question.id)}
+                    onSelect={() => {
+                      selectQuestion(question.id);
+                      onCloseMobile?.();
+                    }}
+                    onDuplicate={(e) => {
+                      e.stopPropagation();
+                      duplicateQuestion(question.id);
+                    }}
+                    onDelete={(e) => {
+                      e.stopPropagation();
+                      deleteQuestion(question.id);
+                    }}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+
+            {/* Drag Overlay */}
+            <DragOverlay
+              dropAnimation={{
+                duration: 200,
+                easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
+              }}
+            >
+              {activeQuestion ? (
+                <DraggingItemOverlay question={activeQuestion} index={activeQuestionIndex} />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+
+          {/* + Add content button styled as clean dashed drop card matching Image 2 */}
+          <button
+            type="button"
+            onClick={onOpenAddModal}
+            data-testid="add-content-btn"
+            className="w-full flex items-center justify-center gap-2 py-3 px-3 text-xs font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white border-2 border-dashed border-neutral-300 hover:border-neutral-400 dark:border-neutral-700 dark:hover:border-neutral-600 rounded-2xl transition-all cursor-pointer bg-neutral-50/40 hover:bg-neutral-100/50 dark:bg-neutral-900/20"
+          >
+            <Plus className="w-4 h-4" aria-hidden="true" />
+            <span>Add content</span>
+          </button>
         </div>
 
-        {/* ── 2. PERSONALIZE WITH BRANCHING CALLOUT (Screenshot 1 & 2) ─── */}
+        {/* ── 2. PERSONALIZE WITH BRANCHING CALLOUT ─────────────────── */}
         <div
           onClick={() => setShowLogicOverview(!showLogicOverview)}
-          className="rounded-xl border border-default p-2.5 flex items-center justify-between text-xs font-medium bg-surface hover:bg-surface-hover text-primary transition-all cursor-pointer shadow-card"
+          className="rounded-2xl border border-neutral-200/90 dark:border-neutral-800 p-3 flex items-center justify-between text-xs font-medium bg-white dark:bg-card hover:border-neutral-300 dark:hover:border-neutral-700 text-primary transition-all cursor-pointer shadow-2xs"
         >
           <div className="flex items-center gap-2 min-w-0">
-            <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" aria-hidden="true" />
+            <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" aria-hidden="true" />
             <span className="text-xs font-medium text-primary truncate">Personalize with branching</span>
           </div>
           <ArrowRight className="w-3.5 h-3.5 text-muted shrink-0" aria-hidden="true" />
         </div>
 
         {/* ── 3. HORIZONTAL SEPARATOR DASH ──────────────────────────── */}
-        <div className="flex justify-center my-1" aria-hidden="true">
-          <div className="w-8 h-0.5 bg-border-strong rounded-full" />
+        <div className="flex justify-center my-0.5" aria-hidden="true">
+          <div className="w-8 h-0.5 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
         </div>
 
-        {/* ── 4. ENDINGS SECTION (Screenshot 1 & 2) ─────────────────── */}
-        <div>
-          <div className="px-1 pb-1.5 flex items-center justify-between">
-            <span className="text-xs font-semibold text-secondary">Endings</span>
+        {/* ── 4. ENDINGS SECTION ─────────────────────────────────── */}
+        <div className="space-y-2">
+          <div className="px-1 flex items-center justify-between">
+            <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Endings</span>
             <button
               type="button"
               onClick={() => selectQuestion("thank_you")}
               title="Add ending"
-              className="p-1 rounded text-muted hover:text-primary hover:bg-surface-hover cursor-pointer"
+              className="p-1 rounded text-muted hover:text-primary hover:bg-neutral-200/50 dark:hover:bg-neutral-800 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="bg-surface rounded-xl border border-default p-1.5 shadow-card">
-            <div
-              onClick={() => {
-                selectQuestion("thank_you");
-                onCloseMobile?.();
-              }}
-              data-testid="step-thank-you"
-              className={clsx(
-                "group flex items-center justify-between gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all duration-100 cursor-pointer select-none",
-                selectedId === "thank_you"
-                  ? "bg-muted text-primary shadow-xs font-semibold border border-default"
-                  : "hover:bg-surface-hover text-secondary hover:text-primary"
-              )}
-            >
-              <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded shrink-0 text-micro font-bold bg-neutral-200/70 dark:bg-neutral-800 text-secondary">
-                  <span>A</span>
-                </div>
-                <span className="truncate flex-1 text-caption leading-tight text-primary">
-                  {form?.thank_you_title || "Thank you for sharing your..."}
-                </span>
-              </div>
+          <div
+            onClick={() => {
+              selectQuestion("thank_you");
+              onCloseMobile?.();
+            }}
+            data-testid="step-thank-you"
+            className={clsx(
+              "group flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-card border transition-all duration-150 cursor-pointer select-none",
+              selectedId === "thank_you"
+                ? "border-neutral-900 dark:border-white shadow-xs ring-1 ring-neutral-900/10 dark:ring-white/20"
+                : "border-neutral-200/90 dark:border-neutral-800/90 hover:border-neutral-300 dark:hover:border-neutral-700 shadow-2xs hover:shadow-xs"
+            )}
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 font-semibold text-xs shrink-0">
+              A
             </div>
+            <span className="text-[13px] leading-snug font-normal text-neutral-700 dark:text-neutral-200 line-clamp-2 flex-1">
+              {form?.thank_you_title || "Thank you screen"}
+            </span>
           </div>
         </div>
       </div>
