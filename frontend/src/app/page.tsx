@@ -220,7 +220,7 @@ export default function WorkspaceDashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             {/* Title & Actions */}
             <div className="flex items-center gap-2.5">
-              <h1 className="text-[22px] font-semibold text-[#191919] tracking-tight">
+              <h1 className="text-[22px] font-semibold text-primary tracking-tight">
                 {workspaceName}
               </h1>
 
@@ -229,7 +229,7 @@ export default function WorkspaceDashboard() {
                 trigger={
                   <button
                     type="button"
-                    className="p-1.5 rounded-lg text-[#65636d] hover:text-[#191919] hover:bg-[#f4f3f6] transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-hover transition-colors cursor-pointer"
                     title="Workspace settings"
                   >
                     <MoreHorizontal className="w-4 h-4" />

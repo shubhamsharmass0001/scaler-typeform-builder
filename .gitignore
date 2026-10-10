@@ -49,3 +49,4 @@ backend/uploads/
 *.db.bak
 test-results/
 playwright-report/
+.antigravity/

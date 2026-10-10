@@ -19,6 +19,7 @@ import {
   Check,
 } from "lucide-react";
 import { BASE_URL } from "@/lib/api";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface TopNavProps {
   onToggleMobileSidebar?: () => void;
@@ -190,6 +191,9 @@ export function TopNav({
           <Briefcase className="w-4 h-4 text-muted" />
           <span>Brand kit</span>
         </button>
+
+        {/* Light / Dark Mode Toggle matching reference image 3 */}
+        <ThemeToggle size="sm" />
 
         {/* "View plans" solid dark teal button matching Screenshot 2 */}
         <button

@@ -51,14 +51,14 @@ export function TopTabs() {
             )}
 
             {tab.badge && (
-              <span className="text-[11px] font-medium leading-none px-1.5 py-0.5 rounded-full bg-[#e6f4fe] text-[#0284c7] border border-[#bae6fd]">
+              <span className="text-[11px] font-medium leading-none px-1.5 py-0.5 rounded-full bg-[#e6f4fe] dark:bg-sky-950/60 text-[#0284c7] dark:text-sky-300 border border-[#bae6fd] dark:border-sky-800/60">
                 {tab.badge}
               </span>
             )}
 
             {/* Active underline indicator spanning under the tab at bottom border */}
             {tab.active && (
-              <span className="absolute -bottom-[9px] left-3 right-3 h-[2px] bg-[#191919]" />
+              <span className="absolute -bottom-[9px] left-3 right-3 h-[2px] bg-[#191919] dark:bg-white" />
             )}
           </button>
         );

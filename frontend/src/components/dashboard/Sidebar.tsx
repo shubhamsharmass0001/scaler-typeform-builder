@@ -83,7 +83,7 @@ export function Sidebar({
             type="button"
             onClick={onCreateForm}
             disabled={isCreating}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-[#30283b] hover:bg-[#231d2c] text-white font-medium text-[13px] tracking-tight transition-all shadow-[0_1px_2px_rgba(0,0,0,0.06)] cursor-pointer disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-[#30283b] dark:bg-[#383046] hover:bg-[#231d2c] dark:hover:bg-[#4a405d] dark:border dark:border-white/10 text-white font-medium text-[13px] tracking-tight transition-all shadow-[0_1px_2px_rgba(0,0,0,0.06)] cursor-pointer disabled:opacity-50"
           >
             <Plus className="w-4 h-4 stroke-[2.2]" />
             <span>{isCreating ? "Creating..." : "Create form"}</span>

@@ -36,6 +36,8 @@
   --color-primary: var(--bg-btn-primary);
   --color-primary-hover: var(--bg-btn-primary-hover);
   --color-primary-foreground: var(--text-btn-primary);
+  --color-btn-primary: var(--bg-btn-primary);
+  --color-btn-primary-hover: var(--bg-btn-primary-hover);
   --color-brand-plan: var(--bg-brand-plan);
   --color-brand-plan-hover: var(--bg-brand-plan-hover);
   --color-brand-plan-text: var(--text-brand-plan);
@@ -211,6 +213,9 @@ body {
 /* ─────────────────────────────────────────────────────────────────────────────
    Global Contrast & Text Readability Overrides (WCAG AA compliance)
    ───────────────────────────────────────────────────────────────────────────── */
+.text-primary {
+  color: var(--text-primary) !important;
+}
 .text-muted {
   color: var(--text-muted) !important;
 }

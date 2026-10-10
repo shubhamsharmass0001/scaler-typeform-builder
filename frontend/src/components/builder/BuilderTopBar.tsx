@@ -412,16 +412,16 @@ export function BuilderTopBar({
             </button>
 
             {isProfileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-white shadow-xl border border-[#ecebf0] p-3 text-xs z-50 animate-in fade-in zoom-in-95 duration-100">
-                <div className="flex items-center gap-3 pb-3 border-b border-[#ecebf0]">
+              <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-card shadow-dropdown border border-default p-3 text-xs z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="flex items-center gap-3 pb-3 border-b border-default">
                   <div className="w-9 h-9 rounded-full bg-avatar text-avatar font-bold text-xs flex items-center justify-center border border-default shrink-0 select-none">
                     S
                   </div>
                   <div className="min-w-0 flex-1 text-left">
-                    <div className="font-semibold text-[13px] text-[#2d2b33] truncate">
+                    <div className="font-semibold text-[13px] text-primary truncate">
                       Shubham
                     </div>
-                    <div className="text-[11px] text-[#71717a] truncate font-normal">
+                    <div className="text-[11px] text-secondary truncate font-normal">
                       sshubham3_be23@thapar.edu
                     </div>
                   </div>
@@ -434,7 +434,7 @@ export function BuilderTopBar({
                       setIsProfileMenuOpen(false);
                       toast.info("Account settings");
                     }}
-                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#2d2b33] hover:bg-[#f4f3f6] transition-colors text-left text-[13px] font-normal cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-primary hover:bg-surface-hover transition-colors text-left text-[13px] font-normal cursor-pointer"
                   >
                     <span>Account settings</span>
                   </button>
@@ -444,7 +444,7 @@ export function BuilderTopBar({
                       setIsProfileMenuOpen(false);
                       toast.info("Plan: Typeform Pro");
                     }}
-                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#2d2b33] hover:bg-[#f4f3f6] transition-colors text-left text-[13px] font-normal cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-primary hover:bg-surface-hover transition-colors text-left text-[13px] font-normal cursor-pointer"
                   >
                     <span>Billing & plans</span>
                   </button>
